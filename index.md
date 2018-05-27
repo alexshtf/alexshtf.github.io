@@ -18,8 +18,10 @@ layout: home
 ## Publications
 - [Geosemantic Snapping for Sketch‐Based Modeling](https://onlinelibrary.wiley.com/doi/full/10.1111/cgf.12044)  
   A Shtof, A Agathos, Y Gingold, A Shamir, D Cohen‐Or  
-  Computer Graphics Forum 32 (2pt2), 245-253 (May 2013)
+  Computer Graphics Forum 32 (2pt2), 245-253 (May 2013)  
+  ([paper]({{ "/assets/geosemantic.pdf" | absolute_url }}), [paper supplemental]({{ "/assets/geosemantic_supplemental.pdf" | absolute_url }}), [video](https://www.youtube.com/watch?v=YsqdFFU6T2c))
 - [Globally solving a class of optimal power flow problems in radial networks by tree reduction](https://link.springer.com/article/10.1007/s10898-018-0652-z)    
   Amir Beck, Yuval Beck, Yoash Levron, Alex Shtof, Luba Tetruashvili  
-  To appear in Journal of Global Optimization 
+  To appear in Journal of Global Optimization  
+  ([paper]({{ "/assets/trem_jogo.pdf" | absolute_url }}))
 
