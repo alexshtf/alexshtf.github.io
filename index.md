@@ -20,3 +20,7 @@ layout: home
   ([paper]({{ "/assets/geosemantic.pdf" | absolute_url }}), [paper supplemental]({{ "/assets/geosemantic_supplemental.pdf" | absolute_url }}), [video](https://www.youtube.com/watch?v=YsqdFFU6T2c))
 - **Amir Beck, Yuval Beck, Yoash Levron, Alex Shtof, Luba Tetruashvili** [Globally solving a class of optimal power flow problems in radial networks by tree reduction](https://link.springer.com/article/10.1007/s10898-018-0652-z) _Journal of Global Optimization 72 (3), 373–402 (November 2018)_  
   ([paper]({{ "/assets/trem_jogo.pdf" | absolute_url }}), [software](https://github.com/alexshtf/trem_opf_solver))
+
+## Links
+- [StackOverflow profile](https://stackoverflow.com/users/532057/alex-shtof)
+- [Math StackExchange profile](https://math.stackexchange.com/users/5073/alex-shtof)
