@@ -21,6 +21,9 @@ layout: home
 - **Amir Beck, Yuval Beck, Yoash Levron, Alex Shtof, Luba Tetruashvili** [Globally solving a class of optimal power flow problems in radial networks by tree reduction](https://link.springer.com/article/10.1007/s10898-018-0652-z) _Journal of Global Optimization 72 (3), 373–402 (November 2018)_  
   ([paper]({{ "/assets/trem_jogo.pdf" | absolute_url }}), [software](https://github.com/alexshtf/trem_opf_solver))
 
+## Conference Lectures
+- Globally Solving a Class of Optimal Power Flow Problems in Radial Networks, _International Symposium on Mathematical Programming (July 2018)_ ([presentation]({{ "assets/ismp2018.pdf" | absolute_url }})).
+
 ## Links
 - [StackOverflow profile](https://stackoverflow.com/users/532057/alex-shtof)
 - [Math StackExchange profile](https://math.stackexchange.com/users/5073/alex-shtof)
