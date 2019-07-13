@@ -10,6 +10,7 @@ layout: home
 - Software development: design principles, TDD and BDD, C++, C#, F#
 - Numerical Linear Algebra
 - Numerical optimization algorithms for convex and nonconvex problems.
+- On-line optimization
 
 ## Projects
 - [AutoDiff](https://github.com/alexshtf/autodiff) - a .NET library for automatically computing derivatives of mathematical functions.
@@ -23,6 +24,9 @@ layout: home
 
 ## Conference Lectures
 - Globally Solving a Class of Optimal Power Flow Problems in Radial Networks, _International Symposium on Mathematical Programming (July 2018)_ ([presentation]({{ "assets/ismp2018.pdf" | absolute_url }})).
+
+## Thesis
+- [Optimal Power Flow in Networks with a Tree Topology]({{ "assets/thesis.pdf" | absolute_url }})
 
 ## Links
 - [StackOverflow profile](https://stackoverflow.com/users/532057/alex-shtof)
