@@ -20,7 +20,7 @@ description: |-
  Experienced Software Developer
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
-#twitter_username: jekyllrb
+twitter_username: alexshtf
 github_username:  alexshtf
 linkedin_username: alexshtf
 google_analytics: UA-134901511-1
