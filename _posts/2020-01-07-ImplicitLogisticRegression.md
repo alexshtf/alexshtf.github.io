@@ -8,7 +8,7 @@ comments: true
 When training machine-learning models, we typically aim to minimize the training loss
 
 $$
-\frac{1}{n} \sum_{k=1}^n f_k(x), 
+\frac{1}{n} \sum_{k=1}^n f_k(x),
 $$
 
 where $$f_k$$ is the loss of the $$k^{\mathrm{th}}$$ training sample with respect to the model parameter vector $$x$$. We usually do that by variants of the stochastic gradient method: at iteration $$t$$ we select $$f \in \{ f_1, \dots, f_n \}$$, and perform the gradient step $$x_{t+1} = x_t - \eta \nabla f(x_t)$$. Many variants exist, i.e. AdaGrad and Adam, but they all share one property - they use $$f$$ as a 'black box', and assume nothing about $$f$$, except for being able to compute its gradient. In this series of posts we explore methods which can exploit more information about the losses $$f$$.
@@ -49,25 +49,45 @@ x_{t+1}=\operatorname*{argmin}_x \left\{
 \right\} \tag{**}
 $$
 To derive an explicit formula for $$x_{t+1}$$ let's again, take the gradient w.r.t $$x$$ at $$x_{t+1}$$ and equate it with zero:
+
+
 $$
 a(a^T x_{t+1} + b) + \frac{1}{\eta}(x_{t+1} - x_t) = 0
 $$
+
+
 Now it becomes a bit technical, so bear with me - it leads to an important conclusion. Re-arranging, we obtain
+
+
 $$
 [\eta (a a^T) + I] x_{t+1} = x_t - (\eta b) a
 $$
+
+
 Solving for $$x_{t+1}$$ leads to
+
+
 $$
 x_{t+1} =[\eta (a a^T) + I]^{-1}[x_t - (\eta b) a].
 $$
- It seems that we have defeated the whole point of using a first-order method - avoiding inverting matrices to solve least-squares problems. The remedy comes from the famous [Sherman-Morrison matrix inversion formula]([https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula](https://en.wikipedia.org/wiki/Sherman–Morrison_formula)), which leads us to
+
+
+It seems that we have defeated the whole point of using a first-order method - avoiding inverting matrices to solve least-squares problems. The remedy comes from the famous [Sherman-Morrison matrix inversion formula]([https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula](https://en.wikipedia.org/wiki/Sherman–Morrison_formula)), which leads us to
+
+
 $$
 x_{t+1}=\left[I - \frac{\eta a a^T}{1+\eta \|a\|_2^2} \right][x_t - (\eta b) a],
 $$
+
+
 which by careful mathematical manipulations can be further simplified into
+
+
 $$
 x_{t+1}=x_t - \frac{\eta (a^T x_t+b)}{1+\eta \|a\|_2^2} a.
 $$
+
+
 Ah! Finally! Now we have arrived at a formula which can be implemented in $$O(d)$$ operations, where $$d$$ is the dimension of $$x$$, just like the regualr gradient method. We just need to compute the coefficient before $$a$$, and take a step in the direction opposite to $$a$$.
 
 Before moving forward and testing our algorithm in practice, let's look at our derivation again. It seems we employed some heavy-duty machinery - we had to find an efficient way to invert a matrix. Moreover, it seems that a different problem would require deriving an entirely new update step, which might be even more involved. Can we avoid this complexity, and construct a generic and simple method for a family of learning problems? It turns out to be possible, and we will address this challenge in a subsequent blog post.
