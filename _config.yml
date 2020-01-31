@@ -26,7 +26,7 @@ linkedin_username: alexshtf
 google_analytics: UA-134901511-1
 
 disqus:
-  shortname: alexshtf.github.io
+  shortname: alexshtf-github-io
 
 # Build settings
 markdown: kramdown
