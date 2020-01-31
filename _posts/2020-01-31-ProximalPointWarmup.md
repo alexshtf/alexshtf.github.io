@@ -101,7 +101,7 @@ $$
 
 Ah! Finally! Now we have arrived at a formula which can be implemented in $$O(d)$$ operations, where $$d$$ is the dimension of $$x$$. We just need to compute the coefficient $$\alpha_t$$, and take a step in the direction opposite to $$a$$. 
 
-An interesting thing to observe here is that large step-sizes $$\eta$$ do not lead to an overly large coefficient $$\alpha_t$$, since $$\eta$$ appears both in the numerator and the denominator. Intuitively, this might lead to a more stable learning algorithm - it is less sensitive bad step-size choice. 
+An interesting thing to observe here is that large step-sizes $$\eta$$ do not lead to an overly large coefficient $$\alpha_t$$, since $$\eta$$ appears both in the numerator and the denominator. Intuitively, this might lead to a more stable learning algorithm - it is less sensitive bad step-size choice. In fact, this stability property extends beyond least-squares problems, and you are encouraged to read the excellent paper[^stbl] by Asi and Duchi on stability of such methods. 
 
 # Experiment
 
@@ -138,6 +138,5 @@ The need to devise a custom optimizer for each problem in machine learning, whic
 [^ppm]: Bianchi, P. (2016). Ergodic convergence of a stochastic proximal point algorithm. _SIAM Journal on Optimization_, 26(4), 2235-2260.
 [^impl]: Kulis, B., & Bartlett, P. L. (2010). Implicit online learning. _In Proceedings of the 27th International Conference on Machine Learning (ICML-10)_ (pp. 575-582).
 [^prox]: Polyak B. (1987). Introduction to Optimization. _Optimization Software_
-
 [^stbl]: Asi, H. & Duchi J. (2019). Stochastic (Approximate) Proximal Point Methods: Convergence, Optimality, and Adaptivity *SIAM Journal on Optimization 29(3)* (pp. 2257–2290)
 
