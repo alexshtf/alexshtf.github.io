@@ -19,7 +19,7 @@ description: |-
  Ph.D in Continuous Optimization, Research Scientist,
  Experienced Software Developer
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://alexshtf.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: alexshtf
 github_username:  alexshtf
 linkedin_username: alexshtf
