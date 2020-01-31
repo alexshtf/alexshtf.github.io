@@ -5,7 +5,7 @@ comments: true
 ---
 
 # Intro
-I have two desires - learning Python, and sharing my thoughts on the intersection between software, mathematical optimization, and machine learning. So let’s begin our mutual adventure with a few simple ideas.
+I have two desires - learning Python, and sharing my thoughts and learnings on the intersection between software, mathematical optimization, and machine learning in an accessible manner to a wide audience. So let’s begin our mutual adventure with a few simple ideas, which are heavily inspired by a great work by Asi and Duchi[^stbl]. 
 
 When training machine-learning models, we typically aim to minimize the training loss
 
@@ -32,7 +32,7 @@ The balance is controlled by the step-size parameter $$\eta$$. Larger $$\eta$$ p
 To convince ourselves that $$(\text{*})$$ above is indeed the gradient step in disguise, we recall that by Fermat's principle we have $$\nabla H_t(x_{t+1}) = 0$$, or equivalently
 
 $$
-\nabla f(x_t) + \frac{1}{2\eta} (x_{t+1} - x_t) = 0.
+\nabla f(x_t) + \frac{1}{\eta} (x_{t+1} - x_t) = 0.
 $$
 
 By re-arranging and extracting $$x_{t+1}$$ we recover the gradient step.
@@ -46,7 +46,7 @@ x_{t+1} = \operatorname*{argmin}_x \left\{
 \right\}
 $$
 
-The  idea is known as the stochastic proximal point method[^ppm], or implicit learning[^impl]. Note, that when $$f$$ is “too complicated”, we might not have any efficient method to compute $$x_{t+1}$$, which makes this method impractical for many types of loss functions. However, it turns out to be useful for many losses.
+The  idea is known as the stochastic proximal point method[^ppm], or implicit learning[^impl]. Note, that when the loss $$f$$ is “too complicated”, we might not have any efficient method to compute $$x_{t+1}$$, which makes this method impractical for many types of loss functions, i.e. training deep neural networks. However, it turns out to be useful for many losses.
 
 Let us consider a simple example - linear regression. Our aim is to minimize 
 
@@ -62,14 +62,14 @@ x_{t+1}=\operatorname*{argmin}_x \left\{ P_t(x)\equiv
 \right\} \tag{**}
 $$
 
-To derive an explicit formula for $$x_{t+1}$$ let’s solve the equation $$\nabla P_t(x_{t+1}) = 0$$:
+Now it becomes a bit technical, so bear with me - it leads to an important conclusion at the end of this post. To derive an explicit formula for $$x_{t+1}$$ let’s solve the equation $$\nabla P_t(x_{t+1}) = 0$$:
 
 
 $$
 a(a^T x_{t+1} + b) + \frac{1}{\eta}(x_{t+1} - x_t) = 0
 $$
 
-Now it becomes a bit technical, so bear with me - it leads to an important conclusion at the end of this post. Re-arranging, we obtain
+Re-arranging, we obtain
 
 $$
 [\eta (a a^T) + I] x_{t+1} = x_t - (\eta b) a
@@ -87,7 +87,7 @@ $$
 x_{t+1}=\left[I - \frac{\eta a a^T}{1+\eta \|a\|_2^2} \right][x_t - (\eta b) a],
 $$
 
-which by careful mathematical manipulations can be further simplified into
+which by tedious, but simple mathematical manipulations can be further simplified into
 
 $$
 x_{t+1}=x_t - \underbrace{\frac{\eta (a^T x_t+b)}{1+\eta \|a\|_2^2}}_{\alpha_t} a. \tag{S}
@@ -95,13 +95,13 @@ $$
 
 Ah! Finally! Now we have arrived at a formula which can be implemented in $$O(d)$$ operations, where $$d$$ is the dimension of $$x$$. We just need to compute the coefficient $$\alpha_t$$, and take a step in the direction opposite to $$a$$. 
 
-An interesting thing to observe here is that large step-sizes $$\eta$$ do not lead to an overly large coefficient $$\alpha_t$$, since $$\eta$$ appears both in the numerator and the denominator. Intuitively, this might lead to a more stable learning algorithm - it is less sensitive bad step-size choice. In fact, this stability property extends beyond least-squares problems, and you are encouraged to read the excellent paper[^stbl] by Asi and Duchi on stability of such methods. 
+An interesting thing to observe here is that large step-sizes $$\eta$$ do not lead to an overly large coefficient $$\alpha_t$$, since $$\eta$$ appears both in the numerator and the denominator. Intuitively, this might lead to a more stable learning algorithm - it is less sensitive bad step-size choice. In fact, this stability property extends beyond least-squares problems, which is the subject of the excellent paper[^stbl] by Asi and Duchi which inspired me to write. 
 
 # Experiment
 
-We will compare the performance of our method against several optimizers which are widely used in existing machine learning frameworks: AdaGrad, Adam, SGD, and  will test the stability of our algorithm w.r.t the step-size choice, since our intuition suggested that our method might be more stable than the ‘black box’ approaches. The python code we describe below, which reproduces our results, can be found in this [git repo](https://github.com/alexshtf/proxptls).
+We will compare the performance of our method against several optimizers which are widely used in existing machine learning frameworks: AdaGrad, Adam, SGD, and  will test the stability of our algorithm w.r.t the step-size choice, since our intuition suggested that our method might be more stable than the ‘black box’ approaches. The Python code for my experiments can be found in this [git repo](https://github.com/alexshtf/proxptls).
 
-We use the [Boston Housing Dataset](https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html) to test our algorithms on a linear regression model attempting to predict housing prices $$y$$ based on the data vector $$a \in \mathbb{R}^3$$ comprising the number of rooms, population lower status percentage, and average pupil-teacher ratio by the linear model:
+We use the [Boston Housing Dataset](https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html) to test our algorithms on a linear regression model attempting to predict housing prices $$y$$ based on the data vector $$p \in \mathbb{R}^3$$ comprising the number of rooms, population lower status percentage, and average pupil-teacher ratio by the linear model:
 
 $$
 y = p^T \beta +\alpha
@@ -113,22 +113,22 @@ $$
 \min_{\alpha, \beta} \quad \frac{1}{2n} \sum_{j=1}^n (p_j^T \beta +\alpha-y_j)^2
 $$
 
-Let's see the most interesting part first - the results! Below is a chart obtained by running each method for 100 epochs, taking the best training loss, and repeating each experiment 20 times for each of our step-size choices. The line is the average of the best obtained loss of each experiment run. The x-axis is the step-size, while the y-axis is the deviation of the obtained training loss from the optimal loss (recall - least squared problems can be solved efficiently and exactly solved using a direct method).
+Let's look at the results! Below is a chart obtained by running each method for 100 epochs, taking the best training loss, and repeating each experiment 20 times for each of our step-size choices. Each line is the average of the best obtained loss of each experiment run. The x-axis is the step-size, while the y-axis is the deviation of the obtained training loss from the optimal loss (recall - least squared problems can be solved efficiently and exactly solved using a direct method).
 
 ![stability]({{ "/assets/stability.png" | absolute_url }})
 
-What we observe is interesting - all optimizers except for our _proximal point_ optimizer may product solutions which are far away from the optima, but for a narrow choice of step-sizes they product a solution which is very close to the optimum. Observe AdaGrad - for step-size choices of around $$\eta=10$$ we obtain a solution which is practically optimal - its deviation from the optimum is almost 0. On the other hand, our proximal point optimizer behaves fairly well for a huge range of step-sizes, from $$10^{-3}$$ up to $$10^2$$! Its deviation from the optimal loss remains quite small.
+What we observe is interesting - all optimizers except for our _proximal point_ optimizer may produce solutions which are far away from the optimum, but there is a narrow choice of step-sizes for which they produce a solution which is very close to the optimum. In particular, AdaGrad with a step-size of around $$\eta=10$$ produces  a solution which is practically optimal - its deviation from the optimum is almost 0. On the other hand, our proximal point optimizer behaves fairly well for a huge range of step-sizes, from $$10^{-3}$$ up to $$10^2$$! Its deviation from the optimal loss remains quite small.
 
 # Conclusion
 
-We gave up the black box and made our hands dirty by devising a custom optimizer for least-squares problems which treats losses directly, without approximating. In return, we gained stability w.r.t the step-sizes. Namely, to obtain a good model by training from data, we do not need to scan a large set of hyperparameter choices. 
+We gave up the black box and made our hands dirty by devising a custom optimizer for least-squares problems which treats the losses directly, without approximating. In return, we gained stability w.r.t the step-sizes. Namely, to obtain a good model by training from data, we do not need to scan a large set of hyperparameter choices. 
 
-The need to devise a custom optimizer for each problem in machine learning, which may require some serious mathematical trickery, comprises a major barrier towards using such methods. For many machine learning problems it is _not even possible_ to devise a simple formula for computing $$x_{k+1}$$, like we did in this post for the least-squares problem. In the next blog post we will attempt to make a crack in this barrier by devising a more generic approach, and implementing a PyTorch optimizer based on our developments. Stay tuned!
+The need to devise a custom optimizer for each problem in machine learning, which may require some serious mathematical trickery, might make such methods quite prohibitive and poses a serious barrier between machine learnign practicioners and stable learning methods. Furthermore, for many machine learning problems it is _not even possible_ to devise a simple formula for computing $$x_{k+1}$$. In the next blog post we will attempt to make a crack in this barrier by devising a more generic approach, and implementing a PyTorch optimizer based on our mathematical developments. Stay tuned!
 
 # References
 
 [^ppm]: Bianchi, P. (2016). Ergodic convergence of a stochastic proximal point algorithm. _SIAM Journal on Optimization_, 26(4), 2235-2260.
 [^impl]: Kulis, B., & Bartlett, P. L. (2010). Implicit online learning. _In Proceedings of the 27th International Conference on Machine Learning (ICML-10)_ (pp. 575-582).
 [^prox]: Polyak B. (1987). Introduction to Optimization. _Optimization Software_
-[^stbl]: Asi, H. & Duchi J. (2019). Stochastic (Approximate) Proximal Point Methods: Convergence, Optimality, and Adaptivity *SIAM Journal on Optimization 29(3)* (pp. 2257–2290)
+[^stbl]: Asi, H. & Duchi J. (2019). Stochastic (Approximate) Proximal Point Methods: Convergence, Optimality, and Adaptivity _SIAM Journal on Optimization 29(3)_ (pp. 2257–2290)
 
