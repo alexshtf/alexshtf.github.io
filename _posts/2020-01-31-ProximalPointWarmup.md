@@ -8,6 +8,7 @@ comments: true
 I have two desires - learning Python, and sharing my thoughts on the intersection between software, mathematical optimization, and machine learning. So let’s begin our mutual adventure with a few simple ideas.
 
 When training machine-learning models, we typically aim to minimize the training loss
+
 $$
 \frac{1}{n} \sum_{k=1}^n f_k(x),
 $$
@@ -16,11 +17,13 @@ where $$f_k$$ is the loss of the $$k^{\mathrm{th}}$$ training sample with respec
 
 # Gradient step revisited
 The gradient step is usually taught as 'take a small step in the direction of the negative gradient', but there is a different view - the well-known[^prox] _proximal view_:  
+
 $$
 x_{t+1} = \operatorname*{argmin}_{x} \left\{ H_t(x) \equiv
     \color{blue}{f(x_t) + \nabla f(x_t)^T (x - x_t)} + \frac{1}{2\eta} \color{red}{\| x - x_t\|_2^2} \tag{*}
 \right\}.
 $$
+
 The blue part in the formula above is the tangent, or the first-order Taylor approximation at $$x_t$$, while the red part is a measure of proximity to $$x_t$$. In other words, the gradient step can be interpreted as
 > find a point which balances between descending along the tangent at $$x_t$$, and staying in close proximity to $$x_t$$.
 
@@ -37,13 +40,11 @@ By re-arranging and extracting $$x_{t+1}$$ we recover the gradient step.
 # Beyond the black box
 A first order approximation is reasonable if we know nothing about the function $$f$$, except for the fact that it is differentiable. But what if we **do** know something about $$f$$? Let us consider an extreme case - we would like to exploit as much as we can about $$f$$, and define
 
-
 $$
 x_{t+1} = \operatorname*{argmin}_x \left\{
     \color{blue}{f(x)} + \frac{1}{2\eta} \color{red}{\|x - x_t\|_2^2}
 \right\}
 $$
-
 
 The  idea is known as the stochastic proximal point method[^ppm], or implicit learning[^impl]. Note, that when $$f$$ is “too complicated”, we might not have any efficient method to compute $$x_{t+1}$$, which makes this method impractical for many types of loss functions. However, it turns out to be useful for many losses.
 
@@ -54,11 +55,13 @@ $$
 $$
 
 Thus, every $$f$$ is of the form $$f(x)=\frac{1}{2}(a^T x + b)^2$$,  and our computational steps are of the form:
+
 $$
 x_{t+1}=\operatorname*{argmin}_x \left\{ P_t(x)\equiv
  \frac{1}{2}(a^T x + b)^2 + \frac{1}{2\eta} \|x - x_t\|^2
 \right\} \tag{**}
 $$
+
 To derive an explicit formula for $$x_{t+1}$$ let’s solve the equation $$\nabla P_t(x_{t+1}) = 0$$:
 
 
@@ -66,38 +69,29 @@ $$
 a(a^T x_{t+1} + b) + \frac{1}{\eta}(x_{t+1} - x_t) = 0
 $$
 
-
 Now it becomes a bit technical, so bear with me - it leads to an important conclusion at the end of this post. Re-arranging, we obtain
-
 
 $$
 [\eta (a a^T) + I] x_{t+1} = x_t - (\eta b) a
 $$
 
-
 Solving for $$x_{t+1}$$ leads to
-
 
 $$
 x_{t+1} =[\eta (a a^T) + I]^{-1}[x_t - (\eta b) a].
 $$
 
-
 It seems that we have defeated the whole point of using a first-order method - avoiding inverting matrices to solve least-squares problems. The remedy comes from the famous [Sherman-Morrison matrix inversion formula]([https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula](https://en.wikipedia.org/wiki/Sherman–Morrison_formula)), which leads us to
-
 
 $$
 x_{t+1}=\left[I - \frac{\eta a a^T}{1+\eta \|a\|_2^2} \right][x_t - (\eta b) a],
 $$
 
-
 which by careful mathematical manipulations can be further simplified into
-
 
 $$
 x_{t+1}=x_t - \underbrace{\frac{\eta (a^T x_t+b)}{1+\eta \|a\|_2^2}}_{\alpha_t} a. \tag{S}
 $$
-
 
 Ah! Finally! Now we have arrived at a formula which can be implemented in $$O(d)$$ operations, where $$d$$ is the dimension of $$x$$. We just need to compute the coefficient $$\alpha_t$$, and take a step in the direction opposite to $$a$$. 
 
@@ -109,18 +103,16 @@ We will compare the performance of our method against several optimizers which a
 
 We use the [Boston Housing Dataset](https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html) to test our algorithms on a linear regression model attempting to predict housing prices $$y$$ based on the data vector $$a \in \mathbb{R}^3$$ comprising the number of rooms, population lower status percentage, and average pupil-teacher ratio by the linear model:
 
-
 $$
 y = p^T \beta +\alpha
 $$
 
-
 To that end, we will attempt to minimize the mean squared error over all our samples $$(p_j, y_j)$$, namely:
-
 
 $$
 \min_{\alpha, \beta} \quad \frac{1}{2n} \sum_{j=1}^n (p_j^T \beta +\alpha-y_j)^2
 $$
+
 Let's see the most interesting part first - the results! Below is a chart obtained by running each method for 100 epochs, taking the best training loss, and repeating each experiment 20 times for each of our step-size choices. The line is the average of the best obtained loss of each experiment run. The x-axis is the step-size, while the y-axis is the deviation of the obtained training loss from the optimal loss (recall - least squared problems can be solved efficiently and exactly solved using a direct method).
 
 ![stability]({{ "/assets/stability.png" | absolute_url }})
