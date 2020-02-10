@@ -1,6 +1,7 @@
 ---
 ≠layout: post
 title:  “Proximal Point - warmup"
+tags: machine-learning optimization proximal-point online-optimization online-learning
 comments: true
 ---
 
