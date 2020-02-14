@@ -26,7 +26,7 @@ Namely, the next iterate balances between minimizing $$f$$ and staying in close 
 
 The major challenge is in actually computing $$x_{t+1}$$, since the loss $$f$$ can be arbitrarily complex. Having paid the above price, the advantage obtained from PPM is stability w.r.t the step-size choices, as demonstrated in the previous post.
 
-# Intro
+# Teaser
 
 In this post we attempt to add some gray color to the white box, namely, we partially decouple some of the intimate knowledge about the loss $$f$$ from the SPP optimizer for a useful family of loss functions, which are of the form 
 
@@ -37,9 +37,9 @@ $$
 
 where $$\phi$$ is a one-dimensional convex function.  The family above includes two important machine learning problems - linear least squares, and [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression). For linear least squares we each loss if of the form $$f(x)=\frac{1}{2} (a^T x + b)$$, meaning that we have $$\phi(t)=\frac{1}{2}t^2$$, while for logistic regression each loss is of the form $$\ln(1+\exp(a^T x))$$, meaning that we have $$\phi(t)=\ln(1+\exp(t))$$.
 
-We will first develop the mathematical machinery for dealing with such losses, and then we will implement and test an optimizer written using PyTorch.
+We will first develop the mathematical machinery for dealing with such losses, and then we will implement and test an optimizer based on PyTorch.
 
-#  The challenge
+#  The naive attempt
 
 Consider the logistic regression setup. The loss functions are of the form
 
@@ -65,7 +65,7 @@ $$
 $$
 
 
-Seems like we are stuck! Personally, I am not aware of any explicit formula for solving the above equation. We can, of course, try numerical methods, but then we defeat the entire idea of using the proximal point method when we have simple formula for computing $$x_{t+1}$$ given $$x_t$$.
+Whoa! How do we solve such an equation?  Personally, I am not aware of any explicit formula for solving the above equation. We can, of course, try numerical methods, but then we defeat the entire idea of using the proximal point method when we have simple formula for computing $$x_{t+1}$$ given $$x_t$$.
 
 What gets us to the promised land is the powerful [convex duality theory](https://en.wikipedia.org/wiki/Duality_(optimization)#Convex_problems).
 
@@ -79,16 +79,27 @@ $$
 $$
 
 
-Suppose (P) above has a finite optimal value $$v(P)$$. Let’s take at the following function:
+Suppose problem (P) above has a finite optimal value $$v(P)$$. Let’s take a look at the following function:
 
 
 $$
 q(s)=\inf_{x,t} \{ \phi(t)+g(x)+s(a^T x+b-t) \}
 $$
 
+Instead of the constraint $$t=a^T x + b$$, we define an unconstrained optimization problem parameterized by a ‘price’ $$s \in \mathbb{R}$$ for violating the constraint. Why is $$q(s)$$ interesting? Because of the following careful, but simple observation:
 
-That is, instead of the constraint $$t=a^T x + b$$, we define an unconstrained optimization problem parameterized by a ‘price’ $$s$$ for violating the constraint. It is not hard to conclude that $$q(s) \leq v(P)$$, namely, $$q(s)$$ is a lower bound on the optimal value of our desired problem (P). The *dual* problem is about finding the “best” lower bound:
 
+$$
+\begin{align}
+q(s)
+ &= \inf_{x,t} \{ \phi(t)+g(x)+s(a^T x+b-t) \} \\
+ &\leq \inf_{x,t} \{ \phi(t)+g(x)+s(a^T x+b-t) : t = a^T x + b \} \\
+ &= \inf_{x,t} \{ \phi(t)+g(x) : t = a^T x + b \} = v(\mathrm{P})
+\end{align}
+$$
+
+
+In other words,  $$q(s)$$ is a lower bound on the optimal value of our desired problem (P). The *dual* problem is about finding the “best” lower bound:
 
 $$
 \max_s \quad q(s). \tag{D}
@@ -97,13 +108,15 @@ $$
 
 This “best” lower bound $$v(D)$$ is still a lower bound - this simple property is called the *weak duality theorem*. But we are interested in the stronger result - strong duality:
 
-> Suppose that both $$\phi(t)$$ and g(x) are *closed convex functions* and  $$v(P)$$ is finite. Then, 
+> Suppose that both $$\phi(t)$$ and g(x) are *closed convex functions*[^clcvx] and  $$v(P)$$ is finite. Then, 
 >
 > (a) the dual problem (D) has an optimal solution $$s^*$$, and $$v(P)=v(D)$$, that is, the ‘best’ lower bound is tight. 
 >
-> (b) Moreover, if the minimization problem which is used to define $$q(s^*)$$ has a unique optimal solution $$x^*$$, then $$x^*$$ is the unique optimal solution of (P). Namely, having solved the dual problem, we can obtain the optimal solution of (P).
+> (b) Moreover, if the minimization problem which is used to define $$q(s^*)$$ has a unique optimal solution $$x^*$$, then $$x^*$$ is the unique optimal solution of (P). Meaning, we can extract the optimal solution of (P) from the optimal solution of (D).
 
-What we described above is a tiny fraction of convex duality theory, but this tiny fraction is enough for our purposes.
+What we described above is a tiny fraction of convex duality theory, but this tiny fraction is enough for our purposes. 
+
+Why is it useful? Note that the dual problem we obtained is a _one dimensional_ optimization problem. It can be as simple as maximizing a parabola!
 
 # Coloring the white box in gray
 
@@ -247,7 +260,7 @@ $$
 $$
 
 
-The only challenge left is finding the initial interval $$[l,u]$$ where the solution lies, because we can’t use $$[0,q]$$ since $$q’$$ is undefined at its endpoints . We, again, use the fact that $$q’(s)$$ is a strictly decreasing function, and therefore when we approach $$s=0$$ it becomes positive, while as we approach $$s=1$$ it becomes negative. Thus, we can find $$[l,u]$$ using the following simple method:
+The only challenge left is finding the initial interval $$[l,u]$$ where the solution lies, because we can’t use $$[0,1]$$ since $$q’$$ is undefined at its endpoints . But  carefully looking at $$q’(s)$$ we conclude that when we approach $$s=0$$ it tends to infinity, while as we approach $$s=1$$ it tends to negative infinity. Thus, we can find $$[l,u]$$ using the following simple method:
 
 - $$l=2^{-k}$$ for the smallest positive integer $$k$$ such that $$q’(2^{-k}) > 0$$.
 - $$u=1-2^{-k}$$ for the smallest positive integer $$k$$ such that $$q’(1-2^{-k}) < 0$$.
@@ -283,7 +296,7 @@ class ConvexOnLinearSPP:
         # update x
         x.sub_(eta * s_star * a)
         
-        return phi.eval(beta)
+        return phi.eval(beta.item())
     
     def x(self):
         return self._x
@@ -294,6 +307,7 @@ Next, let’s implement our two $$\phi$$ variants:
 
 ```python
 import torch
+import math
 
 # 0.5 * t^2
 class SquaredSPPLoss:
@@ -332,7 +346,7 @@ class LogisticSPPLoss:
         return (u + l) / 2
    
     def eval(self, beta):
-        return torch.log(1+torch.exp(beta))
+        return math.log(1+math.exp(beta))
 ```
 
 # Experiment
@@ -343,6 +357,6 @@ Let’s see if we observe the the same stability w.r.t the step-size choice for 
 
 [^sep]: Separable minimization: $$\min_{z,w} \{ f(z)+g(w) \} = \min_u f(z) + \min_v g(w).$$
 
-
+[^clcvx]: A function is closed if its epigraph $$\operatorname{epi}(f)=\{ (x, y): y \geq f(x) \}$$ is a closed set.
 
 .
