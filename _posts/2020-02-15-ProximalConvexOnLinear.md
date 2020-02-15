@@ -26,7 +26,7 @@ Namely, the next iterate balances between minimizing $$f$$ and staying in close 
 
 The major challenge is in actually computing $$x_{t+1}$$, since the loss $$f$$ can be arbitrarily complex. Having paid the above price, the advantage obtained from PPM is stability w.r.t the step-size choices, as demonstrated in the previous post.
 
-# Teaser
+# This time
 
 In this post we attempt to add some gray color to the white box, namely, we partially decouple some of the intimate knowledge about the loss $$f$$ from the SPP optimizer for a useful family of loss functions, which are of the form 
 
@@ -351,12 +351,30 @@ class LogisticSPPLoss:
 
 # Experiment
 
-Let’s see if we observe the the same stability w.r.t the step-size choice for a logistic regression problem, similarly to what we saw for linear least squares in the previous post. We will use the [Adult income dataset](https://archive.ics.uci.edu/ml/datasets/Adult), whose purpose is predicting wheather income exceeds $50k/y based on census data.
+Let’s see if we observe the the same stability w.r.t the step-size choice for a logistic regression problem, similarly to what we saw for linear least squares in the previous post. We will use the [Adult income dataset](https://archive.ics.uci.edu/ml/datasets/Adult), whose purpose is predicting wheather income exceeds $50k/y based on census data. Full code can be found in this [git repo](https://github.com/alexshtf/proxlogreg.git).
 
- 
+This time I checked only one competitor - AdaGrad, since my computational resources are limited. But you are welcome to clone the repository, and check additional algorithms. Each algorithm ran 10 times for 20 epochs, and the best training loss of each run was recorded. Below are the results:
+
+![results]({{ "/assets/prox_logreg_results.png" | absolute_url }})
+
+The x-axis is the step size, while the y-axis is the best achieved loss for that step-size among the epochs. It is not a surprise that this time as well we observe the same stability phenomenon: AdaGrad performs well for a narrow range of step-sizes, while the SPP method performs well  for a very wide range of step-size choices, namely, it is less sensitive to the choice of step-sizes.
+
+# Teaser
+
+In many machine learning problems, we don’t wish to merely solve a simple least squares or a logistic regression problem, but a _regularized_ problem. For example, L2 regularized logistic regression aims to solve an average of losses of the form
+
+
+$$
+f(x)=\log(1+\exp(a^T x)) + \alpha \|x\|_2^2
+$$
+
+
+ We will discuss regularization in the next post. Stay tuned!
+
+
 
 [^sep]: Separable minimization: $$\min_{z,w} \{ f(z)+g(w) \} = \min_u f(z) + \min_v g(w).$$
 
-[^clcvx]: A function is closed if its epigraph $$\operatorname{epi}(f)=\{ (x, y): y \geq f(x) \}$$ is a closed set.
+[^clcvx]: A function is closed if its epigraph $$\operatorname{epi}(f)=\{ (x, y): y \geq f(x) \}$$ is a closed set. Most functions of interest are closed, including the functions in this post.
 
 .
