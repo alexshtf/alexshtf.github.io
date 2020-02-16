@@ -2,7 +2,7 @@
 
 layout: post
 title: “Proximal point - convex on linear losses"
-tags: machine-learning online-learning online-optimization optimization proximal-point logistic-regression
+tags: [machine-learning, online-learning, online-optimization, optimization, proximal-point, logistic-regression]
 comments: true
 ---
 
