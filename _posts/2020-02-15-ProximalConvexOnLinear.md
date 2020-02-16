@@ -4,6 +4,8 @@ layout: post
 title: “Proximal point - convex on linear losses"
 tags: [machine-learning, online-learning, online-optimization, optimization, proximal-point, logistic-regression]
 comments: true
+description: "Implementing the Stochastic proximal point method for convex over linear losses, with applications to linear least squares and logistic regression"
+
 ---
 
 # Review
