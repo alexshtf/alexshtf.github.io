@@ -3,6 +3,7 @@
 title:  “Proximal Point - warmup"
 tags: [machine-learning, optimization, proximal-point, online-optimization, online-learning]
 comments: true
+description: "Stochastic proximal point introduction, advantages, disadvantages, and a demonstration on linear least squares problems"
 ---
 
 # Intro
