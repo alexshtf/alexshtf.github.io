@@ -177,7 +177,7 @@ The function $$\phi^{*}(s)$$ is well known in convex analysis, and is called the
 | :-----------------: | :--------------------------------------------------------: |
 | $$\frac{1}{2}t^2$$  |                     $$\frac{1}{2}s^2$$                     |
 | $$\ln(1+\exp(t))$$ | $$s \ln(s)+(1-s) \ln(1-s)$$ where $$0 \log(0) \equiv 0$$ |
-| $$-\ln(x)$$ | $$ -(1+\ln(-x))$$ |
+| $$-\ln(x)$$ | $$ -(1+\ln(-s))$$ |
 
 Summing up what we discovered about the red and blue parts, we obtained
 

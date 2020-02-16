@@ -118,11 +118,11 @@ Let's look at the results! Below is a chart obtained by running each method for 
 
 ![stability]({{ "/assets/stability.png" | absolute_url }})
 
-What we observe is interesting - all optimizers except for our _proximal point_ optimizer may produce solutions which are far away from the optimum, but there is a narrow choice of step-sizes for which they produce a solution which is very close to the optimum. In particular, AdaGrad with a step-size of around $$\eta=10$$ produces  a solution which is practically optimal - its deviation from the optimum is almost 0. On the other hand, our proximal point optimizer behaves fairly well for a huge range of step-sizes, from $$10^{-3}$$ up to $$10^2$$! Its deviation from the optimal loss remains quite small.
+What we observe is interesting - all optimizers except for our _proximal point_ optimizer may produce solutions which are far away from the optimum, but there is a narrow choice of step-sizes for which they produce a solution which is very close to the optimum. In particular, AdaGrad with a step-size of around $$\eta=10$$ produces  a solution which is practically optimal - its deviation from the optimum is almost 0 (note the log-scale). On the other hand, the proximal point optimizer behaves fairly well for a huge range of step-sizes, from $$10^{-3}$$ up to $$10^2$$! Its deviation from the optimal loss remains quite small.
 
 # Conclusion
 
-We gave up the black box and made our hands dirty by devising a custom optimizer for least-squares problems which treats the losses directly, without approximating. In return, we gained stability w.r.t the step-sizes. Namely, to obtain a good model by training from data, we do not need to scan a large set of hyperparameter choices. 
+We gave up the black box and made our hands dirty by devising a custom optimizer for least-squares problems which treats the losses directly, without approximating. In return, we gained stability w.r.t the step-sizes. Namely, to obtain a reasonably good model, we do not need to invest a lot of computational effort into scanning a large set of hyperparameter choices. 
 
 The need to devise a custom optimizer for each problem in machine learning, which may require some serious mathematical trickery, might make such methods quite prohibitive and poses a serious barrier between machine learnign practicioners and stable learning methods. Furthermore, for many machine learning problems it is _not even possible_ to devise a simple formula for computing $$x_{k+1}$$. In the next blog post we will attempt to make a crack in this barrier by devising a more generic approach, and implementing a PyTorch optimizer based on our mathematical developments. Stay tuned!
 
