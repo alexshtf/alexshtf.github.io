@@ -353,7 +353,7 @@ class LogisticSPPLoss:
 
 # Experiment
 
-Let’s see if we observe the the same stability w.r.t the step-size choice for a logistic regression problem, similarly to what we saw for linear least squares in the previous post. We will use the [Adult income dataset](https://archive.ics.uci.edu/ml/datasets/Adult), whose purpose is predicting wheather income exceeds $50k/y based on census data. Full code can be found in this [git repo](https://github.com/alexshtf/proxlogreg.git).
+Let’s see if we observe the the same stability w.r.t the step-size choice for a logistic regression problem, similarly to what we saw for linear least squares in the previous post. We will use the [Adult income dataset](https://archive.ics.uci.edu/ml/datasets/Adult), whose purpose is predicting wheather income exceeds $50k/y based on census data. Full code can be found in this [git repo](https://github.com/alexshtf/proxptlogreg.git).
 
 This time I checked only one competitor - AdaGrad, since my computational resources are limited. But you are welcome to clone the repository, and check additional algorithms. Each algorithm ran 10 times for 20 epochs, and the best training loss of each run was recorded. Below are the results:
 
