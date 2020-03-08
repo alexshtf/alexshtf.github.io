@@ -83,7 +83,7 @@ $$
 x_{t+1} =[\eta (a a^T) + I]^{-1}[x_t - (\eta b) a].
 $$
 
-It seems that we have defeated the whole point of using a first-order method - avoiding inverting matrices to solve least-squares problems. The remedy comes from the famous [Sherman-Morrison matrix inversion formula]([https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula](https://en.wikipedia.org/wiki/Sherman–Morrison_formula)), which leads us to
+It seems that we have defeated the whole point of using a first-order method - avoiding inverting matrices to solve least-squares problems. The remedy comes from the famous [Sherman-Morrison matrix inversion formula](https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula), which leads us to
 
 $$
 x_{t+1}=\left[I - \frac{\eta a a^T}{1+\eta \|a\|_2^2} \right][x_t - (\eta b) a],
