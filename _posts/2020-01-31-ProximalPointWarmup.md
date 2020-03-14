@@ -15,7 +15,9 @@ $$
 \frac{1}{n} \sum_{k=1}^n f_k(x),
 $$
 
-where $$f_k$$ is the loss of the $$k^{\mathrm{th}}$$ training sample with respect to the model parameter vector $$x$$. We usually do that by variants of the stochastic gradient method: at iteration $$t$$ we select $$f \in \{ f_1, \dots, f_n \}$$, and perform the gradient step $$x_{t+1} = x_t - \eta \nabla f(x_t)$$. Many variants exist, i.e. AdaGrad and Adam, but they all share one property - they use $$f$$ as a 'black box', and assume nothing about $$f$$, except for being able to compute its gradient. In this series of posts we explore methods which can exploit more information about the losses $$f$$.
+where $$f_k$$ is the loss of the $$k^{\mathrm{th}}$$ training sample with respect to the model parameter vector $$x$$.  We usually do that by variants of the stochastic gradient method: at iteration $$t$$ we select $$f \in \{ f_1, \dots, f_n \}$$, and perform the gradient step $$x_{t+1} = x_t - \eta \nabla f(x_t)$$.  Many variants exist, i.e. AdaGrad and Adam, but they all share one property - they use $$f$$ as a 'black box', and assume nothing about $$f$$, except for being able to compute its gradient. In this series of posts we explore methods which can exploit more information about the losses $$f$$.
+
+For some machine learning practitioners the notation may seem unusual - $$x$$ denotes the model’s parameters, rather than the input data. But since I focus on optimization and refer to many papers in the field, I adopted ubiquitous notation in the optimization community, which also common in most mathematical fields - the ‘unknown’ we aim to compute by solving a problem is denoted by $$x$$. The fact that our unknown is the parameter vector of a model does not change anything - we have an optimization problem, and aim to find its optimal solution $$x$$. Moreover, the training data itself plays no role when optimizing - so its embedded inside each of the functions $$\{f_1, \dots, f_n\}$$. Get used to it :)
 
 # Gradient step revisited
 The gradient step is usually taught as 'take a small step in the direction of the negative gradient', but there is a different view - the well-known[^prox] _proximal view_:  
@@ -53,7 +55,7 @@ The  idea is known as the stochastic proximal point method[^ppm], or implicit le
 Let us consider a simple example - linear regression. Our aim is to minimize 
 
 $$
-\frac{1}{2n} \sum_{k=1}^n (a_i^T x + b_i)^2
+\frac{1}{2n} \sum_{k=1}^n (a_i^T x + b_i)^2 \tag{LS}
 $$
 
 Thus, every $$f$$ is of the form $$f(x)=\frac{1}{2}(a^T x + b)^2$$,  and our computational steps are of the form:
@@ -114,6 +116,8 @@ To that end, we will attempt to minimize the mean squared error over all our sam
 $$
 \min_{\alpha, \beta} \quad \frac{1}{2n} \sum_{j=1}^n (p_j^T \beta +\alpha-y_j)^2
 $$
+
+In terms of (LS) above , we have the parameters $$x = (\alpha_1, \alpha_2, \alpha_3, \beta)^T$$, and the data $$a_i = (p_1, p_2, p_3, 1)^T$$, and $$b_i = -y_i$$.   
 
 Let's look at the results! Below is a chart obtained by running each method for 100 epochs, taking the best training loss, and repeating each experiment 20 times for each of our step-size choices. Each line is the average of the best obtained loss of each experiment run. The x-axis is the step-size, while the y-axis is the deviation of the obtained training loss from the optimal loss (recall - least squared problems can be solved efficiently and exactly solved using a direct method).
 
