@@ -379,4 +379,4 @@ $$
 
 [^clcvx]: A function is closed if its epigraph $$\operatorname{epi}(f)=\{ (x, y): y \geq f(x) \}$$ is a closed set. Most functions of interest are closed, including the functions in this post.
 
-[^logistic]: The prediction of logistic regression $$\hat{y} = 1/(1+\exp(w^T x))$$ for input $$w$$ composed onto the log-loss $$-y \ln(y) - (1-y) \ln(1-y)$$ for binary labels $$y \in {0,1}$$ results in $$\ln(1+\exp(\pm w^T x))$$. Defining $$a = w$$ or $$a = -w$$, depending on weather our sample is positive or negative, results in losses of the form $$\ln(1+\exp(a^T x))$$.
+[^logistic]: The prediction of logistic regression $$\hat{y} = 1/(1+\exp(-w^T x))$$ for input $$w$$ composed under the log-loss $$-y \ln(y) - (1-y) \ln(1-y)$$ for binary labels $$y \in {0,1}$$ results, after some algebra, in $$\ln(1+\exp(\pm w^T x))$$. Defining $$a = w$$ or $$a = -w$$, depending on weather our sample is positive or negative, results in losses of the form $$\ln(1+\exp(a^T x))$$.
