@@ -37,7 +37,7 @@ $$
 f(x) = \phi(a^T x+b),
 $$
 
-where $$\phi$$ is a one-dimensional convex function.  The family above includes two important machine learning problems - linear least squares, and [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression). For linear least squares each loss is of the form $$f(x)=\frac{1}{2} (a^T x + b)^2$$, meaning that we have $$\phi(t)=\frac{1}{2}t^2$$, while for logistic regression each loss is of the form $$\ln(1+\exp(a^T x))$$^[logistic], meaning that we have $$\phi(t)=\ln(1+\exp(t))$$.
+where $$\phi$$ is a one-dimensional convex function.  The family above includes two important machine learning problems - linear least squares, and [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression). For linear least squares each loss is of the form $$f(x)=\frac{1}{2} (a^T x + b)^2$$, meaning that we have $$\phi(t)=\frac{1}{2}t^2$$, while for logistic regression each loss is of the form $$\ln(1+\exp(a^T x))$$[^logistic], meaning that we have $$\phi(t)=\ln(1+\exp(t))$$.
 
 We will first develop the mathematical machinery for dealing with such losses, and then we will implement and test an optimizer based on PyTorch.
 
