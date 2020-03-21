@@ -10,7 +10,7 @@ description: "Implementing the Stochastic proximal point method for convex over 
 
 # Review
 
-In the [previous post]({% post_url 2020-01-31-ProximalPointWarmup %}) of this series, we introduced the stochastic proximal point (SPP) method for minimizing the average loss
+In the [previous post]({{ page.previous.url }}) of this series, we introduced the stochastic proximal point (SPP) method for minimizing the average loss
 $$
 \frac{1}{n} \sum_{i=1}^n f_i(x),
 $$
@@ -26,7 +26,7 @@ $$
 
 Namely, the next iterate balances between minimizing $$f$$ and staying in close proximity to the previou siterate $$x_t$$. The optimizer implementing SPP must intimately know $$f$$, intimately enough so that it is able to solve the above problem and compute $$x_{t+1}$$. This ‘white box’ approach is in direct contrast to the standard ‘black box’ approach of SGD-type methods, where the optimizer sees $$f$$ through an oracle which is able to compute gradients.
 
-The major challenge is in actually computing $$x_{t+1}$$, since the loss $$f$$ can be arbitrarily complex. Having paid the above price, the advantage obtained from PPM is stability w.r.t the step-size choices, as demonstrated in the previous post.
+The major challenge is in actually computing $$x_{t+1}$$, since the loss $$f$$ can be arbitrarily complex. Having paid the above price, the advantage obtained from stochastic proximal point is stability w.r.t the step-size choices, as demonstrated in the previous post.
 
 # This time
 
@@ -37,7 +37,7 @@ $$
 f(x) = \phi(a^T x+b),
 $$
 
-where $$\phi$$ is a one-dimensional convex function.  The family above includes two important machine learning problems - linear least squares, and [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression). For linear least squares we each loss if of the form $$f(x)=\frac{1}{2} (a^T x + b)$$, meaning that we have $$\phi(t)=\frac{1}{2}t^2$$, while for logistic regression each loss is of the form $$\ln(1+\exp(a^T x))$$, meaning that we have $$\phi(t)=\ln(1+\exp(t))$$.
+where $$\phi$$ is a one-dimensional convex function.  The family above includes two important machine learning problems - linear least squares, and [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression). For linear least squares each loss is of the form $$f(x)=\frac{1}{2} (a^T x + b)^2$$, meaning that we have $$\phi(t)=\frac{1}{2}t^2$$, while for logistic regression each loss is of the form $$\ln(1+\exp(a^T x))$$^[logistic], meaning that we have $$\phi(t)=\ln(1+\exp(t))$$.
 
 We will first develop the mathematical machinery for dealing with such losses, and then we will implement and test an optimizer based on PyTorch.
 
@@ -379,4 +379,4 @@ $$
 
 [^clcvx]: A function is closed if its epigraph $$\operatorname{epi}(f)=\{ (x, y): y \geq f(x) \}$$ is a closed set. Most functions of interest are closed, including the functions in this post.
 
-.
+[^logistic]: The prediction of logistic regression $$\hat{y} = 1/(1+\exp(w^T x))$$ for input $$w$$ composed onto the log-loss $$-y \ln(y) - (1-y) \ln(1-y)$$ for binary labels $$y \in {0,1}$$ results in $$\ln(1+\exp(\pm w^T x))$$. Defining $$a = w$$ or $$a = -w$$, depending on weather our sample is positive or negative, results in losses of the form $$\ln(1+\exp(a^T x))$$.
