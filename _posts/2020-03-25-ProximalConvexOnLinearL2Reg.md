@@ -226,7 +226,7 @@ Whoa! Surprise! Our stable stochastic proximal point optimizer has been outperfo
 
 # Teaser
 
-What if we want to regularize using L1 regularization, namely, $$r(x)=\lambda \|x\|_1= \lambda \sum_{i=1}^n |x_i|$$? Such regularizers are especially beneficial when we need a simple model with a small number of features, since they promote a _sparse_ vector $$x$$. But it turns out AdaGrad, and other black-box optimizers do not shine so well with L1 regularization, but the proximal point approach does.  So we continue our endaevor for an efficient implementation of the approach with a general regularizer $$r$$.
+What if we want to regularize using L1 regularization, namely, $$r(x)=\lambda \|x\|_1$$? Such regularizers are especially beneficial when we need a simple model with a small number of features, since they promote a _sparse_ vector $$x$$. But it turns out AdaGrad, and other black-box optimizers do not shine so well with L1 regularization, but the proximal point approach does.  So we continue our endaevor for an efficient implementation of the approach with a general regularizer $$r$$.
 
 Repeating the dual problem derivation for a generic regularizer $$r(x)$$ we obtain
 
