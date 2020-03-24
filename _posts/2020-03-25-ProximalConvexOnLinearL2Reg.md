@@ -77,7 +77,7 @@ The corresponding dual problem aims to maximize
 
 
 
-$$ {Dual function}
+$$
 \begin{align}
 q(s) 
  &= \inf_{x,u} \left \{ \phi(u)+ \frac{\lambda}{2} \|x\|_2^2+\frac{1}{2\eta} \|x - x_t\|_2^2 + s(a^T x + b - u) \right \} \\
