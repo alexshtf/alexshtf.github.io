@@ -17,7 +17,7 @@ $$
 
 Recall, the challenge lies in the fact that  $$f$$ can be arbitrary complex, and thus computing $$x_{t+1}$$ can be arbitrarily hard, and may even be impossible. A major benefit, on the othet hand, is stability w.r.t step-size choices, compared with black-box stochastic gradient methods.
 
-In the [previous post]({{ post.previous.url }}) we derived, implemented, and tested an efficient implementation for a specific family of losses of the form
+In the [previous post]({{ page.previous.url }}) we derived, implemented, and tested an efficient implementation for a specific family of losses of the form
 
 
 
