@@ -37,7 +37,7 @@ $$
 f(x) = \phi(a^T x+b),
 $$
 
-where $$\phi$$ is a one-dimensional convex function.  The family above includes two important machine learning problems - linear least squares, and [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression). For linear least squares each loss is of the form $$f(x)=\frac{1}{2} (a^T x + b)^2$$, meaning that we have $$\phi(t)=\frac{1}{2}t^2$$, while for logistic regression each loss is of the form $$\ln(1+\exp(a^T x))$$^[logistic], meaning that we have $$\phi(t)=\ln(1+\exp(t))$$.
+where $$\phi$$ is a one-dimensional convex function.  The family above includes two important machine learning problems - linear least squares, and [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression). For linear least squares each loss is of the form $$f(x)=\frac{1}{2} (a^T x + b)^2$$, meaning that we have $$\phi(t)=\frac{1}{2}t^2$$, while for logistic regression each loss is of the form $$\ln(1+\exp(a^T x))$$[^logistic], meaning that we have $$\phi(t)=\ln(1+\exp(t))$$.
 
 We will first develop the mathematical machinery for dealing with such losses, and then we will implement and test an optimizer based on PyTorch.
 
@@ -379,4 +379,4 @@ $$
 
 [^clcvx]: A function is closed if its epigraph $$\operatorname{epi}(f)=\{ (x, y): y \geq f(x) \}$$ is a closed set. Most functions of interest are closed, including the functions in this post.
 
-[^logistic]: The prediction of logistic regression $$\hat{y} = 1/(1+\exp(w^T x))$$ for input $$w$$ composed onto the log-loss $$-y \ln(y) - (1-y) \ln(1-y)$$ for binary labels $$y \in {0,1}$$ results in $$\ln(1+\exp(\pm w^T x))$$. Defining $$a = w$$ or $$a = -w$$, depending on weather our sample is positive or negative, results in losses of the form $$\ln(1+\exp(a^T x))$$.
+[^logistic]: The prediction of logistic regression $$\hat{y} = 1/(1+\exp(-w^T x))$$ for input $$w$$ composed with the log-loss $$-y \ln(\hat{y})+ (1-y) \ln(1-\hat{y})$$ for binary labels $$y \in \{0,1\}$$, after some algebra, results in $$\ln(1+\exp(\pm w^T x))$$. Defining $$a = w$$ or $$a = -w$$, depending on our sample's label, results in losses of the form $$\ln(1+\exp(a^T x))$$.
