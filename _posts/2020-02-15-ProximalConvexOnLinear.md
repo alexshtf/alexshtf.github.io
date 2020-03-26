@@ -101,7 +101,7 @@ q(s)
 $$
 
 
-In other words,  $$q(s)$$ is a lower bound on the optimal value of our desired problem (P). The *dual* problem is about finding the “best” lower bound:
+The above inequality holds since minimizing over the entire space produces a smaller value than minimizing over a subset. The observation above means that  $$q(s)$$ is a lower bound on the optimal value of our desired problem (P). The *dual* problem is about finding the “best” lower bound:
 
 $$
 \max_s \quad q(s). \tag{D}
