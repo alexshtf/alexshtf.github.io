@@ -3,6 +3,7 @@
 title:  “Proximal Point - regularized convex on linear I"
 tags: [machine-learning, optimization, proximal-point, online-optimization, online-learning, logistic-regression, regularization]
 comments: true
+description: "Implementing the Stochastic proximal point method for convex over linear losses with regularization, with a logistic regression example"
 ---
 
 We continue our endeavor of looking for a practical and efficient implementation of the stochastic proximal point method, which aims to minimize the average loss $$\frac{1}{n} \sum_{i=1}^n f_i(x)$$ over $$n$$ training samples by, iteratively,  selecting  $$f \in \{f_1, \dots, f_n \}$$ and computing

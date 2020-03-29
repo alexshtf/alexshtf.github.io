@@ -14,16 +14,16 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 title: Alex Shtof
+tagline: Blog on optimization, machine learning, and software development.
 email: alex.shtf@mail.com
-description: |-
- Ph.D in Continuous Optimization, Research Scientist,
- Experienced Software Developer
+description: Blog on optimization, machine learning, and software development.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://alexshtf.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: alexshtf
 github_username:  alexshtf
 linkedin_username: alexshtf
 google_analytics: UA-134901511-1
+google_site_verification: rjnh8Vn7SLOIBKgGMei2oc5VP-dVUr9j_wR5fucMn-o
 
 disqus:
   shortname: alexshtf-github-io
