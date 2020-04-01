@@ -18,7 +18,7 @@ $$
 
 where $$f_k$$ is the loss of the $$k^{\mathrm{th}}$$ training sample with respect to the model parameter vector $$x$$.  We usually do that by variants of the stochastic gradient method: at iteration $$t$$ we select $$f \in \{ f_1, \dots, f_n \}$$, and perform the gradient step $$x_{t+1} = x_t - \eta \nabla f(x_t)$$.  Many variants exist, i.e. AdaGrad and Adam, but they all share one property - they use $$f$$ as a 'black box', and assume nothing about $$f$$, except for being able to compute its gradient. In this series of posts we explore methods which can exploit more information about the losses $$f$$.
 
-For some machine learning practitioners the notation may seem unusual - $$x$$ denotes the model’s parameters, rather than the input data. But since I focus on optimization and refer to many papers in the field, I adopted ubiquitous notation in the optimization community, which also common in most mathematical fields - the ‘unknown’ we aim to compute by solving a problem is denoted by $$x$$. The fact that our unknown is the parameter vector of a model does not change anything - we have an optimization problem, and aim to find its optimal solution $$x$$. Moreover, the training data itself plays no role when optimizing - so its embedded inside each of the functions $$\{f_1, \dots, f_n\}$$. Get used to it :)
+For some machine learning practitioners the notation may seem unusual - $$x$$ denotes the model’s parameters, rather than the input data. Since this blog focuses on optimization and refers to many papers in the field, I adopted the ubituitous notation in the optimization community, and in mathematics in general - the ‘unknown’ we are looking for is denoted by $$x$$. In our context, the ‘unknown’ is the model’s parameter vector. Get used to it :)
 
 # Gradient step revisited
 The gradient step is usually taught as 'take a small step in the direction of the negative gradient', but there is a different view - the well-known[^prox] _proximal view_:  
@@ -51,9 +51,9 @@ x_{t+1} = \operatorname*{argmin}_x \left\{
 \right\}
 $$
 
-The  idea is known as the stochastic proximal point method[^ppm], or implicit learning[^impl]. Note, that when the loss $$f$$ is “too complicated”, we might not have any efficient method to compute $$x_{t+1}$$, which makes this method impractical for many types of loss functions, i.e. training deep neural networks. However, it turns out to be useful for many losses.
+The  idea is known as the stochastic proximal point method[^ppm], or implicit learning[^impl]. Note, that when the loss $$f$$ is “too complicated”, we might not have any efficient method to compute $$x_{t+1}$$, which makes this method impractical for many types of loss functions, i.e. training deep neural networks. However, it turns out to be useful for many losses. In the following series of posts we will explore ways to efficiently implement the method for some losses $$f$$ which are not too complicated, and demonstrate the method’s advantages over regular black-box approaches.
 
-Let us consider a simple example - linear regression. Our aim is to minimize 
+In this post, we begin by considering a simple example - linear regression. Our aim is to minimize 
 
 $$
 \frac{1}{2n} \sum_{k=1}^n (a_i^T x + b_i)^2 \tag{LS}
