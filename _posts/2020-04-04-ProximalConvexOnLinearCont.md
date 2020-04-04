@@ -146,14 +146,14 @@ Before going deeper, let’s recap and explicitly write our “meta-algorithm" f
 
 # Moreau envelope - tangible example
 
-To make things less abstract, look at a one-dimensional example to gain some more intuition:  the absolute value function $$r(x) = |x|$$. Doing some lengthy calculus, which is out of scope of this post, we can compute:
+To make things less abstract, look at a one-dimensional example to gain some more intuition:  the absolute value function $$r(x) = \mid x \mid$$. Doing some lengthy calculus, which is out of scope of this post, we can compute:
 
 
 
 $$
 M_{\eta}r (u) = \inf_x \left\{ |x| + \frac{1}{2\eta}(x - u)^2\right\} = \begin{cases}
-\frac{u^2}{2\eta} & |u| \leq \eta \\
-|u| - \frac{\eta}{2} & |u|>\eta
+\frac{u^2}{2\eta} & \mid u\mid \leq \eta \\
+\mid u \mid - \frac{\eta}{2} & \mid u \mid>\eta
 \end{cases}
 $$
 
@@ -240,11 +240,11 @@ $$
 
 To conclude, our ingredients for $$q’(s)$$ are: a formula for the proximal operator of $$r$$, and a formula for the derivative of $$\phi^*$$. Since proximal operators are ubiquitous in optimization theory and practice,  entire book chapters about proximal operators were written, i.e. see [here](https://web.stanford.edu/~boyd/papers/pdf/prox_algs.pdf)[^proxalgs] and [here](https://archive.siam.org/books/mo25/mo25_ch6.pdf)[^fom6]. The second reference contains, at the end of the chapter, a catalog of explicit formulas for $$\operatorname{prox}_{\eta r}$$ for various functions $$r$$  summarized in a table. Here are a two important examples:
 
-| $$r(x)$$                                        | $$\operatorname{prox}_{\eta r}(u)$$                          | Remarks                                                      |
-| ----------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| $$(\lambda/2) \|x\|_2^2$$                       | $$\frac{1}{1+\eta \lambda} u$$                               |                                                              |
-| $$\lambda \|x\|_1 = \lambda\sum_{i=1}^n |x_i|$$ | $$[|u|-\lambda \eta \mathbf{1}]_+ \cdot \operatorname{sign}(u)$$ | $$\mathbf{1}$$ is a vector whose components are all 1. $$[a]_+\equiv\max(0, a)$$ is the ‘positive part’ of $$a$$. More details later in this post. |
-| 0                                               | u                                                            | no regularizer                                               |
+| $$r(x)$$                                                | $$\operatorname{prox}_{\eta r}(u)$$                          | Remarks                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| $$(\lambda/2) \|x\|_2^2$$                               | $$\frac{1}{1+\eta \lambda} u$$                               |                                                              |
+| $$\lambda \|x\|_1 = \lambda\sum_{i=1}^n \mid x_i \mid$$ | $$[\mid u \mid -\lambda \eta \mathbf{1}]_+ \cdot \operatorname{sign}(u)$$ | $$\mathbf{1}$$ is a vector whose components are all 1. $$[a]_+\equiv\max(0, a)$$ is the ‘positive part’ of $$a$$. More details later in this post. |
+| 0                                                       | u                                                            | no regularizer                                               |
 
 With the above in mind, the meta-algorithm for computing $$x_{t+1}$$ amounts to:
 
@@ -334,7 +334,7 @@ and it is defined on the open interval $$(0,1)$$. From the table of proximal ope
 
 
 $$
-\operatorname{prox}_{\eta r}(u) = [|u|-\lambda \eta \mathbf{1}]_+ \cdot \operatorname{sign}(u).
+\operatorname{prox}_{\eta r}(u) = [\mid u \mid -\lambda \eta \mathbf{1}]_+ \cdot \operatorname{sign}(u).
 $$
 
 
@@ -631,7 +631,7 @@ Up until now we have laid the theoretical and computational foundations, which w
 
 Two important examples in machine learning come to mind - factorization machines, and neural networks. Losses incurred by these models clearly do not fall into the ‘convex on linear’ category, and we will see in future posts how we can construct non black-box optimizers, which exploit more information about the loss, to train such models.
 
-Moreover, up until now we assumed the fully stochastic setting: at each iteration we select _one_ training sample, and perform a computational step based on the loss the sample incurres. We will see that the concepts we developed so far let us find an efficient implementation for the stochastic proximal point algorithm for the mini-batch setting, where we select a small subset of training samples $$B \subseteq \{1, \dots, n \}$$, and perform a computational step based on the average loss $$\frac{1}{|B|} \sum_{j \in B} f_j(x)$$ incurred by these samples.
+Moreover, up until now we assumed the fully stochastic setting: at each iteration we select _one_ training sample, and perform a computational step based on the loss the sample incurres. We will see that the concepts we developed so far let us find an efficient implementation for the stochastic proximal point algorithm for the mini-batch setting, where we select a small subset of training samples $$B \subseteq \{1, \dots, n \}$$, and perform a computational step based on the average loss $$\frac{1}{\mid B \mid} \sum_{j \in B} f_j(x)$$ incurred by these samples.
 
 Before we proceed to the above interesting stuff, one foundational concept is missing. Despite the fact that it doesn’t seem so at first glance, the stochastic proximal point method is a gradient method: it makes a small step towards a negative gradient direction.  But in contrast to SGD-type methods, the gradient is not $$\nabla f(x_t)$$, but taken at a different point, which is not $$x_t$$. The next post will deal with this nature of the method. We will mostly have theoretical explanations and drawings illustrating them, and see why it is a gradient method after all. No code, just theory. And no lengthy math, just elementary math and hand-waving with drawings and illustrations. Stay tuned!
 
