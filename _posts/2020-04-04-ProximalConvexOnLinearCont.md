@@ -2,6 +2,7 @@
 ≠layout: post
 title:  “Proximal Point - regularized convex on linear II"
 tags: [machine-learning, optimization, proximal-point, online-optimization, online-learning, logistic-regression, regularization]
+description: A more generic approach to constructing proximal point optimizers with regularization. We introduce Moreau Envelopes, Proximal Operators, and their usefulness to optimizing regularized models.
 comments: true
 ---
 
