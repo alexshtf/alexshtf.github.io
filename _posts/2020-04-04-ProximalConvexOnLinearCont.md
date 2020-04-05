@@ -15,7 +15,7 @@ x_{t+1} = \operatorname*{argmin}_x \left\{ f(x) + \frac{1}{2\eta} \|x - x_t\|_2^
 $$
 
 
- to losses of the form
+to losses of the form
 
 
 
@@ -379,7 +379,7 @@ $$
 At first glance it seems like a hard equation to solve, but we have already dealt with a similar challenge in a previous post. Recall that:
 
 1. The dual function $$q$$ is aways _concave_, and therefore its derivative $$q’$$ is _decreasing_. Moreover, it tends to infinity when $$s \to 1$$, and tends to negative infinity when $$s \to 0$$ . In other words, $$q’$$ looks something like this:
-   ![](../assets/logreg_dual_derivative.gif)
+   ![]({{ "/assets/logreg_dual_derivative.gif" | absolute_url }})
 2. The function $$q’$$ is defined on the interval $$(0,1)$$ and is continuous. Thus, we can employ the same bisection strategy we used in a previous post for non-regularized logistic regression:
    1. Find an initial interval $$[l, u]$$  where our solution must lie, by setting:
       1.  $$l=2^{-k}$$ for the smallest positive integer $$k$$ satisfying $$q’(2^{-k}) > 0$$,
