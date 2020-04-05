@@ -25,7 +25,7 @@ $$
 
 
 
-where $$\phi$$ and $$r$$ are convex functions, and devised an efficient implementation for L2 regularized losses: $$r(x) = (\lambda/2) \|x\|_2^2$$.  We now aim for a more general approach, which will allow us to deal with many other regularizers. One important example is L1 regularization $$r(x)=\lambda \|x\|_1 = \sum_{i=1}^d \vert x_i \vert$$, since it is well-known that it promotes a _sparse_ parameter vector $$x$$. It is useful when we have a huge number of features, and the small number of non-zero components of $$x$$ select only the features which have meaningful effect on the model’s predictive power.
+where $$\phi$$ and $$r$$ are convex functions, and devised an efficient implementation for L2 regularized losses: $$r(x) = (\lambda/2) \|x\|_2^2$$.  We now aim for a more general approach, which will allow us to deal with many other regularizers. One important example is L1 regularization $$r(x)=\lambda \|x\|_1 = \sum_{i=1}^d \vert x_i \vert$$, since it is well-known that it promotes a _sparse_ parameter vector $$x$$. It is useful when we have a huge number of features, and the non-zero components of $$x$$ select only the features which have meaningful effect on the model’s predictive power.
 
 Recall that implementing stochastic proximal point method amounts to solving the one-dimensional problem dual to the optimizer’s step (S) by maximizing:
 
@@ -378,7 +378,7 @@ $$
 
 At first glance it seems like a hard equation to solve, but we have already dealt with a similar challenge in a previous post. Recall that:
 
-1. The dual function $$q$$ is aways _concave_, and therefore its derivative $$q’$$ is _decreasing_. Moreover, it tends to infinity when $$s \to 1$$, and tends to negative infinity when $$s \to 0$$ . In other words, $$q’$$ looks something like this:
+1. The dual function $$q$$ is aways _concave_, and therefore its derivative $$q’$$ is _decreasing_. Moreover, it tends to negative infinity when $$s \to 1$$, and to positive infinity when $$s \to 0$$ . In other words, $$q’$$ looks something like this:
    ![]({{ "/assets/logreg_dual_derivative.gif" | absolute_url }})
 2. The function $$q’$$ is defined on the interval $$(0,1)$$ and is continuous. Thus, we can employ the same bisection strategy we used in a previous post for non-regularized logistic regression:
    1. Find an initial interval $$[l, u]$$  where our solution must lie, by setting:
@@ -461,7 +461,9 @@ Before running an experiment, let’s discuss an important property of our optim
 
 The above property is exactly the competitive edge of the proximal point approach in contrast to black-box approaches, such as SGD. Since we deal with the loss itself, rather with its first-order approximation, we preserve its important properties. As we will see in the experiment below, AdaGrad does not produce sparse vecotrs, while the solver we implemented above does. So even if we did not have the benefit of step-size stability, we still have the benefit of preserving our regularizer’s properties.
 
-Since my computational resources are limited, and I do not wish to train models for several days, we will use a rather small data-set this time. I chose the spambase dataset available from [here](https://web.stanford.edu/~hastie/ElemStatLearn/data.html). It is composed of 48 numerical columns, signifying frequencies of various frequently-occuring words, and average run-lengths of capital letters, and a 49-th column with a spam indicator.
+## Using the optimizer
+
+Since my computational resources are limited, and I do not wish to train models for several days, we will use a rather small data-set this time. I chose the spambase dataset available from [here](https://web.stanford.edu/~hastie/ElemStatLearn/data.html). It is composed of 57 numerical columns, signifying frequencies of various frequently-occuring words, and average run-lengths of capital letters, and a 58-th column with a spam indicator.
 
 Let’s begin by loading the data-set
 
@@ -502,7 +504,7 @@ Y = torch.tensor(np.array(df.iloc[:, 57]))   # labels
 ds = TensorDataset(W, Y)
 ```
 
-And now, let’s run the optimizer we wrote above, `LogisticRegressionL1`, to find the weights of the regularized logistic regression model, with regularization parameter $$\lambda=0.0003$$.  Since this post is on optimization, we refer readers to standard techniques for choosing regularization parameters, such as K-fold cross-validation. Since our proximal point optimizers are quite stable w.r.t the step size choices, I just chose $$\eta = 1$$, without doing too much thinking.
+And now, let’s run the optimizer we wrote above, `LogisticRegressionL1`, to find the weights of the regularized logistic regression model, with regularization parameter $$\lambda=0.0003$$.  Since this post is on optimization, we refer readers to standard techniques for choosing regularization parameters, such as K-fold cross-validation. Since our proximal point optimizers are quite stable w.r.t the step size choices, I just arbitrarily chose $$\eta = 1$$.
 
 ```python
 from torch.utils.data.dataloader import DataLoader
