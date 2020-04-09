@@ -51,9 +51,9 @@ x_{t+1} = \operatorname*{argmin}_x \left\{
 \right\}
 $$
 
-The  idea is known as the stochastic proximal point method[^ppm], or implicit learning[^impl]. Note, that when the loss $$f$$ is “too complicated”, we might not have any efficient method to compute $$x_{t+1}$$, which makes this method impractical for many types of loss functions, i.e. training deep neural networks. However, it turns out to be useful for many losses. In the following series of posts we will explore ways to efficiently implement the method for some losses $$f$$ which are not too complicated, and demonstrate the method’s advantages over regular black-box approaches.
+The  idea is known as the stochastic proximal point method[^ppm], or implicit learning[^impl]. Note, that when the loss $$f$$ is “too complicated”, we might not have any efficient method to compute $$x_{t+1}$$, which makes this method impractical for many types of loss functions, i.e. training deep neural networks. However, it turns out to be useful for many losses. In the following series of posts we will explore ways to efficiently implement the method for some losses families, and demonstrate the method’s advantages over regular black-box approaches. We will begin our implementation endaevor from a simple example, the linear least-squares problem, and eventually reach more advanced scenarios, such as training factorization machines and neural networks.
 
-In this post, we begin by considering a simple example - linear regression. Our aim is to minimize 
+Now, let’s talk about implementing the method for linear regression. Our aim is to minimize 
 
 $$
 \frac{1}{2n} \sum_{k=1}^n (a_i^T x + b_i)^2 \tag{LS}
@@ -86,7 +86,7 @@ $$
 x_{t+1} =[\eta (a a^T) + I]^{-1}[x_t - (\eta b) a].
 $$
 
-It seems that we have defeated the whole point of using a first-order method - avoiding inverting matrices to solve least-squares problems. The remedy comes from the famous [Sherman-Morrison matrix inversion formula](https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula), which leads us to
+It seems that we have defeated the whole point of using a first-order method - simple and efficient formula for computing $$x_{t+1}$$ from $$x_t$$. Here we seem to have to invert a matrix at every step of the algorithm, which is very inefficient. The remedy comes from the famous [Sherman-Morrison matrix inversion formula](https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula), which leads us to
 
 $$
 x_{t+1}=\left[I - \frac{\eta a a^T}{1+\eta \|a\|_2^2} \right][x_t - (\eta b) a],
