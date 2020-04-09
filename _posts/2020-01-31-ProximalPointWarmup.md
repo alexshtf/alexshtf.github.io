@@ -102,6 +102,67 @@ Ah! Finally! Now we have arrived at a formula which can be implemented in $$O(d)
 
 An interesting thing to observe here is that large step-sizes $$\eta$$ do not lead to an overly large coefficient $$\alpha_t$$, since $$\eta$$ appears both in the numerator and the denominator. Intuitively, this might lead to a more stable learning algorithm - it is less sensitive bad step-size choice. In fact, this stability property extends beyond least-squares problems, which is the subject of the excellent paper[^stbl] by Asi and Duchi which inspired me to write. 
 
+Let’s implement out optimizer in Python, using PyTorch. Despite looking somewhat un-natural, PyTorch was chosen for two reasons: first, I would like to learn PyTorch; second, as we move to more generic optimizers in future posts, using PyTorch will become natural. So here it is:
+
+```python
+import torch
+
+class LeastSquaresProxPointOptimizer:
+    def __init__(self, x, step_size):
+        self._x = x
+        self._step_size = step_size
+
+    def step(self, a, b):
+        # helper variables
+        x = self._x
+        step_size = self._step_size
+
+        # compute alpha
+        numerator = step_size * (torch.dot(a, x) + b).item()
+        denominator = 1 + step_size * torch.dot(a, a).item()
+        alpha = numerator / denominator
+
+        # perform step
+        x.sub_(alpha * a)
+
+```
+
+Now, for example, if we want to solve the linear least-squares problem:
+
+
+$$
+\min_x \quad \frac{1}{2}(-x_1+x_2-1)^2+\frac{1}{2}(x_1+x_2-2)^2+\frac{1}{2}(x_1-2x_2)^2
+$$
+
+
+We can use our optimizer in the following manner:
+
+```python
+import torch
+import random
+
+# each tuple in the list is (a, b)
+data = [(torch.tensor([-1., 1.]), -1.), 
+        (torch.tensor([1., 1.]), -2.),
+        (torch.tensor([1., -2.]), 0.)]
+
+# setup the optimizer
+x = torch.empty(2)
+torch.nn.init.normal_(x)
+opt = LeastSquaresProxPointOptimizer(x, step_size=1)
+
+# train our parameter vector `x`
+num_of_epochs = 20
+for epoch in range(0, num_of_epochs):
+    for a, b in random.sample(data, len(data)):
+        opt.step(a, b)
+        
+# print the parameters
+print(x)
+```
+
+So, now we are ready for a more serious experiment.
+
 # Experiment
 
 We will compare the performance of our method against several optimizers which are widely used in existing machine learning frameworks: AdaGrad, Adam, SGD, and  will test the stability of our algorithm w.r.t the step-size choice, since our intuition suggested that our method might be more stable than the ‘black box’ approaches. The Python code for my experiments can be found in this [git repo](https://github.com/alexshtf/proxptls).
