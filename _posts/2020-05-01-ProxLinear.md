@@ -452,7 +452,7 @@ And after a few **days** we obtain the following result:
 
 ![proxlinear_vs_adagrad]({{ "/assets/proxlinear_vs_adagrad.png" | absolute_url }})
 
-Seems that the algorithm is indeed stable, and performs reasonably even when taking extremely large step sizes. However, AdaGrad does achieve a better loss for its optimal step-size range. To see a better picture, let’s focus on a smaller step size range:
+Seems that the algorithm is indeed stable, and does not diverge even when taking extremely large step sizes. However, AdaGrad does achieve a better loss for its optimal step-size range. To see a better picture, let’s focus on a smaller step size range:
 
 ![proxlinear_vs_adagrad_focus]({{ "/assets/proxlinear_vs_adagrad_focus.png" | absolute_url }})
 
@@ -471,9 +471,11 @@ plt.show()
 
 ![proxlinear_vs_adagrad_focus]({{ "/assets/proxlinear_vs_adagrad_convrate.png" | absolute_url }})
 
-Indeed, the rate of AdaGrad’s convergence is substantially better. Seems that adapting a step size to each coordinate is more beneficial than adapting a step size to each training sample via the prox-linear algorithm. But we also saw that this approach really shines when the regularization is not L2, and we can actually benefit from not approximating it. Despite its drawbacks, it’s still a reasonable algorithm to use when we don’t have the resources to tune the step size, but to get good results we will have to use more epochs to let it converge to a better solution.
+Indeed, the rate of AdaGrad’s convergence is substantially better. Seems that adapting a step size to each coordinate is more beneficial than adapting a step size to each training sample via the prox-linear algorithm. But we also saw that this approach really shines when the regularization is not L2, and we can actually benefit from not approximating the regularizer.
 
-# Truncated losses
+Despite its drawbacks, it’s still a reasonable algorithm to use when we don’t have the resources to tune the step size, but to get good results we will have to use more epochs to let it converge to a better solution. But our journey is not done - we will improve our optimizers using the framework we develop and see where it gets us.
+
+# Truncated loss approximations
 
 For simplicity, suppose that we have no regularization ($$r=0$$). An interesting approach suggested in the paper[^stbl] by Asi & Duchi is using trunaced approximations for losses which are lower bounded, namely, $$f_i \geq 0$$. Luckily, most losses in machine learning are lower bounded, and we can replace each $$f_i$$ with
 
@@ -491,7 +493,7 @@ x_{t+1} = \operatorname*{argmin}_x \left\{ \max(0, f(x_t) + \nabla f(x_t)^T (x -
 $$
 
 
-The above formula differs from regular SGD only in the fact that the linear approximation of $$f$$ is trunaced at zero when it becomes negative, and is based on the simple intuition of: if the loss is bounded below at zero, we shouldn’t allow its approixmation to be unbounded. 
+The above formula differs from regular SGD only in the fact that the linear approximation of $$f$$ is trunaced at zero when it becomes negative, and is based on the simple intuition: if the loss is bounded below at zero, we shouldn’t allow its approixmation to be unbounded. 
 
 Remarkably, the above simple idea was proven by Asi & Duchi to enjoy similar stability properties, when the only information about the loss we exploit is the fact that it _has a lower bound_. By following the convex-on-linear solution recipe, we obtain an explicit formula for computing $$x_{t+1}$$:
 
@@ -501,7 +503,7 @@ x_{t+1} = x_t - \min\left(\eta, \frac{f(x_t)}{\|\nabla f(x_t) \|_2^2} \right) \n
 $$
 
 
-That is, when the ratio of $$f(x_t)$$ to the squared norm of the gradient $$\nabla f(x_t)$$ is small, we take a regular SGD step of size $$\eta$$. Otherwise, we modify the step length to be the above ratio. The above remarkably simple formula is enough to substantially improve the stability properties of SGD, both in theory and practice. The reason for not dealing with the above approach in this blog post, is because Hilal Asi, one of the authors of the above-mentioned paper[^stbl], already provided truncated loss optimizers, for both PyTorch and TensorFlow, in [this](https://github.com/HilalAsi/APROX-Robust-Stochastic-Optimization-Algorithms) GitHub repo.
+That is, when the ratio of $$f(x_t)$$ to the squared norm of the gradient $$\nabla f(x_t)$$ is small, we take a regular SGD step of size $$\eta$$. Otherwise, we modify the step length to be the above ratio. The above remarkably simple formula is enough to substantially improve the stability properties of SGD, both in theory and practice. The reason for not dealing with the above approach in this blog post, is because Hilal Asi, one of the authors of the above-mentioned paper[^stbl], already provided truncated approximation optimizers for both PyTorch and TensorFlow in [this](https://github.com/HilalAsi/APROX-Robust-Stochastic-Optimization-Algorithms) GitHub repo.
 
 # Teaser
 
