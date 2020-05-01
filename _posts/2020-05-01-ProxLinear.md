@@ -4,6 +4,7 @@ title:  “Selective approximation - the prox-linear method for training arbitra
 tags: [machine-learning, optimization, proximal-point, prox-linear, online-optimization, online-learning, theory]
 description: Introducing a partial approximation approach, where we decompose the losses into parts we want to keep, and parts we want to approximate. The parts we would like to keep are the ones we can still handle efficiently by the methods we have developed so far for regularized convex-on-linear losses.
 comments: true
+image: /assets/proxlinear_vs_adagrad.png
 ---
 
 The proximal point approach which we explored in the last series of posts is an extreme approach - avoid any loss approximation, and work with it directly. But this extreme approach works only for a small subset of losses for which it is practical. The most general subset we explored was the [regularized convex-on-linear]({% post_url 2020-04-04-ProximalConvexOnLinearCont %}). On the scale between using losses exactly on the one side and performing a full linear approximation, such as SGD, on the other side, there is diverse set of possibilities which rely on partial approximations. Carefully chosing which part we approximate and which we treat directly leads to _practically implementable_ algorithms that can optimize a variety functions, while still enjoying some of the benefits of the proximal point approach. In this post we discuss one of them - the prox-linear method.
