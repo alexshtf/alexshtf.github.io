@@ -176,11 +176,11 @@ $$
 
 The function $$\phi^{*}(s)$$ is well known in convex analysis, and is called the  [convex conjugate](https://en.wikipedia.org/wiki/Convex_conjugate) of $$\phi$$. One important property of $$\phi^*$$ is that it is always _convex_. Here are some well-known examples:
 
-|     $$\phi(t)$$     |                      $$\phi^{*}(s)$$                       |
-| :-----------------: | :--------------------------------------------------------: |
-| $$\frac{1}{2}t^2$$  |                     $$\frac{1}{2}s^2$$                     |
+|    $$\phi(t)$$     |                     $$\phi^{*}(s)$$                      |
+| :----------------: | :------------------------------------------------------: |
+| $$\frac{1}{2}t^2$$ |                    $$\frac{1}{2}s^2$$                    |
 | $$\ln(1+\exp(t))$$ | $$s \ln(s)+(1-s) \ln(1-s)$$ where $$0 \log(0) \equiv 0$$ |
-| $$-\ln(x)$$ | $$ -(1+\ln(-s))$$ |
+|    $$-\ln(x)$$     |                    $$ -(1+\ln(-s))$$                     |
 
 Summing up what we discovered about the red and blue parts, we obtained
 

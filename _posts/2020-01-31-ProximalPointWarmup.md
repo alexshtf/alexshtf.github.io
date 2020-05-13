@@ -179,7 +179,7 @@ $$
 \min_{\alpha, \beta} \quad \frac{1}{2n} \sum_{j=1}^n (p_j^T \beta +\alpha-y_j)^2
 $$
 
-In terms of (LS) above , we have the parameters $$x = (\beta_1, \beta_2, \beta_3, \alpha)^T$$, and the data $$a_i = (p_1, p_2, p_3, 1)^T$$, and $$b_i = -y_i$$.   
+In terms of (LS) above , we have the parameters $$x = (\beta_1, \beta_2, \beta_3, \alpha)^T$$, and the data $$a_i = (p_{i,1}, p_{i,2}, p_{i,3}, 1)^T$$, and $$b_i = -y_i$$.   
 
 Let's look at the results! Below is a chart obtained by running each method for 100 epochs, taking the best training loss, and repeating each experiment 20 times for each of our step-size choices. Each line is the average of the best obtained loss of each experiment run. The x-axis is the step-size, while the y-axis is the deviation of the obtained training loss from the optimal loss (recall - least squared problems can be solved efficiently and exactly solved using a direct method).
 
