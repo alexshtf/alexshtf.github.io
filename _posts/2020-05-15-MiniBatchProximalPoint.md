@@ -342,7 +342,7 @@ Working with a larger family of functions $$\phi$$ will be addressed in future p
 
 # Linear least squares experiment
 
-Let’s test our new shiny optimizer on the [Boston housing dataset](https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html), and see how mini-batching affects its performance. We will try to predict housing prices $$y$$ based on the data vector $$p \in \mathbb{R}^3$$ comprising the number of rooms, population lower status percentage, and average pupil-teacher ratio by the linear model:
+Let’s test our new shiny optimizer on the [Boston housing dataset](https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html), and see how mini-batching affects its performance. The code is also available in this [git repo](https://github.com/alexshtf/proxpt_ls_minibatch). We will try to predict housing prices $$y$$ based on the data vector $$p \in \mathbb{R}^3$$ comprising the number of rooms, population lower status percentage, and average pupil-teacher ratio by the linear model:
 $$
 y = p^T \beta +\alpha
 $$
