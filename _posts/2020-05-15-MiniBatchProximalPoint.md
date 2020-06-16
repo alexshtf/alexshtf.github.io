@@ -4,7 +4,7 @@ title:  “Proximal Point with Mini Batches"
 tags: [machine-learning, optimization, proximal-point, online-optimization, online-learning, theory]
 description: Present the mini-batch version of the stochastic proximal point algorithm, which uses a mini-batch of training samples
 comments: true
-image: /assets/proxlinear_vs_adagrad.png
+image: /assets/proxpt_ls_minibatch_focus.png
 
 ---
 
@@ -44,7 +44,7 @@ $$
 
 
 
-The red part is, as usually, a proximal term penalizing the distance from $$x_t$$. The blue term is a linear approximation $$\frac{1}{\vert B \vert} \sum_{i \in B} f_i(x)$$, which is the *average loss of the mini-batch*. Consequently, we can interpret mini-batch SGD as:
+The red part is, as usually, a proximal term penalizing the distance from $$x_t$$. The blue term is a linear approximation of $$\frac{1}{\vert B \vert} \sum_{i \in B} f_i(x)$$, which is the *average loss of the mini-batch*. Consequently, we can interpret mini-batch SGD as:
 
 > find a point which balances between descending along the tangent of the mini-batch average $$\frac{1}{\vert B \vert} \sum_{i \in B} f_i(x)$$ and staying close to $$x_t$$.
 
@@ -233,7 +233,7 @@ $$
 
 
 
-Apparently, both methods step in a direction obtained from a linear combination of the vectors $$a_i$$. But while SGD multiplies each vector by derivatives of $$\phi$$, which correspond to a linear approximation, while the proximal point method uses coefficients $$s_i^*$$ obtained by considering exact losses.
+Apparently, both methods step in a direction obtained from a linear combination of the vectors $$a_i$$. But while SGD multiplies each vector by derivatives of $$\phi$$, which correspond to a linear approximation, the proximal point method uses coefficients $$s_i^*$$ obtained by considering exact losses via duality.
 
 #### Compact form
 
