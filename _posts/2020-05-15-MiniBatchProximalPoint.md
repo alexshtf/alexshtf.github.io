@@ -34,7 +34,7 @@ $$
 
 
 
-Recalling the proximal view we discussed [earlier]({% post_url 2020-01-31-ProximalPointWarmup %}), mini-batch SGD step can be written as
+Recalling the proximal view we discussed at the [beginning]({% post_url 2020-01-31-ProximalPointWarmup %}) of the series, the mini-batch SGD step can be written as
 
 
 
