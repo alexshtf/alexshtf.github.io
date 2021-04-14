@@ -255,7 +255,7 @@ $$
 $$
 
 
-Since $$|\alpha_{ij}| \leq 1$$, we can easily deduce that for any step-size $$\eta \leq \frac{1}{2m}$$, we obtain a convex $$\phi$$. A better bound is obtained if we have a bound on the number of indicators in the vector $$w$$ which may be non-zero at the same time. For example, if we have six categorical fields, we will have at most six non-zero elements in $$w$$, and thus $$\eta \leq \frac{1}{12}$$.
+Since $$\vert \alpha_{ij} \vert \leq 1$$, we can easily deduce that for any step-size $$\eta \leq \frac{1}{2m}$$, we obtain a convex $$\phi$$. A better bound is obtained if we have a bound on the number of indicators in the vector $$w$$ which may be non-zero at the same time. For example, if we have six categorical fields, we will have at most six non-zero elements in $$w$$, and thus $$\eta \leq \frac{1}{12}$$.
 
 Convexity is nice if we want Sion’s theorem to hold, but if we want a _unique_ minimizer $$x_{t+1}$$ we need _strict_ convexity, which is obtained by using a strict inequality - replace $$\leq$$ with $$<$$. In this post we will assume that we have at most $$d$$ categorical features, and use step-sizes which satisfy
 
@@ -373,7 +373,7 @@ $$
 q_2(z) = \min_{v_1, \dots, v_m} \left\{ Q(v_1, \dots, v_m, z) \equiv - z \hat{y} \sum_{(i,j)\in P[1..m]} (v_i^T v_j) w_i w_j  + \frac{1}{2\eta} \sum_{i\in 1..m} \| v_i - v_{i,t} \|_2^2 \right\}.
 $$
 
-Of course, we assume that we indeed chose $$\eta$$ such that $Q$ inside the $$\min$$ operator is strictly convex in $$v_1, \dots, v_m$$, so that there is a unique solution. 
+Of course, we assume that we indeed chose $$\eta$$ such that $$Q$$ inside the $$\min$$ operator is strictly convex in $$v_1, \dots, v_m$$, so that there is a unique solution. 
 
 Since $$w$$ is a vector of indicators, we can write the function $$Q$$ by separating out the part which corresponds to non-zero indicators in $$w$$:
 
@@ -426,7 +426,7 @@ $$
 S(z) = (1 + \eta z \hat{y}) I - \eta z  \hat{y}(\mathbf{e} ~ \mathbf{e}^T)
 $$
 
-where $$\mathbf{e} \in \mathbb{R}^{|\operatorname{nz}(w)|}$$ is a column vector whose components are all $$1$$. Now, we’ll employ the [Sherman-Morrison](https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula) matrix inversion identity:
+where $$\mathbf{e} \in \mathbb{R}^{\vert\operatorname{nz}(w)\vert}$$ is a column vector whose components are all $$1$$. Now, we’ll employ the [Sherman-Morrison](https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula) matrix inversion identity:
 
 $$
 (A+u v^T)^{-1} = A^{-1} - \frac{A^{-1} u v^T A^{-1}}{1 + v^T A^{-1} u}.
@@ -439,7 +439,7 @@ S(z)^{-1}
  = \frac{1}{1 + \eta \hat{y} z} I + \frac{\eta \hat{y} z}{(1 + \eta \hat{y} z)^2 - \eta \hat{y} z(1 + \eta \hat{y} z) \mathbf{e}^T \mathbf{e}} \mathbf{e}~\mathbf{e}^T
 $$
 
-Now, note that $$\mathbf{e}~\mathbf{e}^T = \unicode{x1D7D9}$$ is a matrix whose components are all $$1$$, and that $$\mathbf{e}^T \mathbf{e} = |\operatorname{nz}(w)|$$ by construction. Thus:
+Now, note that $$\mathbf{e}~\mathbf{e}^T = \unicode{x1D7D9}$$ is a matrix whose components are all $$1$$, and that $$\mathbf{e}^T \mathbf{e} = \vert\operatorname{nz}(w)\vert$$ by construction. Thus:
 
 $$
 \begin{aligned}
@@ -459,7 +459,7 @@ V^*=S(z)^{-1} V_t = V_t - \frac{\eta \hat{y} z}{1+\eta \hat{y} z} \underbrace{ \
   V_t - \frac{1}{1+\eta \hat{y} z (1- |\operatorname{nz}(w)| )} \unicode{x1D7D9} V_t \right]}_{(*)} \tag{C}
 $$
 
-Finally, we note that the matrix $$\unicode{x1D7D9} V_t$$ is the matrix obtained by computing the sum of the _rows_ of $$V_t$$ and replicating the result $$|\operatorname{nz}(w)|$$ times, so we don’t even need to invoke any matrix multiplication function at all! 
+Finally, we note that the matrix $$\unicode{x1D7D9} V_t$$ is the matrix obtained by computing the sum of the _rows_ of $$V_t$$ and replicating the result $$\vert \operatorname{nz}(w)\vert$$ times, so we don’t even need to invoke any matrix multiplication function at all! 
 
 So, to summarize, we have Algorithm B above to compute $$q_2(z)$$, where the solution of the linear system is obtained via formula (C) above. Moreover, formula (C) is used to update the latent vectors once the optimal $$z$$ is found. Let’s implement the above:
 
@@ -746,17 +746,17 @@ Whoa! It isn’t converging! The loss _grows_ after a few epochs, and we can see
 
 Let’s now do a more thorough stability comparison - run our method, Adam, Adagrad, and SGD, with various step-size parameters for ten epochs, and see what loss we are getting. The above methods ran with several step sizes for $$M=20$$ epochs, each step-size was tested $$N=20$$ times to take into account the effect of randomness in the weight initialization and the data shuffling.  Then, I produced a plot showing the best loss achieved for each step-size and each algorithm, averaged over the $$N=15$$ attempts, with transparent uncertainty bands. The code resides in `stability_experiment.py` in the repo. Here is the result:
 
-![](../_posts/{{ "/assets/proxpt_fm_results" | absolute_url }})
+![]({{ "/assets/proxpt_fm_results.png" | absolute_url }})
 
 It’s quite apparent that the performance of the proximal point algorithm is quite consistent over the various step-size choices. We also see that Adam’s performance degrades when the step-size is too large. Consequently, to see the difference between the various algorithms more clearly, let’s plot the results _without_ Adam:
 
-![](../_posts/{{ "/assets/proxpt_fm_results_noadam.png" | absolute_url }})
+![]({{ "/assets/proxpt_fm_results_noadam.png" | absolute_url }})
 
 Well, as we see, the proximal point’s performance is the most consistent accross various step-sizes, but it is certainly not the _best_ algorithm for training a factorization machine on this dataset. It appears that Adagrad is.
 
 One possible explanation is that the proximal point algorithm converges more slowly, and requires more epochs to achieve good performance. Let’s test this hypothesis, and run the proximal point algorithm for 50 epochs. And after a few _days_, I got:
 
-![](../_posts/{{ "/assets/proxpt_fm_proxpt_many_epochs.png" | absolute_url }})
+![]({{ "/assets/proxpt_fm_proxpt_many_epochs.png" | absolute_url }})
 
 The situation doesn’t seem to improve much. The method is quite consistent in its performance, but it doesn’t seem to converge rapidly to an optimum. 
 
