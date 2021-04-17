@@ -20,7 +20,7 @@ Since it’s an ‘academic’ experiment in nature, and I do not aim to impleme
 
 Let’s begin by a quick introduction to factorization machines. Factorization machines are usually trained on categorical data representing the users and the items, for example, age group and gender may be user features, while product category and price group may be item features. The model embeds each categorical feature to a latent space of some pre-defined dimension $$k$$, and the model’s prediction comprises of inner products of the latent vectors corresponding to the current samples. The most simple variant are _second order_ factorization machines, which we the focus of this post. 
 
-Formally, our second-order factorization machine $$\sigma(w, x)$$ is given a binary input $$w \in \{0, 1\}^m$$ which is a one-hot encoding of a subset of at most $m$ categorical features. For exampe of a factorization machine, suppose we would like to predict the affinity of people with chocolate. For simplicity, suppose we have only two  user gender values $$\{ \mathrm{male}, \mathrm{female} \}$$, and two two age groups $$\{ \mathrm{young}, \mathrm{old} \}$$. Assume our items are chocolate, and we’ll have a feature for each type, which may take the values $$\{\mathrm{dark}, \mathrm{milk}, \mathrm{white}\}$$. In that case, the model’s input is the vector of zeros and ones encoding feature indicators:
+Formally, our second-order factorization machine $$\sigma(w, x)$$ is given a binary input $$w \in \{0, 1\}^m$$ which is a one-hot encoding of a subset of at most $$m$$ categorical features. For exampe, suppose we would like to predict the affinity of people with chocolate. Assume, for simplicity, that we have only two user gender values $$\{ \mathrm{male}, \mathrm{female} \}$$, and two two age groups $$\{ \mathrm{young}, \mathrm{old} \}$$. For our items, suppose we have only one feature - the chocolate type, which may take the values $$\{\mathrm{dark}, \mathrm{milk}, \mathrm{white}\}$$. In that case, the model’s input is the vector of zeros and ones encoding feature indicators:
 
 $$
 w=(w_{\mathrm{male}}, w_{\mathrm{female}}, w_{\mathrm{young}}, w_{\mathrm{old}}, w_{\mathrm{dark}}, w_{\mathrm{milk}}, w_{\mathrm{white}}).
@@ -34,13 +34,13 @@ $$
 
 In general, the vector $$w$$ can be defined by arbitrary real numbers, but I promised that we’ll make simplifying assumptions :)
 
-The model's parameter vector  $$x = (b_0, b_1, \dots, b_m, v_1, \dots, v_m)$$ is composed of the model’s global bias $$b_0 \in \mathbb{R}$$, and for each feature $$i\in \{1, \dots, m\}$$ we have a bias $$b_i \in \mathbb{R}$$, and a latent vectors $$v_i \in \mathbb{R}^k$$ with $$k$$ being the embeddig dimension. The model computes:
+The model's parameter vector  $$x = (b_0, b_1, \dots, b_m, v_1, \dots, v_m)$$ is composed of the model’s global bias $$b_0 \in \mathbb{R}$$, the biases $$b_i \in \mathbb{R}$$ for the features $$i\in \{1, \dots, m\}$$, and the latent vectors $$v_i \in \mathbb{R}^k$$ for the same features with $$k$$ being the embeddig dimension. The model computes:
 
 $$
 \sigma(w, x) := b_0 + \sum_{i = 1}^m w_i b_i + \sum_{i = 1}^m\sum_{j = i + 1}^{m} (v_i^T v_j) w_i w_j.
 $$
 
-Using the notation $$i..j=\{i, i+1, \dots, j\}$$ for a set of consecutive integers, and for a set of integers $J$ denote $$P[J]=\{ (i,j) \in J\times J : i<j \}$$ the set of distinct pairs from $$J$$, we can re-write:
+Let’s set up some notation which will become useful throughout this post. We will detote a set of consecutive integers by $$i..j=\{i, i+1, \dots, j\}$$, and the set of distinct pairs of the integers $$J$$ is denoted by $$P[J]=\{ (i,j) \in J\times J : i<j \}$$. Consequently, we can re-write:
 
 $$
 \sigma(w,x)=b_0 + \sum_{i\in 1..m} w_i b_i+\sum_{(i,j) \in P[1..m]} (v_i^T v_j) w_i w_j
@@ -57,10 +57,10 @@ $$
 After re-arrangement, the above results in:
 
 $$
-\sum_{(i,j)\in P[1..m]} (v_i^T v_j) w_i w_j= \frac{1}{2}\Bigl\| \sum_{i\in1.m} w_i v_i \Bigr\|_2^2-\frac{1}{2}\sum_{i\in1..m} \|w_i v_i\|_2^2.
+\sum_{(i,j)\in P[1..m]} (v_i^T v_j) w_i w_j= \frac{1}{2}\Bigl\| \sum_{i\in1.m} w_i v_i \Bigr\|_2^2-\frac{1}{2}\sum_{i\in1..m} \|w_i v_i\|_2^2. \tag{L}
 $$
 
-Since $$w$$ is a binary vector, we can associate it with its non-zero indices $$\operatorname{nz}(w)$$, and the rigth-hand side of above term can be written as:
+Since $$w$$ is a binary vector, we can associate it with its non-zero indices $$\operatorname{nz}(w)$$, and the right-hand side of above term can be written as:
 
 $$
 \frac{1}{2}\Bigl\| \sum_{i \in \operatorname{nz}(w)} v_i \Bigr\|_2^2-\frac{1}{2}\sum_{i \in \operatorname{nz}(w)} \| v_i\|_2^2.
@@ -78,7 +78,7 @@ class FM(torch.nn.Module):
         super(FM, self).__init__()
 
         self.bias = nn.Parameter(torch.zeros(1))
-        self.biases = nn.Parameter(torch.zeros(m))  # the bias, b_0, is last
+        self.biases = nn.Parameter(torch.zeros(m))
         self.vs = nn.Embedding(m, k)
 
         with torch.no_grad():
@@ -120,13 +120,13 @@ $$
 \ln(1+\exp(-\hat{y} \sigma(w,x))).
 $$
 
-Consequently, our aim will be training over the set $$\{ w_i, \hat{y}_i \}_{i=1}^n$$  by minimizing the average loss
+Consequently, our aim will be training over the set $$\{ (w_i, \hat{y}_i) \}_{i=1}^n$$  by minimizing the average loss
 
 $$
 \frac{1}{n} \sum_{i=1}^n \underbrace{\ln(1+\exp(-\hat{y}_i \sigma(w_i, x)))}_{f_i(x)}.
 $$
 
-Instead of using regular SGD-based methods for training, which construct a linear approximations of $$f_i$$ and are able to use only the information provided by the gradient, we will attempt to avoid any approximation, and use the proximal point algorithm - at iteration $$t$$ choose $$f \in \{f_1, \dots, f_n\}$$ and compute:
+Instead of using regular SGD-based methods for training, which construct a linear approximations of $$f_i$$ and are able to use only the information provided by the gradient, we will avoid approximating and use the loss itself via the stochastic proximal point algorithm - at iteration $$t$$ choose $$f \in \{f_1, \dots, f_n\}$$ and compute:
 
 $$
 x_{t+1} = \operatorname*{argmin}_x \left\{ f(x) + \frac{1}{2\eta}  \|x - x_t\|_2^2 \right\}. \tag{P}
@@ -137,7 +137,7 @@ Careful readers might notice that the formula above is total nonsense in general
 1. Discover the conditions on the step-size $$\eta$$ which ensure that we have a unique minimizer $$x_{t+1}$$.
 2. Find an explicit formula, or a simple algorithm, for computing $$x_{t+1}$$.
 
-Having done the above, we’ll have an algorithm which can train classifying factorization machines exploiting the entire loss function, instead of relying just on the information provided by its gradient.
+Having done the above, we’ll be able to construct an algorithm which can train classifying factorization machines which exploit the exact loss function, instead of just relying on its slope as in SGD.
 
 # Duality strikes again
 
@@ -150,12 +150,13 @@ $$
 and recall also that in a previous post we saw that $$h(t)=\ln(1+\exp(t))$$ is convex, and its convex conjugate is:
 
 $$
-h^*(z) = z\ln(z) + (1 - z) \ln(1 - z),
+h^*(z) = \begin{cases}
+	z\ln(z) + (1 - z) \ln(1 - z), & 0 < z < 1 \\
+	0, & \text{otherwise}.
+\end{cases}
 $$
 
-which is defined on the interval $$[0,1]$$ with the convention that $$0\ln(0) \equiv 0$$. An interesting result about conjugates is that under some technical conditions, which hold for $$h(t)$$ above, we have $$h^{**} = h$$, namely, the conjugate of $$h^*$$ is $$h$$. Moreover, in our case the $$\sup$$ in the conjugate’s definition can be replaced with a $$\max$$, since the supermum is always attained[^legendre]. 
-
-So, to summarize, we have
+An interesting result about conjugates is that under some technical conditions, which hold for $$h(t)$$ above, we have $$h^{**} = h$$, namely, the conjugate of $$h^*$$ is $$h$$. Moreover, in our case the $$\sup$$ in the conjugate’s definition can be replaced with a $$\max$$, since the supermum is always attained[^legendre]. Why is it useful? Since now we know that:
 
 $$
 \ln(1+\exp(t))=\max_z \left\{ t z - z \ln(z) - (1-z) \ln(1-z) \right\}.
@@ -193,8 +194,9 @@ So here is relevant duality theorem, which is a simplification of Sion’s minim
 > \min_x \max_z \phi(x,z) = \max_z \min_x \phi(x,z)
 > $$
 
-In our case, $$\phi$$ is indeed concave in $$z$$ and its domain, the interval $$[0,1]$$, is indeed compact. What we require for the theorem’s conditions to hold is convexity in $$x$$, which is what we explore next. Then, we’ll see that $$q$$, despite not being so simple, can still be quite efficiently maximized. Having found $$z^*=\operatorname{argmax}_z q(z)$$, we by construction obtain a formula for computing the optimal $$x$$:
+In our case, it’s easy to see that $$\phi$$ is indeed concave in $$z$$ using negativity of its second derivative, and its domain, the interval $$[0,1]$$, is indeed compact. What we require for the theorem’s conditions to hold is convexity in $$x$$, which is what we explore next. Then, we’ll see that $$q$$, despite not being so simple, can still be quite efficiently maximized. The theorem does not imply that a pair $$(x, z)$$ solving the max-min problem also solves the min-max problem, but in our case the max-min problem has a unique solution, and in that particular case it indeed also solves the min-max problem.
 
+Consequently, having found $$z^*=\operatorname{argmax}_z q(z)$$, we by construction obtain a formula for computing the optimal $$x$$:
 $$
 x_{t+1} = \operatorname*{argmin}_x ~ \phi(x, z^*).
 $$
@@ -222,24 +224,25 @@ $$
 \end{aligned}
 $$
 
-The part colored in blue is always convex - it is the sum of a linear function and a convex-quadratic one. It remains to study the convexity of the brown part. Re-arranging the formula for $$\|v_i \pm v_j\|_2^2$$, we obtain that:
+The part colored in blue is always convex - it is the sum of a linear function and a convex-quadratic one. It remains to study the convexity of the brown part. Re-arranging the formula for $$\|v_i + v_j\|_2^2$$, we obtain that:
 
 $$
-\pm v_i^T v_j = \frac{1}{2} \|v_i \pm v_j\|_2^2 - \frac{1}{2}\|v_i\|_2^2 - \frac{1}{2} \|v_j\|_2^2.
+v_i^T v_j = \frac{1}{2} \|v_i + v_j\|_2^2 - \frac{1}{2}\|v_i\|_2^2 - \frac{1}{2} \|v_j\|_2^2.
 $$
 
 Denoting $$\alpha_{ij} = -z \hat{y} w_i w_j$$ we can re-write the brown part as:
-
 $$
 \begin{aligned}
-\color{brown}{\text{brown}} = \sum_{i\in P[1..m]} \frac{\vert \alpha_{ij}\vert}{2} \left( \|v_i + \operatorname{sign}(\alpha_{ij}) v_j\|_2^2 - \|v_i\|_2^2 - \|v_j\|_2^2 \right) + \frac{1}{2\eta} \sum_{i\in 1..m} \left( \|v_i\|_2^2 \color{darkgray}{- 2 v_i^T v_{i,t} + \|v_{i,t}\|_2^2} \right)
+\color{brown}{\text{brown}}
+ &= \sum_{i\in P[1..m]} |\alpha_{ij}| v_i^T ( \operatorname{sign}(\alpha_{ij}) v_j) + \frac{1}{2\eta} \sum_{i\in1..m} \| v_i - v_{i,t} \|_2^2 \\
+ &= \frac{1}{2}\sum_{i\in P[1..m]} |\alpha_{ij}| \left[ \|v_i + \operatorname{sign}(\alpha_{ij}) v_j\|_2^2 - \|v_i\|_2^2-\|v_j\|_2^2 \right] + \sum_{i\in1..m} \left[ \| v_i \|_2^2 \color{darkgray}{- 2 v_i^T v_{i,t} + \|v_{i,t}\|_2^2} \right] 
 \end{aligned}
 $$
 
 The grayed-out part on the right is linear in $$v_i$$, so it’s convex. Since $$\alpha_{ij} = \alpha_{ji}$$, to simplify notation we define $$\alpha_{ii}=0$$, and the remaining non-greyed parts can be written as:
 
 $$
-\sum_{i\in P[1..m]} \frac{|\alpha_{ij}|}{2} \|v_i + \operatorname{sign}(\alpha_{ij}) v_j\|_2^2 + \sum_{i\in 1..m} \left(\frac{1}{2\eta} - \sum_{j\in 1..m} |\alpha_{ij}|\right) \|v_i\|_2^2.
+\frac{1}{2} \sum_{i\in P[1..m]} |\alpha_{ij}| \|v_i + \operatorname{sign}(\alpha_{ij}) v_j\|_2^2 + \sum_{i\in 1..m} \left(\frac{1}{2\eta} - \sum_{j\in 1..m} |\alpha_{ij}|\right) \|v_i\|_2^2.
 $$
 
 Again, the first sum is a sum of convex-quadratic functions, and thus convex. For the second part to be convex, we require that for each $$i$$ we have
@@ -268,10 +271,10 @@ $$
 Suppose that Sion’s theorem holds, and that we can obtain a unique minimizer $$x_{t+1}$$. How do we compute it? Well, Sion’s theorem lets us switch the order of $$\min$$ and $$\max$$, so we are aiming to solve:
 
 $$
-\max_z \min_x \phi(x,z),
+\max_z \underbrace{ \min_x \phi(x,z)}_{q(z)},
 $$
 
-and recall that we denoted by $$q(z)$$ the inner function obtained by minimizing over $$x$$, namely,
+and explicitly writing $$\phi$$ we have:
 
 $$
 \begin{aligned}
@@ -281,9 +284,9 @@ q(z) = \min_{b,v_i} \Bigl\{ &-z \hat{y} \Bigl[ b_0 + \sum_{i\in 1..m} w_i b_i \B
 \end{aligned}
 $$
 
-It becomes a bit technical, but the end-result will be an algorithm to compute $$q(z)$$ for any $$z$$ by solving the inner minimization problem. Then, we’ll find a way to maximize $$q$$ over $$z$$.
+From now it becomes a bit technical, but the end-result will be an algorithm to compute $$q(z)$$ for any $$z$$ by solving the minimization problem over $$x$$. Afterwards, we’ll find a way to maximize $$q$$ over $$z$$.
 
-Using separability[^sep] we can separate the inner minimization problem into a sum of minimum over the biases $$b$$, another minimum over the latent vectors $$v_1, \dots, v_m$$, and the term $$-z \ln(z) - (1-z) \ln(1-z)$$, namely:
+Using separability[^sep] we can separate the minimum above into a sum of three parts: the minimum over the biases $$b$$, another minimum over the latent vectors $$v_1, \dots, v_m$$, and the term $$-z \ln(z) - (1-z) \ln(1-z)$$, namely:
 
 $$
 \begin{aligned}
@@ -294,7 +297,7 @@ q(z)
 \end{aligned}
 $$
 
-Let's  implement a skeleton of our optimizer, which we will fill with deeper analysis of $$q_1$$, $$q_2$$, and $$q$$. On construction, it receives a factorization machine object of the class we implemented above, and the step size. Then, each training step’s input is the set $$\operatorname{nz}(w)$$ of the non-zero feature indicators, and the label $$\hat{y}$$:
+We’ll analyze $$q_1$$, and $$q_2$$ shortly, but let’s take a short break and implement a skeleton of our training algorithm. A deeper analysis of $$q_1$$, $$q_2$$, and $$q$$ will let us fill the skeleton. On construction, it receives a factorization machine object of the class we implemented above, and the step size. Then, each training step’s input is the set $$\operatorname{nz}(w)$$ of the non-zero feature indicators, and the label $$\hat{y}$$:
 
 ```python
 class ProxPtFMTrainer:
@@ -313,29 +316,31 @@ class ProxPtFMTrainer:
 
 ## Minimizing over $$b$$ - computing $$q_1$$
 
-Defining $$\hat{w}=(1, w_1, \dots, w_m)^T$$ and $$b_0=b$$, and using separability, we obtain
+Defining $$\hat{w}=(1, w_1, \dots, w_m)^T$$ and $$\hat{b}=(b_0, b_1, \dots, b_m)$$, we obtain:
 
 $$
 \begin{aligned}
-q_1(z) =&\min_b \left\{ -z \hat{y} \Bigl[ b_0 + \sum_{i=1}^m w_i b_i \Bigr] + \frac{1}{2\eta} \|b - b_t\|_2^2 \right\} \\
-=& \min_b \left\{ \sum_{i\in0..m} \left[ -z \hat{y} \hat{w}_i b_i + \frac{1}{2\eta} (b_i-b_{i,t})^2 \right]\right\} \\
-=& \sum_{i\in 0..m} \min_{b_i} \left\{ -z \hat{y} \hat{w}_i b_i + \frac{1}{2\eta} (b_i - b_{i,t})^2\right\}
+q_1(z) =&\min_{\hat{b}} \left\{ -z \hat{y} \hat{w}^T \hat{b} + \frac{1}{2\eta} \|\hat{b} - \hat{b}_t\|_2^2 \right\} 
 \end{aligned}.
 $$
 
-Each term in the sum is a simple convex parabola. Its minimizer is 
-
+The term inside the minimu is a simple convex quadratic which is minimized by comparing its gradient with zero:
 $$
-b_i^* = b_{i,t} + \eta z \hat{y} \hat{w}_i, \tag{A}
-$$
-
-and substituting the above back into the sum we obtain:
-
-$$
-q_1(z) = \sum_{i\in0..m} \left[ -z \hat{y} \hat{w}_i (b_{i,t} + \eta z \hat{y} \hat{w}_i) + \frac{1}{2\eta} (\eta z \hat{y} \hat{w}_i)^2 \right] = -\frac{\eta \hat{y}^2 \sum_{i\in 0..m} \hat{w}_i^2}{2} z^2 -\hat{y} (\hat{w}^T b_t) z.
+\hat{b}^* = \hat{b}_t + \eta z \hat{y} \hat{w}. \tag{A}
 $$
 
-Since $$\hat{y} =\pm 1$$ we have that $$\hat{y}^2 = 1$$. Moreover, since $$w_i$$ are indicators, the sum $$\sum_{i \in 0..m} \hat{w}_i^2$$ is the number of non-zero entries of $$w$$ plus one. So, to summarize, the above can be written as
+Consequently:
+
+$$
+\begin{aligned}
+q_1(z) 
+ &= -z \hat{y} \hat{w}^T (\hat{b}_t + \eta z \hat{y} \hat{w}) + \frac{1}{2\eta} \| \eta z \hat{y} \hat{w} \|_2^2 \\
+ &= -\hat{y} (\hat{w}^T \hat{b}_t) z - \eta \hat{y}^2 \|\hat{w}\|_2^2 z^2 + \frac{\eta \hat{y}^2 \|\hat{w}\|_2^2}{2} z^2 \\
+ &= -\hat{y} (\hat{w}^T \hat{b}_t) z - \frac{\eta \hat{y}^2 \|\hat{w}\|_2^2}{2} z^2
+\end{aligned}
+$$
+
+Since $$\hat{y} =\pm 1$$ we have that $$\hat{y}^2 = 1$$. Moreover, since $$w_i$$ are indicators, the term $$\|\hat{w}\|_2^2$$ is the number of non-zero entries of $$w$$ plus one. So, to summarize, the above can be written as
 
 $$
 q_1(z) = -\frac{\eta (1 + |\operatorname{nz}(w)|)}{2}z^2 -\hat{y} (w^T b_t + b_{0,t}) z.
@@ -363,7 +368,7 @@ def update_biases(self, w_nz, y_hat, z):
     self.b0.add_(self.step_size * z * y_hat)    
 ```
 
-
+You might be asking yourself why we stored the bias sum in a member of `self`. It will become apparent shortly, but we’ll be calling the function `q_one` repeatedly, and we would like to avoid re-computing time consuming things we could compute only once.
 
 ## Minimizing over $$v_1, \dots, v_m$$
 
@@ -373,7 +378,7 @@ $$
 q_2(z) = \min_{v_1, \dots, v_m} \left\{ Q(v_1, \dots, v_m, z) \equiv - z \hat{y} \sum_{(i,j)\in P[1..m]} (v_i^T v_j) w_i w_j  + \frac{1}{2\eta} \sum_{i\in 1..m} \| v_i - v_{i,t} \|_2^2 \right\}.
 $$
 
-Of course, we assume that we indeed chose $$\eta$$ such that $$Q$$ inside the $$\min$$ operator is strictly convex in $$v_1, \dots, v_m$$, so that there is a unique solution. 
+Of course, we assume that we indeed chose $$\eta$$ such that $$Q$$ inside the $$\min$$ operator is strictly convex in $$v_1, \dots, v_m$$, so that there is a unique minimizer. 
 
 Since $$w$$ is a vector of indicators, we can write the function $$Q$$ by separating out the part which corresponds to non-zero indicators in $$w$$:
 
@@ -387,7 +392,7 @@ $$
 q_2(z)=\min_{v_{\operatorname{nz}(w)}} \hat{Q}(v_{\operatorname{nz}(w)}, z),
 $$
 
-where $$v_{\operatorname{nz}(w)}$$ is the set of the vectors $$v_i$$ for $$i \in \operatorname{nz}(w)$$.  Since we assumed that we chose $$\eta$$ to have a strictly-convex function $$Q$$, we can find our optimal $$v_{\operatorname{nz}(w)}^*$$ by solving the _linear_ system obtained by equating the gradient of $$\hat{Q}$$ with zero.
+where $$v_{\operatorname{nz}(w)}$$ is the set of the vectors $$v_i$$ for $$i \in \operatorname{nz}(w)$$.  Since $$\hat{Q}$$ is a quadratic function which we made sure is strictly convex, we can find our optimal $$v_{\operatorname{nz}(w)}^*$$ by solving the _linear_ system obtained by equating the gradient of $$\hat{Q}$$ with zero.
 
 So let’s see what the gradient looks like. We have a function of several vector variables $$v_{\operatorname{nz}(w)}$$, and we imagine that they are all stacked into one big vector. Consequently, the gradient of $$\hat{Q}$$ is a stacked vector comprising of the gradients w.r.t each of the vectors. So, let’s compute the gradient w.r.t each $$v_i$$ and equate it with zero: 
 
@@ -401,7 +406,7 @@ $$
 -\eta z \hat{y} \sum_{\substack{j \in \operatorname{nz}(w)\\j\neq i}} v_{j} + v_{i} = v_{i,t}.
 $$
 
-The above system means that we are actually solving linear systems with the _same_ matrix for each coordinate of the embedding vectors separately. Explicitly written, we can stack the vectors $$v_{\operatorname{nz}(w)}$$ into the rows of the matrix $$V$$, and the vectors $$v_{\operatorname{nz}(w),t}$$ into the rows of the matrix $$V_t$$, and solve the linear system
+The above system means that we are actually solving linear systems with the _same_ coefficients for each coordinate of the embedding vectors. Equivalently written, we can stack the vectors $$v_{\operatorname{nz}(w)}$$ into the rows of the matrix $$V$$, and the vectors $$v_{\operatorname{nz}(w),t}$$ into the rows of the matrix $$V_t$$, and solve the linear system
 
 $$
 \underbrace{\begin{pmatrix}
@@ -420,7 +425,7 @@ Note, that the matrix $$S(z)$$ is _small_, since its dimensions only depend on t
 > 2. Obtain a solution $$V^*$$ of the linear system of equations $$S(z) V = V_t$$, and use the rows of $$V^*$$ as the vectors $$\{v_{i}^*\}_{i \in \operatorname{nz}(w)}$$.
 > 3. Output: $$q_2(z)=-z \hat{y} \sum_{(i,j) \in P[\operatorname{nz}(w)]} ({v_{i}^*}^T v_{j}^*)+\frac{1}{2\eta} \sum_{i\in \operatorname{nz}(w)} \|v_{i}^* - v_{i,t} \|_2^2$$
 
-We know that our function $$\hat{Q}$$ is strictly convex, and thus the matrix $$S(z)$$ must be invertible, so the linear system must have a unique solution. However, let’s see how we can avoid invoking any matrix inversion algorithm altogether! It turns out we can directly and _efficiently_ compute $$S(z)^{-1}$$. The matrix $$S(z)$$ can be written as:
+However, let’s see how we can solve the linear system _without_ invoking any matrix inversion algorithm altogether, since it turns out we can directly and _efficiently_ compute $$S(z)^{-1}$$! The matrix $$S(z)$$ can be written as:
 
 $$
 S(z) = (1 + \eta z \hat{y}) I - \eta z  \hat{y}(\mathbf{e} ~ \mathbf{e}^T)
