@@ -16,7 +16,7 @@ title: About me
 
 ## Publications
 - **Alex Shtoff, Yair Koren** Mitigating Divergence of Latent Factors via Dual Ascent for Low Latency Event Prediction Models. _Accepted to IEEE Big data 2021_
-- **Yohay Kaplan, Naama Krasne, Alex Shtoff, and Oren Somekh** Unbiased Filtering of Accidental Clicks in Verizon Media Native Advertising. _Accepted to CIKM 2021_
+- **Yohay Kaplan, Naama Krasne, Alex Shtoff, and Oren Somekh** [Unbiased Filtering of Accidental Clicks in Verizon Media Native Advertising](https://dl.acm.org/doi/10.1145/3459637.3481958). _Proceedings of the 30th ACM International Conference on Information & Knowledge Management, 3878–3887 (October 2021)_
 - **Amir Beck, Yuval Beck, Yoash Levron, Alex Shtof, Luba Tetruashvili** [Globally solving a class of optimal power flow problems in radial networks by tree reduction](https://link.springer.com/article/10.1007/s10898-018-0652-z) _Journal of Global Optimization 72 (3), 373–402 (November 2018)_  
   ([paper]({{ "/assets/trem_jogo.pdf" | absolute_url }}), [software](https://github.com/alexshtf/trem_opf_solver))
 - **Alex Shtof, Alexander Agathos, Yotam Gingold, Ariel Shamir, Daniel Cohen‐Or** [Geosemantic Snapping for Sketch‐Based Modeling](https://onlinelibrary.wiley.com/doi/full/10.1111/cgf.12044) _Computer Graphics Forum 32 (2pt2), 245-253 (May 2013)_  
