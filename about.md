@@ -13,6 +13,7 @@ title: About me
 ## Projects
 - [AutoDiff](https://github.com/alexshtf/autodiff) - a .NET library for automatically computing derivatives of mathematical functions.
 - [TREM OPF Solver](https://github.com/alexshtf/trem_opf_solver) - A MATLAB solver for a class of optimal power flow problems using the Tree Reduction and Expansion Method. See paper below.
+- [Machine learning proximal operators library](https://github.com/alexshtf/inc_prox_pt) - A library of proximal operator implementations of functions useful in machine learning, for implementing algorithms such as online proximal point, or stochastic proximal iteration.
 
 ## Publications
 - **Alex Shtoff, Yair Koren** Mitigating Divergence of Latent Factors via Dual Ascent for Low Latency Event Prediction Models. _Accepted to IEEE Big data 2021_ ([Preprint](https://arxiv.org/abs/2111.07866))
