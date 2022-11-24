@@ -17,8 +17,9 @@ title: About me
 - [Machine learning proximal operators library](https://github.com/alexshtf/inc_prox_pt) - A library of proximal operator implementations of functions useful in machine learning, for implementing algorithms such as online proximal point, or stochastic proximal iteration.
 
 ## Publications
+- **Yohay Kaplan, Yair Koren, Alex Shtoff, Oren Somekh** Conversion-Based Dynamic-Creative-Optimization in Native Advertising. _Accepted to IEEE Big Data 2022_ ([Preprint](https://arxiv.org/abs/2211.11524)
 - **Alex Shtoff** Efficient implementation of incremental proximal-point methods. _Submitted_ ([Preprint](https://arxiv.org/abs/2205.01457), [code](https://github.com/alexshtf/inc_prox_pt/tree/a826c7179a528757399e661c5619a68dad254711))
-- **Alex Shtoff, Yair Koren** Mitigating Divergence of Latent Factors via Dual Ascent for Low Latency Event Prediction Models. _Accepted to IEEE Big data 2021_ ([Preprint](https://arxiv.org/abs/2111.07866))
+- **Alex Shtoff, Yair Koren** [Mitigating Divergence of Latent Factors via Dual Ascent for Low Latency Event Prediction Models](https://ieeexplore.ieee.org/document/9671859). _2021 IEEE International Conference on Big Data (Big Data), 2021, pp. 1940-1949_ ([Preprint](https://arxiv.org/abs/2111.07866))
 - **Yohay Kaplan, Naama Krasne, Alex Shtoff, and Oren Somekh** [Unbiased Filtering of Accidental Clicks in Verizon Media Native Advertising](https://dl.acm.org/doi/10.1145/3459637.3481958). _Proceedings of the 30th ACM International Conference on Information & Knowledge Management, 3878–3887 (October 2021)_
 - **Amir Beck, Yuval Beck, Yoash Levron, Alex Shtof, Luba Tetruashvili** [Globally solving a class of optimal power flow problems in radial networks by tree reduction](https://link.springer.com/article/10.1007/s10898-018-0652-z) _Journal of Global Optimization 72 (3), 373–402 (November 2018)_  
   ([paper]({{ "/assets/trem_jogo.pdf" | absolute_url }}), [software](https://github.com/alexshtf/trem_opf_solver))
