@@ -5,10 +5,11 @@ title: About me
 ![Personal Photo]({{ "/assets/photo.jpg" | absolute_url }})
 
 ## Interests
-- Software development: design principles, TDD and BDD, C++, C#, F#
 - Numerical Linear Algebra
 - Numerical optimization algorithms for convex and nonconvex problems.
 - On-line optimization
+- Recommender systems with tabular data
+- Software development: design principles, TDD and BDD, C++, C#, F#
 
 ## Projects
 - [Incremental proximal point](https://github.com/alexshtf/inc_prox_pt) - a library of algorithms for building incremental proximal-point methods for machine learning.
