@@ -22,7 +22,7 @@ url: "https://alexshtf.github.io" # the base hostname & protocol for your site, 
 twitter_username: alexshtf
 github_username:  alexshtf
 linkedin_username: alexshtf
-google_analytics: UA-134901511-1
+google_analytics: 364439015
 google_site_verification: rjnh8Vn7SLOIBKgGMei2oc5VP-dVUr9j_wR5fucMn-o
 
 disqus:
@@ -30,11 +30,12 @@ disqus:
 
 # Build settings
 markdown: kramdown
-theme: minima
+remote_theme: jekyll/minima
 highlighter: rouge
 plugins:
   - jekyll-feed
   - jekyll-sitemap
+  - jekyll-remote-theme
 
 header_pages:
   - about.md
