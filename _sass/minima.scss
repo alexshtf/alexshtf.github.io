@@ -15,8 +15,8 @@ $background-color: #fefefe !default;
 $link-base-color:  #8d8eeb !default;
 
 $brand-color:       #828282 !default;
-$brand-color-light: lighten($grey-color, 40%) !default;
-$brand-color-dark:  darken($grey-color, 25%) !default;
+$brand-color-light: lighten($brand-color, 40%) !default;
+$brand-color-dark:  darken($brand-color, 25%) !default;
 
 $table-text-align: left !default;
 
