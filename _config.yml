@@ -31,7 +31,9 @@ disqus:
 # Build settings
 markdown: kramdown
 remote_theme: jekyll/minima
-highlighter: rouge
+kramdown:
+  math_engine: mathjax
+  syntax_highlighter: rouge
 plugins:
   - jekyll-feed
   - jekyll-sitemap
