@@ -19,21 +19,29 @@ Vladimir Vapnik, in his famous book "The Nature of Statistical Learning Theory" 
 
 Indeed, higher degree polynomials have a higher capacity to approximate arbitrary functions. And since they have more coefficients, these coefficients are harder to estimate from data. But how does it differ from other non-linear features, such as the well-known [radial basis functions](https://en.wikipedia.org/wiki/Radial_basis_function)? Why do polynomials have such a bad reputation? Are they truly hard to estimate from data?
 
-It turns out that the primary source is the standard polynomial basis for n-degree polynomials $\mathbb{E}_n = {1, x, x^2, ..., x^n}$. Indeed, any degree $n$ polynomial can be written as a linear combination of these functions:
+It turns out that the primary source is the standard polynomial basis for n-degree polynomials $$\mathbb{E}_n = {1, x, x^2, ..., x^n}$$. Indeed, any degree $$n$$  polynomial can be written as a linear combination of these functions:
+
+
 $$
 \alpha_0 \cdot 1 + \alpha_1 \cdot x + \alpha_2 \cdot x^2 + \cdots + \alpha_n x^n
 $$
-But the standard basis $\mathbb{B}_n$ is _aweful_ for estimating polynomials from data. In this post we will explore other ways to represent polynomials that are appropriate for machine learning, and are readily available in standard Python packages. We note, that one advantage of polynomials over other non-linear feature bases is that the only hyperparameter is their _degree_. There is no "kernel width", like in radial basis functions[^1].
+
+
+But the standard basis $$\mathbb{B}_n$$ is _aweful_ for estimating polynomials from data. In this post we will explore other ways to represent polynomials that are appropriate for machine learning, and are readily available in standard Python packages. We note, that one advantage of polynomials over other non-linear feature bases is that the only hyperparameter is their _degree_. There is no "kernel width", like in radial basis functions[^1].
 
 The second source of their bad reputation is misunderstanding of Weierstrass' approximation theorem. It's usually cited as "polynomials can approximate arbitrary continuous functions". But that's not entrely true. They can approximate arbitrary continuous functions **in an interval**. This means that when using polynomial features, the data must be normalized to lie in an interval. It can be done using min-max scaling, computing empirical quantiles, or passing the feature through a sigmoid. But we should avoid the use of polynomials on raw un-normalized features.
 
 # Building the basics
 
 In this post we will demonstrate fitting the function
+
+
 $$
 f(x)=\sin(8 \pi x) / \exp(x)+x
 $$
-on the interval $[0, 1]$ by fitting to $m=30$ samples corrupted by Gaussian noise. The following code implements the function and generates samples:
+
+
+on the interval $$[0, 1]$$ by fitting to $$m=30$$ samples corrupted by Gaussian noise. The following code implements the function and generates samples:
 
 ```python
 import numpy as np
@@ -50,7 +58,7 @@ X = np.random.rand(m)
 y = true_func(X) + sigma * np.random.randn(m)
 ```
 
-For function plotting, we will use uniformly-spaced points in $[0, 1]$. The following code plots the true function and the sample points:
+For function plotting, we will use uniformly-spaced points in $$[0, 1]$$. The following code plots the true function and the sample points:
 
 ```python
 import matplotlib.pyplot as plt
@@ -63,11 +71,14 @@ plt.show()
 
 ![polyfit_func]({{ "/assets/polyfit_func.png" | absolute_url }})
 
-Now let's fit a polynomial to the sampled points using the standard basis. Namely, we're given the set of noisy points $\{ (x_i, y_i) \}_{i=1}^m$, and we need to find the coefficients $\alpha_0, \dots, \alpha_n$ that minimize:
+Now let's fit a polynomial to the sampled points using the standard basis. Namely, we're given the set of noisy points $$\{ (x_i, y_i) \}_{i=1}^m$$, and we need to find the coefficients $\alpha_0, \dots, \alpha_n$ that minimize:
+
 $$
 \sum_{i=1}^m (\alpha_0 + \alpha_1 x_i + \dots + \alpha_n x_i^n - y_i)^2
 $$
-As expected, this is readily accomplished by transforming each sample $x_i$ to a vector of features $1, x_i, \dots, x_i^n$, and fitting a linear regression model to the resulting features. Fortunately, NumPy has the `numpy.polynomial.polynomial.polyvander`function. It takes a vector containing $x_1, \dots, x_m$ and produces the matrix
+
+As expected, this is readily accomplished by transforming each sample $$x_i$$ to a vector of features $$1, x_i, \dots, x_i^n$$, and fitting a linear regression model to the resulting features. Fortunately, NumPy has the `numpy.polynomial.polynomial.polyvander`function. It takes a vector containing $$x_1, \dots, x_m$$ and produces the matrix
+
 $$
 \begin{pmatrix}
 1 & x_1 & x_1^2 & \dots & x_1^n \\
@@ -76,7 +87,8 @@ $$
 1 & x_m & x_m^2 & \dots & x_m^n \\
 \end{pmatrix}
 $$
-The name of the function comes from the name of the matrix - the Vandermonde matrix. Let's use it to fit a polynomial of degree $n=50$.
+
+The name of the function comes from the name of the matrix - the Vandermonde matrix. Let's use it to fit a polynomial of degree $$n=50$$.
 
 ```python
 from sklearn.linear_model import LinearRegression
@@ -117,7 +129,7 @@ We get the following result:
 
 ![polyfit_standard_ridge]({{ "/assets/polyfit_standard_ridge.png" | absolute_url }})
 
-The regularization coefficient coefficient of $\alpha=10^{-7}$ is large enough to break the model in $[0,0.8]$ but not large enough to avoid over-fitting in $[0.8, 1]$. Increasing the coefficient clearly won't help - the model will be broken even further in $[0, 0.8]$.
+The regularization coefficient coefficient of $$\alpha=10^{-7}$$ is large enough to break the model in $$[0,0.8]$$ but not large enough to avoid over-fitting in $$[0.8, 1]$$. Increasing the coefficient clearly won't help - the model will be broken even further in $$[0, 0.8]$$.
 
 Since we will be trying several polynomial bases, it makes sense to write a more generic function for our experiments that will accept various "Vandermonde" matrix functions of the basis of our choice, fit the polynomial using the `Ridge` class, and plot it with the original function and the sample points.
 
@@ -143,12 +155,12 @@ fit_and_plot(poly.polyvander, n=50, alpha=1e-7)
 
 # Polynomial bases
 
-It turns out that in our sister discipline, approximation theory, reseachers also encountered similar difficulties with the standard basis $\mathbb{E}_n$, and developed a thoery for approximating functions by polynomials from different bases. Two prominent examples of bases of $n$-degree polynomials include, and their:
+It turns out that in our sister discipline, approximation theory, reseachers also encountered similar difficulties with the standard basis $$\mathbb{E}_n$$, and developed a thoery for approximating functions by polynomials from different bases. Two prominent examples of bases of $$n$$-degree polynomials include, and their:
 
 1. The [Chebyshev polynomials](https://en.wikipedia.org/wiki/Chebyshev_polynomials) $\mathbb{T}_n = \{ T_0, T_1, \dots, T_n \}$, implemented in the `numpy.polynomial.chebyshev` module.
 2. The [Legendre polynomials](https://en.wikipedia.org/wiki/Legendre_polynomials) $\mathbb{P}_n = \{ P_0, P_1, \dots, P_n \}$, implemented in the `numpy.polynomial.legendre` module.
 
-They are the computational workhorse of a large variety of numerical algorithms that are enabled by approximating a function using a polynomial, and are well-known for their advantages in approximating functions in the $[-1, 1]$ interval[^3]. In particular, the corresponding "Vandermonde" matrices are provided by the `chebvander` and `legvander` functions in corresponding modules above.
+They are the computational workhorse of a large variety of numerical algorithms that are enabled by approximating a function using a polynomial, and are well-known for their advantages in approximating functions in the $$[-1, 1]$$ interval[^3]. In particular, the corresponding "Vandermonde" matrices are provided by the `chebvander` and `legvander` functions in corresponding modules above.
 
 I will not elaborate their formulas and properties here for a reason that will immediately be revealed. However,  I highly recomment Prof. Nick Trefethen's "Approximation theory and approximation practice" [online video course](https://people.maths.ox.ac.uk/trefethen/atapvideos.html) to get familiar with their advantages. His book with the same name is an excellent introduction to the subject. 
 
@@ -160,7 +172,7 @@ import numpy.polynomial.chebyshev as cheb
 fit_and_plot(cheb.chebvander, n=50, alpha=1e-7)
 ```
 
-However, that's not the best thing to do. We aim to fit a function sampled from $[0, 1]$, but the Chebyshev basis "lives" in $[-1, 1]$. Therefore, we will add the transformation $x \to 2x-1$ before invoking the `chebvander` function:
+However, that's not the best thing to do. We aim to fit a function sampled from $$[0, 1]$$, but the Chebyshev basis "lives" in $$[-1, 1]$$. Therefore, we will add the transformation $$x \to 2x-1$$ before invoking the `chebvander` function:
 
 ```python
 def scaled_chebvander(x, deg):
@@ -188,28 +200,32 @@ The answer stems from the fundamental difference between two tasks:
 - **Interpolation** - finding a polynomial that agrees with the approximated function $f(x)$ _exactly_ at a set of _carefully chosen_ points
 - **Fitting** - finding a polynomial that agrees _approximately_ with a given _noisy_ set of points, which are _out of our control_.
 
-The Chebyshev and Legendre bases are very well suited for the interpolation task, but not for the fitting task. It turns out that the polynomial $T_k$ in the Chebyshev basis, and the polynomial $P_k$ in the Legendre basis, are both $k$-degree polynomials. Thus, the coefficient of $T_1$ and $T_{50}$ have "different units". This property is shared with the standard basis as well. Thus, we have two issues:
+The Chebyshev and Legendre bases are very well suited for the interpolation task, but not for the fitting task. It turns out that the polynomial $$T_k$$ in the Chebyshev basis, and the polynomial$ $P_k$$ in the Legendre basis, are both $$k$$-degree polynomials. Thus, the coefficient of $$T_1$$ and $$T_{50}$$ have "different units". This property is shared with the standard basis as well. Thus, we have two issues:
 
-1. A small change of the coefficient of a high degree basis function, say the coefficient $\alpha_{50}$, has a huge effect on the shape of the polynomial. A small change can drastically change the shape. A small change in the input data has a *huge* effect of the fit model. It can be either a small change in the feature $x_i$, or a change in the noisedm sample $y_i = f(x_i) + \varepsilon$.
-2. L2 regularization makes no sense! For reasonable functions, the coefficient $\alpha_{50}$ should be much smaller than the coefficient $\alpha_1$. This is regardless of the choice of the basis!
+1. A small change of the coefficient of a high degree basis function, say the coefficient $$\alpha_{50}$$, has a huge effect on the shape of the polynomial. A small change can drastically change the shape. A small change in the input data has a *huge* effect of the fit model. It can be either a small change in the feature $$x_i$$, or a change in the noised sample $$y_i = f(x_i) + \varepsilon$$.
+2. L2 regularization makes no sense! For reasonable functions, the coefficient $$\alpha_{50}$$ should be much smaller than the coefficient $$\alpha_1$$. This is regardless of the choice of the basis!
 
 Both properties show that for the fitting, rather the interpolation tasks we need something else.
 
 # The Bernstein basis
 
-A remedy is provided by the Bernstein basis $\mathbb{B}_n = \{  B_{0,n}, \dots, B_{n, n} \}$. These are $n$-degree polynomials defined by on $[0, 1]$ by:
+A remedy is provided by the Bernstein basis $$\mathbb{B}_n = \{  B_{0,n}, \dots, B_{n, n} \}$$. These are $$n$$-degree polynomials defined by on $$[0, 1]$$ by:
+
 $$
 B_{i,n}(x) = \binom{n}{i} x^i (1-x)^{n-i}
 $$
+
 These polynomials are widely used in computer graphics to approximate curves and surfaces, but it appears that they're less known in the machine learning community. In fact, all the text you see on the screen when reading this post is rendered using Bernstein polynomials[^2].
 
-First, note that each $B_{i,n}$ is an $n$-degree polynomial. Thus, when representing a polynomial using
+First, note that each $$B_{i,n}$$ is an $$n$$-degree polynomial. Thus, when representing a polynomial using
+
 $$
 p_n(x) = \alpha_0 B_{0,n}(x) + \alpha_1 B_{1,n}(x) + \dots + \alpha_n B_{n,n}(x),
 $$
+
 all the coefficients have the same "units". 
 
-Moreover, note that $B_{i,n}(x)$ is exactly the probability mass function of the binomial distribution for obtaining $i$ successes in a sequence of trials whose success probability is $x$. Therefore, $p_n(x) \geq 0$,  and $\sum_{i=0}^n p_i(x) = 1$ for any $x \in [0, 1]$. This means that $p_n(x)$ is just a weighted average of the coefficients $\alpha_0, \dots, \alpha_n$. So not only the coefficients have the same "units", their units are also the same as the targets $y_i \approx p_n(x_i)$.
+Moreover, note that $$B_{i,n}(x)$$ is exactly the probability mass function of the binomial distribution for obtaining $$i$$ successes in a sequence of trials whose success probability is $$x$$. Therefore, $$p_n(x) \geq 0$$,  and $$\sum_{i=0}^n p_i(x) = 1$$ for any $$x \in [0, 1]$$. This means that $$p_n(x)$$ is just a weighted average of the coefficients $$\alpha_0, \dots, \alpha_n$$. So not only the coefficients have the same "units", their units are also the same as the targets $$y_i \approx p_n(x_i)$$.
 
 Finally, due to the equivalence with the binomial distribution p.m.f, we can implement a "Vandermonde" matrix in Python using the `scipy.stats.binom.pmf` function.
 
