@@ -29,7 +29,7 @@ $$
 $$
 
 
-But the standard basis $$\mathbb{B}_n$$ is _aweful_ for estimating polynomials from data. In this post we will explore other ways to represent polynomials that are appropriate for machine learning, and are readily available in standard Python packages. We note, that one advantage of polynomials over other non-linear feature bases is that the only hyperparameter is their _degree_. There is no "kernel width", like in radial basis functions[^1].
+But the standard basis $$\mathbb{B}_n$$ is _awful_ for estimating polynomials from data. In this post we will explore other ways to represent polynomials that are appropriate for machine learning, and are readily available in standard Python packages. We note, that one advantage of polynomials over other non-linear feature bases is that the only hyperparameter is their _degree_. There is no "kernel width", like in radial basis functions[^1].
 
 The second source of their bad reputation is misunderstanding of Weierstrass' approximation theorem. It's usually cited as "polynomials can approximate arbitrary continuous functions". But that's not entrely true. They can approximate arbitrary continuous functions **in an interval**. This means that when using polynomial features, the data must be normalized to lie in an interval. It can be done using min-max scaling, computing empirical quantiles, or passing the feature through a sigmoid. But we should avoid the use of polynomials on raw un-normalized features.
 
@@ -73,7 +73,7 @@ plt.show()
 
 ![polyfit_func]({{ "/assets/polyfit_func.png" | absolute_url }})
 
-Now let's fit a polynomial to the sampled points using the standard basis. Namely, we're given the set of noisy points $$\{ (x_i, y_i) \}_{i=1}^m$$, and we need to find the coefficients $\alpha_0, \dots, \alpha_n$ that minimize:
+Now let's fit a polynomial to the sampled points using the standard basis. Namely, we're given the set of noisy points $$\{ (x_i, y_i) \}_{i=1}^m$$, and we need to find the coefficients $$\alpha_0, \dots, \alpha_n$$ that minimize:
 
 $$
 \sum_{i=1}^m (\alpha_0 + \alpha_1 x_i + \dots + \alpha_n x_i^n - y_i)^2
@@ -159,12 +159,12 @@ fit_and_plot(poly.polyvander, n=50, alpha=1e-7)
 
 It turns out that in our sister discipline, approximation theory, reseachers also encountered similar difficulties with the standard basis $$\mathbb{E}_n$$, and developed a thoery for approximating functions by polynomials from different bases. Two prominent examples of bases of $$n$$-degree polynomials include, and their:
 
-1. The [Chebyshev polynomials](https://en.wikipedia.org/wiki/Chebyshev_polynomials) $\mathbb{T}_n = \{ T_0, T_1, \dots, T_n \}$, implemented in the `numpy.polynomial.chebyshev` module.
-2. The [Legendre polynomials](https://en.wikipedia.org/wiki/Legendre_polynomials) $\mathbb{P}_n = \{ P_0, P_1, \dots, P_n \}$, implemented in the `numpy.polynomial.legendre` module.
+1. The [Chebyshev polynomials](https://en.wikipedia.org/wiki/Chebyshev_polynomials) $$\mathbb{T}_n = \{ T_0, T_1, \dots, T_n \}$$, implemented in the `numpy.polynomial.chebyshev` module.
+2. The [Legendre polynomials](https://en.wikipedia.org/wiki/Legendre_polynomials) $$\mathbb{P}_n = \{ P_0, P_1, \dots, P_n \}$$, implemented in the `numpy.polynomial.legendre` module.
 
 They are the computational workhorse of a large variety of numerical algorithms that are enabled by approximating a function using a polynomial, and are well-known for their advantages in approximating functions in the $$[-1, 1]$$ interval[^3]. In particular, the corresponding "Vandermonde" matrices are provided by the `chebvander` and `legvander` functions in corresponding modules above.
 
-I will not elaborate their formulas and properties here for a reason that will immediately be revealed. However,  I highly recomment Prof. Nick Trefethen's "Approximation theory and approximation practice" [online video course](https://people.maths.ox.ac.uk/trefethen/atapvideos.html) to get familiar with their advantages. His book with the same name is an excellent introduction to the subject. 
+I will not elaborate their formulas and properties here for a reason that will immediately be revealed. However, I highly recomment Prof. Nick Trefethen's "Approximation theory and approximation practice" [online video course](https://people.maths.ox.ac.uk/trefethen/atapvideos.html) to get familiar with their advantages. His book with the same name is an excellent introduction to the subject. 
 
 It might be tempting to try fitting a Chebyshev polynomial using our `fit_and_plot` method above directly:
 
@@ -199,7 +199,7 @@ Appears that our polynomial is both a bad fit for the function, and extremely os
 
 The answer stems from the fundamental difference between two tasks: 
 
-- **Interpolation** - finding a polynomial that agrees with the approximated function $f(x)$ _exactly_ at a set of _carefully chosen_ points
+- **Interpolation** - finding a polynomial that agrees with the approximated function $$f(x)$$ _exactly_ at a set of _carefully chosen_ points
 - **Fitting** - finding a polynomial that agrees _approximately_ with a given _noisy_ set of points, which are _out of our control_.
 
 The Chebyshev and Legendre bases are very well suited for the interpolation task, but not for the fitting task. It turns out that the polynomial $$T_k$$ in the Chebyshev basis, and the polynomial$ $P_k$$ in the Legendre basis, are both $$k$$-degree polynomials. Thus, the coefficient of $$T_1$$ and $$T_{50}$$ have "different units". This property is shared with the standard basis as well. Thus, we have two issues:
