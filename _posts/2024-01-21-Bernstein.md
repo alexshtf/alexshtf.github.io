@@ -13,6 +13,8 @@ When fitting a non-linear model using linear regression, we typically generate n
 
 It turns out that it's just a MYTH. There's nothing inherently wrong with high degree polynomials, and the source of the myth stems mainly from two misconceptions about polynomials that we will explore here. In fact, not only they are great non-linear features, certain representations also provide us with powerful control over the shape of the function we wish to learn.
 
+A colab notebook with the code for reproducing the above results is available [here](https://drive.google.com/file/d/10IxrJUKPfrYkUraC4WVncFozcqi0O5wL/view?usp=sharing).
+
 # Approximation vs estimation
 
 Vladimir Vapnik, in his famous book "The Nature of Statistical Learning Theory" which is cited more than 100,000 times as of today, coined the approximation vs. estimation balance. The approximation power of a model is its ability to represent the "reality" we would like to learn. Typically, approximation power increases with the complexity of the model - more parameters mean more power to represent any function to arbitrary precision. Polynomials are no different - higher degree polynomials can represent functions to higher accuracy. However, more parameters make it difficult to _estimate these parameters from the data_.
@@ -266,8 +268,11 @@ This is a polynomial of degree 100, that does not overfit!
 
 # Summary
 
-The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as an axiom. In the following posts we will explore the Bernstein basis in more detail. We will use it to create polynomial features for real-world datasets and test it versus the standard basis, and see how we can control the shape of the curve by controlling the coefficients. For example, what if we know that the function we're aiming to fit is increasing? Stay tuned!
+The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers using them to represent polynomial features. See the paper [^4] for example.  
+
+In the following posts we will explore the Bernstein basis in more detail. We will use it to create polynomial features for real-world datasets and test it versus the standard basis, and see how we can control the shape of the curve by controlling the coefficients. For example, what if we know that the function we're aiming to fit is increasing? Stay tuned!
 
 [^1]: There are also kernel methods, and polynomial kernels. But polynomial kernels suffer from problems similar to the standard basis.
 [^2]: See [Bézier curves](https://en.wikipedia.org/wiki/B%C3%A9zier_curve) and TrueType [font outlines](https://en.wikipedia.org/wiki/TrueType#Outlines).
 [^3]: The standard basis is not that awful. It's a great basis for representing polynomials on the complex unit circle. In fact, the Fourier transform is based exactly on this observation.
+[^4]: Marco, Ana, and José-Javier Martı. "Polynomial least squares fitting in the Bernstein basis." Linear Algebra and its Applications 433.7 (2010): 1254-1264.
