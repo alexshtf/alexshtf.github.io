@@ -13,7 +13,7 @@ When fitting a non-linear model using linear regression, we typically generate n
 
 It turns out that it's just a MYTH. There's nothing inherently wrong with high degree polynomials, and the source of the myth stems mainly from two misconceptions about polynomials that we will explore here. In fact, not only they are great non-linear features, certain representations also provide us with powerful control over the shape of the function we wish to learn.
 
-A colab notebook with the code for reproducing the above results is available [here](https://drive.google.com/file/d/10IxrJUKPfrYkUraC4WVncFozcqi0O5wL/view?usp=sharing).
+A colab notebook with the code for reproducing the above results is available [here](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/polyfeatures.ipynb).
 
 # Approximation vs estimation
 
@@ -153,8 +153,6 @@ Now we can reproduce our latest experiment by invoking:
 fit_and_plot(poly.polyvander, n=50, alpha=1e-7)
 ```
 
-
-
 # Polynomial bases
 
 It turns out that in our sister discipline, approximation theory, reseachers also encountered similar difficulties with the standard basis $$\mathbb{E}_n$$, and developed a thoery for approximating functions by polynomials from different bases. Two prominent examples of bases of $$n$$-degree polynomials include, and their:
@@ -162,7 +160,16 @@ It turns out that in our sister discipline, approximation theory, reseachers als
 1. The [Chebyshev polynomials](https://en.wikipedia.org/wiki/Chebyshev_polynomials) $$\mathbb{T}_n = \{ T_0, T_1, \dots, T_n \}$$, implemented in the `numpy.polynomial.chebyshev` module.
 2. The [Legendre polynomials](https://en.wikipedia.org/wiki/Legendre_polynomials) $$\mathbb{P}_n = \{ P_0, P_1, \dots, P_n \}$$, implemented in the `numpy.polynomial.legendre` module.
 
-They are the computational workhorse of a large variety of numerical algorithms that are enabled by approximating a function using a polynomial, and are well-known for their advantages in approximating functions in the $$[-1, 1]$$ interval[^3]. In particular, the corresponding "Vandermonde" matrices are provided by the `chebvander` and `legvander` functions in corresponding modules above.
+They are the computational workhorse of a large variety of numerical algorithms that are enabled by approximating a function using a polynomial, and are well-known for their advantages in approximating functions in the $$[-1, 1]$$ interval[^3]. In particular, the corresponding "Vandermonde" matrices are provided by the `chebvander` and `legvander` functions in corresponding modules above. Each row in these matrices contains the value of the basis functions at each point, just like the standard Vandermonde matrix of the standard basis. For example, the Chebyshev Vandermonde matrix is:
+
+$$
+\begin{pmatrix}
+T_0(x_1) & T_1(x_1) & \dots & T_n(x_1) \\
+T_0(x_2) & T_1(x_2) & \dots & T_n(x_2) \\
+\vdots & \vdots  & \ddots& \vdots  \\
+T_0(x_m) & T_1(x_m) & \dots & T_n(x_m) \\
+\end{pmatrix}
+$$
 
 I will not elaborate their formulas and properties here for a reason that will immediately be revealed. However, I highly recomment Prof. Nick Trefethen's "Approximation theory and approximation practice" [online video course](https://people.maths.ox.ac.uk/trefethen/atapvideos.html) to get familiar with their advantages. His book with the same name is an excellent introduction to the subject. 
 
@@ -202,7 +209,7 @@ The answer stems from the fundamental difference between two tasks:
 - **Interpolation** - finding a polynomial that agrees with the approximated function $$f(x)$$ _exactly_ at a set of _carefully chosen_ points
 - **Fitting** - finding a polynomial that agrees _approximately_ with a given _noisy_ set of points, which are _out of our control_.
 
-The Chebyshev and Legendre bases are very well suited for the interpolation task, but not for the fitting task. It turns out that the polynomial $$T_k$$ in the Chebyshev basis, and the polynomial $$P_k$$ in the Legendre basis, are both $$k$$-degree polynomials. Thus, the coefficient of $$T_1$$ and $$T_{50}$$ have "different units". This property is shared with the standard basis as well. Thus, we have two issues:
+The Chebyshev and Legendre bases perform extremely well at the the interpolation task, but not at the fitting task. It turns out that the polynomial $$T_k$$ in the Chebyshev basis, and the polynomial $$P_k$$ in the Legendre basis, are both $$k$$-degree polynomials. Thus, the coefficient of $$T_1$$ and $$T_{50}$$ have "different units". This property is shared with the standard basis as well. Thus, we have two issues:
 
 1. A small change of the coefficient of a high degree basis function, say the coefficient $$\alpha_{50}$$, has a huge effect on the shape of the polynomial. A small change can drastically change the shape. A small change in the input data has a *huge* effect of the fit model. It can be either a small change in the feature $$x_i$$, or a change in the noised sample $$y_i = f(x_i) + \varepsilon$$.
 2. L2 regularization makes no sense! For reasonable functions, the coefficient $$\alpha_{50}$$ should be much smaller than the coefficient $$\alpha_1$$. This is regardless of the choice of the basis!
@@ -227,7 +234,7 @@ $$
 
 all the coefficients have the same "units". 
 
-Moreover, note that $$B_{i,n}(x)$$ is exactly the probability mass function of the binomial distribution for obtaining $$i$$ successes in a sequence of trials whose success probability is $$x$$. Therefore, $$p_n(x) \geq 0$$,  and $$\sum_{i=0}^n p_i(x) = 1$$ for any $$x \in [0, 1]$$. This means that $$p_n(x)$$ is just a weighted average of the coefficients $$\alpha_0, \dots, \alpha_n$$. So not only the coefficients have the same "units", their units are also the same as the targets $$y_i \approx p_n(x_i)$$.
+Moreover, note that $$B_{i,n}(x)$$ is exactly the probability mass function of the binomial distribution for obtaining $$i$$ successes in a sequence of trials whose success probability is $$x$$. Therefore, $$p_n(x) \geq 0$$,  and $$\sum_{i=0}^n p_i(x) = 1$$ for any $$x \in [0, 1]$$,  meaning that $$p_n(x)$$ is just a weighted average of the coefficients $$\alpha_0, \dots, \alpha_n$$. So not only the coefficients have the same "units", their units are also the same as the targets $$y_i \approx p_n(x_i)$$. Thus, they're much easier to regularize - they're all on the same "scale".
 
 Finally, due to the equivalence with the binomial distribution p.m.f, we can implement a "Vandermonde" matrix in Python using the `scipy.stats.binom.pmf` function.
 
@@ -268,9 +275,9 @@ This is a polynomial of degree 100, that does not overfit!
 
 # Summary
 
-The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers using them to represent polynomial features. See the paper [^4] for example.  
+The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as if it was an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers[^4] using them to represent polynomial features. 
 
-In the following posts we will explore the Bernstein basis in more detail. We will use it to create polynomial features for real-world datasets and test it versus the standard basis, and see how we can control the shape of the curve by controlling the coefficients. For example, what if we know that the function we're aiming to fit is increasing? Stay tuned!
+In the following posts we will explore the Bernstein basis in more detail. We will use it to create polynomial features for real-world datasets and test it versus the standard basis. Moreover, we will see how to regularize the coefficients to control the shape of the function we aim to represent.. For example, what if we know that the function we're aiming to fit is increasing? Stay tuned!
 
 [^1]: There are also kernel methods, and polynomial kernels. But polynomial kernels suffer from problems similar to the standard basis.
 [^2]: See [Bézier curves](https://en.wikipedia.org/wiki/B%C3%A9zier_curve) and TrueType [font outlines](https://en.wikipedia.org/wiki/TrueType#Outlines).
