@@ -2,8 +2,9 @@
 ≠layout: post
 title:  “Are polynomial features the root of all evil?"
 tags: [machine-learning, feature-engineering, polynomials]
-description: There is a well-known myth in the machine learning community - high degree polynomials are bad for modeling. In this post we
+description: There is a well-known myth in the machine learning community - high degree polynomials are bad for modeling. In this post we debunk this myth.
 comments: true
+hidden: true
 ---
 
 # A myth
