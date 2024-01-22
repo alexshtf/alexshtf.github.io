@@ -218,7 +218,7 @@ Both properties show that for the fitting, rather the interpolation tasks we nee
 
 # The Bernstein basis
 
-A remedy is provided by the Bernstein basis $$\mathbb{B}_n = \{  B_{0,n}, \dots, B_{n, n} \}$$. These are $$n$$-degree polynomials defined by on $$[0, 1]$$ by:
+A remedy is provided by the [Bernstein basis](https://en.wikipedia.org/wiki/Bernstein_polynomial) $$\mathbb{B}_n = \{  B_{0,n}, \dots, B_{n, n} \}$$. These are $$n$$-degree polynomials defined by on $$[0, 1]$$ by:
 
 $$
 B_{i,n}(x) = \binom{n}{i} x^i (1-x)^{n-i}
