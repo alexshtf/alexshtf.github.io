@@ -275,7 +275,7 @@ This is a polynomial of degree 100, that does not overfit!
 
 # Summary
 
-The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as if it was an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers[^4] using them to represent polynomial features. Their main advantage is ease of use - we can use high degree polynomials to exploit their approximation power, and control model complexity with just one hyperparameter - the regularization coefficient.
+The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as if it was an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers[^4][^5] using them to represent polynomial features. Their main advantage is ease of use - we can use high degree polynomials to exploit their approximation power, and control model complexity with just one hyperparameter - the regularization coefficient.
 
 In the following posts we will explore the Bernstein basis in more detail. We will use it to create polynomial features for real-world datasets and test it versus the standard basis. Moreover, we will see how to regularize the coefficients to control the shape of the function we aim to represent.. For example, what if we know that the function we're aiming to fit is increasing? Stay tuned!
 
@@ -283,3 +283,4 @@ In the following posts we will explore the Bernstein basis in more detail. We wi
 [^2]: See [Bézier curves](https://en.wikipedia.org/wiki/B%C3%A9zier_curve) and TrueType [font outlines](https://en.wikipedia.org/wiki/TrueType#Outlines).
 [^3]: The standard basis is not that awful. It's a great basis for representing polynomials on the complex unit circle. In fact, the Fourier transform is based exactly on this observation.
 [^4]: Marco, Ana, and José-Javier Martı. "Polynomial least squares fitting in the Bernstein basis." Linear Algebra and its Applications 433.7 (2010): 1254-1264.
+[^5]: Wang, Jiangdian, and Sujit K. Ghosh. "Shape restricted nonparametric regression with Bernstein polynomials." Computational Statistics & Data Analysis 56.9 (2012): 2729-2741.
