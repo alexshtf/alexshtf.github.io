@@ -209,9 +209,9 @@ The answer stems from the fundamental difference between two tasks:
 - **Interpolation** - finding a polynomial that agrees with the approximated function $$f(x)$$ _exactly_ at a set of _carefully chosen_ points
 - **Fitting** - finding a polynomial that agrees _approximately_ with a given _noisy_ set of points, which are _out of our control_.
 
-The Chebyshev and Legendre bases perform extremely well at the the interpolation task, but not at the fitting task. It turns out that the polynomial $$T_k$$ in the Chebyshev basis, and the polynomial $$P_k$$ in the Legendre basis, are both $$k$$-degree polynomials. Thus, the coefficient of $$T_1$$ and $$T_{50}$$ have "different units". This property is shared with the standard basis as well. Thus, we have two issues:
+The Chebyshev and Legendre bases perform extremely well at the the interpolation task, but not at the fitting task. It turns out that the polynomial $$T_k$$ in the Chebyshev basis, and the polynomial $$P_k$$ in the Legendre basis, are both $$k$$-degree polynomials. For example, $$T_1$$ is a linear function, whereas $$T_{50}$$ is a polynomial of degree 50. These two functions are radically different. Thus, the coefficient of $$T_1$$ and $$T_{50}$$ have "different units". This property is shared with the standard basis as well. Thus, we have two issues:
 
-1. A small change of the coefficient of a high degree basis function, say the coefficient $$\alpha_{50}$$, has a huge effect on the shape of the polynomial. A small change can drastically change the shape. A small change in the input data has a *huge* effect of the fit model. It can be either a small change in the feature $$x_i$$, or a change in the noised sample $$y_i = f(x_i) + \varepsilon$$.
+1. A small change of the coefficient of a high degree basis function, say the coefficient $$\alpha_{50}$$, has a huge effect on the shape of the polynomial. Thus, a small perturbation in the input data, be it from noise or a slighly different data point $$x_i$$, has a *huge* effect of the fit model. 
 2. L2 regularization makes no sense! For reasonable functions, the coefficient $$\alpha_{50}$$ should be much smaller than the coefficient $$\alpha_1$$. This is regardless of the choice of the basis!
 
 Both properties show that for the fitting, rather the interpolation tasks we need something else.
@@ -224,7 +224,7 @@ $$
 B_{i,n}(x) = \binom{n}{i} x^i (1-x)^{n-i}
 $$
 
-These polynomials are widely used in computer graphics to approximate curves and surfaces, but it appears that they're less known in the machine learning community. In fact, all the text you see on the screen when reading this post is rendered using Bernstein polynomials[^2].
+These polynomials are widely used in computer graphics to approximate curves and surfaces, but it appears that they're less known in the machine learning community. In fact, all the text you see on the screen when reading this post is rendered using Bernstein polynomials[^2]. We will study them more in depth in the next posts, but at this stage I would like to point out two simple properties that give an intuitive explanation of why they're useful in machine learning.
 
 First, note that each $$B_{i,n}$$ is an $$n$$-degree polynomial. Thus, when representing a polynomial using
 
@@ -234,7 +234,7 @@ $$
 
 all the coefficients have the same "units". 
 
-Moreover, note that $$B_{i,n}(x)$$ is exactly the probability mass function of the binomial distribution for obtaining $$i$$ successes in a sequence of trials whose success probability is $$x$$. Therefore, $$p_n(x) \geq 0$$,  and $$\sum_{i=0}^n p_i(x) = 1$$ for any $$x \in [0, 1]$$,  meaning that $$p_n(x)$$ is just a weighted average of the coefficients $$\alpha_0, \dots, \alpha_n$$. So not only the coefficients have the same "units", their units are also the same as the targets $$y_i \approx p_n(x_i)$$. Thus, they're much easier to regularize - they're all on the same "scale".
+If the formula of $$B_{i,n}(x)$$ seems familiar - you are correct. It is exactly the probability mass function of the binomial distribution for obtaining $$i$$ successes in a sequence of trials whose success probability is $$x$$. Therefore, $$p_n(x) \geq 0$$,  and $$\sum_{i=0}^n p_i(x) = 1$$ for any $$x \in [0, 1]$$. Consequently, the polynomial $$p_n(x)$$ is just a weighted average of the coefficients $$\alpha_0, \dots, \alpha_n$$. So not only the coefficients have the same "units", their "units" are also the same as the model's labels. Thus, they're much easier to regularize - they're all on the same "scale".
 
 Finally, due to the equivalence with the binomial distribution p.m.f, we can implement a "Vandermonde" matrix in Python using the `scipy.stats.binom.pmf` function.
 
@@ -253,7 +253,7 @@ fit_and_plot(bernvander, n=50, alpha=0)
 
 ![polyfit_bern_reg0]({{ "/assets/polyfit_bern_reg0.png" | absolute_url }})
 
-We see our regular over-fitting. After playing a bit with the regularization coefficient, we obtain the following
+We see our regular over-fitting. Now let's see that they're indeed easy to regularize. After trying several regularization coefficients, I came up with this:
 
 ```python
 fit_and_plot(bernvander, n=50, alpha=5e-7)
@@ -275,7 +275,7 @@ This is a polynomial of degree 100, that does not overfit!
 
 # Summary
 
-The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as if it was an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers[^4] using them to represent polynomial features. 
+The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as if it was an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers[^4] using them to represent polynomial features. Their main advantage is ease of use - we can use high degree polynomials to exploit their approximation power, and control model complexity with just one hyperparameter - the regularization coefficient.
 
 In the following posts we will explore the Bernstein basis in more detail. We will use it to create polynomial features for real-world datasets and test it versus the standard basis. Moreover, we will see how to regularize the coefficients to control the shape of the function we aim to represent.. For example, what if we know that the function we're aiming to fit is increasing? Stay tuned!
 
