@@ -10,10 +10,10 @@ image: /assets/polyfit_bern_100_reg5em4.png
 
 # A myth
 
-When fitting a non-linear model using linear regression, we typically generate new features using non-linear functions. We also know that any function, in theory, can be approximated by a sufficiently high degree polynomial. This result is known as [Weierstrass approximation theorem](https://en.wikipedia.org/wiki/Stone%E2%80%93Weierstrass_theorem). But many blogs, papers, and even books tell us that high polynomials should be avoided. They tend to oscilate and overfit! They even scare us with images, such as the one below, when the polynomial fit using the data points (in red) is far away from the true function (in blue):
+When fitting a non-linear model using linear regression, we typically generate new features using non-linear functions. We also know that any function, in theory, can be approximated by a sufficiently high degree polynomial. This result is known as [Weierstrass approximation theorem](https://en.wikipedia.org/wiki/Stone%E2%80%93Weierstrass_theorem). But many blogs, papers, and even books tell us that high polynomials should be avoided. They tend to oscilate and overfit, and regularization doesn't help! They even scare us with images, such as the one below, when the polynomial fit using the data points (in red) is far away from the true function (in blue):
 ![Polynomial overfitting]({{ "/assets/poly_overfit.png" | absolute_url }})
 
-It turns out that it's just a MYTH. There's nothing inherently wrong with high degree polynomials, and the source of the myth stems mainly from two misconceptions about polynomials that we will explore here. In fact, not only they are great non-linear features, certain representations also provide us with powerful control over the shape of the function we wish to learn.
+It turns out that it's just a MYTH. There's nothing inherently wrong with high degree polynomials, and in contrast to what is typically taught, high degree polynomials are easily controlled using standard ML tools, like regularization. The source of the myth stems mainly from two misconceptions about polynomials that we will explore here. In fact, not only they are great non-linear features, certain representations also provide us with powerful control over the shape of the function we wish to learn.
 
 A colab notebook with the code for reproducing the above results is available [here](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/polyfeatures.ipynb).
 
@@ -277,9 +277,11 @@ This is a polynomial of degree 100, that does not overfit!
 
 # Summary
 
-The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as if it was an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers[^4][^5] using them to represent polynomial features. Their main advantage is ease of use - we can use high degree polynomials to exploit their approximation power, and control model complexity with just one hyperparameter - the regularization coefficient.
+The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as if it was an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers[^4][^5] using them to represent polynomial features. Their main advantage is ease of use - we can use high degree polynomials to exploit their approximation power, and easily control model complexity with just one hyperparameter - the regularization coefficient. 
 
 In the following posts we will explore the Bernstein basis in more detail. We will use it to create polynomial features for real-world datasets and test it versus the standard basis. Moreover, we will see how to regularize the coefficients to control the shape of the function we aim to represent.. For example, what if we know that the function we're aiming to fit is increasing? Stay tuned!
+
+---
 
 [^1]: There are also kernel methods, and polynomial kernels. But polynomial kernels suffer from problems similar to the standard basis.
 [^2]: See [Bézier curves](https://en.wikipedia.org/wiki/B%C3%A9zier_curve) and TrueType [font outlines](https://en.wikipedia.org/wiki/TrueType#Outlines).
