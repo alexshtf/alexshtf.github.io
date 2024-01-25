@@ -18,7 +18,8 @@ title: About me
 - [Machine learning proximal operators library](https://github.com/alexshtf/inc_prox_pt) - A library of proximal operator implementations of functions useful in machine learning, for implementing algorithms such as online proximal point, or stochastic proximal iteration.
 
 ## Publications
-- **Yohay Kaplan, Yair Koren, Alex Shtoff, Oren Somekh** Conversion-Based Dynamic-Creative-Optimization in Native Advertising. _Accepted to IEEE Big Data 2022_ ([Preprint](https://arxiv.org/abs/2211.11524)
+- **Alex Shtoff, Yohay Kaplan, Ariel Raviv** [Improving conversion rate prediction via self-supervised pre-training in online advertising](https://www.computer.org/csdl/proceedings-article/bigdata/2023/10386162/1TUOD56sBZ6). in 2023 IEEE International Conference on Big Data (BigData). doi: 10.1109/BigData59044.2023.10386162
+- **Yohay Kaplan, Yair Koren, Alex Shtoff, Oren Somekh** Conversion-Based Dynamic-Creative-Optimization in Native Advertising. _IEEE Big Data 2022_ ([Preprint](https://arxiv.org/abs/2211.11524))
 - **Alex Shtoff** Efficient implementation of incremental proximal-point methods. _Submitted_ ([Preprint](https://arxiv.org/abs/2205.01457), [code](https://github.com/alexshtf/inc_prox_pt/tree/a826c7179a528757399e661c5619a68dad254711))
 - **Alex Shtoff, Yair Koren** [Mitigating Divergence of Latent Factors via Dual Ascent for Low Latency Event Prediction Models](https://ieeexplore.ieee.org/document/9671859). _2021 IEEE International Conference on Big Data (Big Data), 2021, pp. 1940-1949_ ([Preprint](https://arxiv.org/abs/2111.07866))
 - **Yohay Kaplan, Naama Krasne, Alex Shtoff, and Oren Somekh** [Unbiased Filtering of Accidental Clicks in Verizon Media Native Advertising](https://dl.acm.org/doi/10.1145/3459637.3481958). _Proceedings of the 30th ACM International Conference on Information & Knowledge Management, 3878–3887 (October 2021)_
@@ -27,7 +28,8 @@ title: About me
 - **Alex Shtof, Alexander Agathos, Yotam Gingold, Ariel Shamir, Daniel Cohen‐Or** [Geosemantic Snapping for Sketch‐Based Modeling](https://onlinelibrary.wiley.com/doi/full/10.1111/cgf.12044) _Computer Graphics Forum 32 (2pt2), 245-253 (May 2013)_  
   ([paper]({{ "/assets/geosemantic.pdf" | absolute_url }}), [paper supplemental]({{ "/assets/geosemantic_supplemental.pdf" | absolute_url }}), [video](https://www.youtube.com/watch?v=YsqdFFU6T2c))
 
-## Conference Lectures
+## Conference talks
+
 - Globally Solving a Class of Optimal Power Flow Problems in Radial Networks, _International Symposium on Mathematical Programming (July 2018)_ ([presentation]({{ "assets/ismp2018.pdf" | absolute_url }})).
 
 ## Thesis
