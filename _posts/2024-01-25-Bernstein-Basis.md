@@ -4,7 +4,7 @@ title:  “Keeping the polynomial monster under control"
 tags: [machine-learning, feature-engineering, polynomials, polynomial-regression]
 description: We explore the Bernstein basis in more depth, and learn how to use the coefficients to control the shape of the fit curve.
 comments: true
-image: /assets/polyfit_bern_100_reg5em4.png
+image: /assets/control_coefficients.gif
 ---
 
 # A recap
