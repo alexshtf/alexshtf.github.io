@@ -15,7 +15,7 @@ $$
 b_{i,n}(x) = \binom{n}{i} x^i (1-x)^{n-i},
 $$
 
-empirically and visually. We will see how to use the coefficients to achieve a higher degree of control over the shape of the function we fit. Then, we'll explore them more theoretically, and see that they are indeed a basis -  they represent the same hypothesis class as the classical power basis $$\{1, x, x^2, \dots, x^n\}$$. All the results are reproducible from this [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/bernstein_basis.ipynb).
+empirically and visually. We will see how to use the coefficients to achieve a higher degree of control over the shape of the function we fit. Then, we'll explore them more theoretically, and see that they are indeed a basis -  they represent the same model class as the classical power basis $$\{1, x, x^2, \dots, x^n\}$$. All the results are reproducible from this [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/bernstein_basis.ipynb).
 
 # Shape preserving properties
 
@@ -136,7 +136,7 @@ The first derivative is a weighted sum of the coefficient first order difference
 > 3. If $$u_{i+2} - 2u_{i+1} + u_i \geq 0$$, then $$f''(x) \geq 0$$, and $$f$$ is convex,
 > 4. If $$u_{i+2} - 2u_{i+1} + u_i \leq 0$$, then $$f''(x) \leq 0$$, and $$f$$ is concave,
 
-An important application of fitting nondecreasing functions, for example, is fitting a CDF. One practical example of CDF fitting is the bid shading problem[^3][^4][^5] in online advertising. We are required to model the probability of winning an ad auction given a bid $$x$$. Naturally, the winning probability should increase when the bid $$x$$ increases. 
+An important application of fitting nondecreasing functions, for example, is fitting a CDF. One practical example of CDF fitting is the bid shading problem[^3][^4][^5] in online advertising. We are required to model the probability of winning an ad auction given a bid $$x$$. Naturally, the winning probability should increase when the bid $$x$$ increases. Another important example is calibration curves[^6][^7][^8] in classification models, which are functions that map the model's score to a probability such that the mean predicted probability conforms to the true conditional probability of the label given the features. The curve should be increasing - the higher the score, the higher probability it represents. See this great tutorial in the [SkLearn documentation](https://scikit-learn.org/stable/modules/calibration.html).
 
 The simplest way to impose constraints on the coefficients when fitting models on small-scale data is using the [CVXPY](https://www.cvxpy.org/) library, which we already encountered in previous posts in this blog. The library allows solving arbitrary convex optimization problems, specified by the function to minimize, and a set of constraints. Let's see how we can use CVXPY to fit a nondecreasing Bernstein polynomial. First, we define the function and use it to generate noisy data:
 
@@ -233,9 +233,9 @@ x^k = \sum_{j=k}^n \frac{\binom{j}{k}}{\binom{n}{k}} b_{j, n}(x) = \sum_{j=k}^n 
 $$
 
 The proof is a bit technical and involved, and requires the [inverse binomial transform](https://en.wikipedia.org/wiki/Binomial_transform), but it gives us our desired result: any power of $$x$$ up to $$n$$ can be expressed using Bernstein polynomials. Consequently, _any polynomial of degree up to  $$n$$ can be expressed as a weighted sum of Bernstein polynomials_, and therefore:
-> The representation power of Bernstein polynomials is **identical** to that of the standard basis. Both represent the same hypothesis class we fit to data.
+> The representation power of Bernstein polynomials is **identical** to that of the standard basis. Both represent the same model class we fit to data.
 
-Using Bernstein polynomials, in itself, does not restrict or regularize the hypothesis class, since any polynomial can be written in Bernstein form. The Bernstein form is just easier to regularize. 
+Using Bernstein polynomials, in itself, does not restrict or regularize the model class, since any polynomial can be written in Bernstein form. The Bernstein form is just easier to regularize. 
 
 This observation leads to some interesting insights, which will be easier to describe by writing the standard and the the Bernstein bases as vectors:
 
@@ -370,3 +370,6 @@ The next post will be more engineering oriented. We'll see how to use the Bernst
 [^3]: Sarah Sluis, S. (2019). [Everything you need to know about bid shading](https://www.adexchanger.com/online-advertising/everything-you-need-to-know-about-bid-shading/).
 [^4]: Karlsson, N., & Sang, Q. (2021, May). Adaptive bid shading optimization of first-price ad inventory. In 2021 American Control Conference (ACC) (pp. 4983-4990). IEEE.
 [^5]: Gligorijevic, D., Zhou, T., Shetty, B., Kitts, B., Pan, S., Pan, J., & Flores, A. (2020, October). Bid shading in the brave new world of first-price auctions. In Proceedings of the 29th ACM International Conference on Information & Knowledge Management (pp. 2453-2460).
+[^6]: Niculescu-Mizil, A., & Caruana, R. (2005, August). Predicting good probabilities with supervised learning. In *Proceedings of the 22nd international conference on Machine learning* (pp. 625-632).
+[^7]:Platt, J. (1999). Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods. *Advances in large margin classifiers*, *10*(3), 61-74.
+[^8]:Zadrozny, B., & Elkan, C. (2002, July). Transforming classifier scores into accurate multiclass probability estimates. In *Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining* (pp. 694-699).
