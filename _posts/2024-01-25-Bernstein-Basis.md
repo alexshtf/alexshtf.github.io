@@ -226,7 +226,7 @@ Not bad! Now we will study the Bernstein basis from a more theoretical perspecti
 
 # The Bernstein polynomials as a basis
 
-So, is it really a basis? First, let's note that this set indeed has $$n+1$$ polynomial functions. So it remains to be convinced that any polynomial can be expressed as a weighted sum of these $$n+1$$ functions. It turns out that for any $$k < n$$, we can write:
+So, is it really a basis? First, let's note the set $$\mathbb{B}_n$$ of n-th degree Bernstein poynomials indeed has $$n+1$$ polynomial functions. So it remains to be convinced that any polynomial can be expressed as a weighted sum of these $$n+1$$ functions. It turns out that for any $$k < n$$, we can write:
 
 $$
 x^k = \sum_{j=k}^n \frac{\binom{j}{k}}{\binom{n}{k}} b_{j, n}(x) = \sum_{j=k}^n q_{j,k} b_{j,n}(x)
@@ -240,7 +240,7 @@ Using Bernstein polynomials, in itself, does not restrict or regularize the hypo
 This observation leads to some interesting insights, which will be easier to describe by writing the standard and the the Bernstein bases as vectors:
 
 $$
-\mathbf{p}_n(x)=(1, x, x^2, \cdots, x^n)^T, \qquad \mathbf{b}_n(x)=(B_{0,n}(x), \cdots, B_{n,n}(x))^T
+\mathbf{p}_n(x)=(1, x, x^2, \cdots, x^n)^T, \qquad \mathbf{b}_n(x)=(b_{0,n}(x), \cdots, b_{n,n}(x))^T
 $$
 
 We note that the standard and Bernstein Vandermonde matrix rows we saw in the previous post are exactly $$\mathbf{p}_n(x_i)$$, and $$\mathbf{b}_n(x_i)$$, respectively. Using this notation, we can write the powers of $$x$$ in terms of the Bernstein basis in matrix form, by gathering the coefficients $$q_{j,k}$$ above, assuming that $$q_{j,k}=0$$ whenever $$j<k$$, into a triangular matrix $$\mathbf{Q}_n$$:
@@ -256,6 +256,7 @@ The matrix $$\mathbf{Q}_n$$  is the _basis trasition matrix_ - it can transform 
 $$
 a_0 + a_1 x + \dots + a_n x^n = \mathbf{p}_n(x)^T \mathbf{a} = \mathbf{b}_n(x)^T \mathbf{Q}_n \mathbf{a}
 $$
+
 The vector $$\mathbf{Q}_n \mathbf{a}$$ is s the coefficient vector w.r.t the Bernstein basis.  Does it mean we can actually fit a polynomial in the standard basis, but regularize it as if it was written in the Bernstein basis? Well, _yes we can_! Polynomial fitting in the Bernstein basis can be written as
 
 $$
@@ -287,7 +288,9 @@ The regularized least-squares problem (P) above is a convex problem that can be 
 $$
 \mathbf{V}^T (\mathbf{V} \mathbf{a} - \mathbf{y}) + \alpha \mathbf{Q}_n^T \mathbf{Q}_n \mathbf{a} = 0.
 $$
+
 Re-arranging, and solving for the coefficients $$\mathbf{a}$$, we obtain:
+
 $$
 \mathbf{a} = (\mathbf{V}^T \mathbf{V} + \alpha \mathbf{Q}_n^T \mathbf{Q}_n)^{-1} \mathbf{V}^T \mathbf{y}
 $$
@@ -340,7 +343,7 @@ plt.plot(plt_xs, polynomial_ys, 'red')
 plt.show()
 ```
 
-I got the following plot, which appears pretty similar to what we got in the previous post:
+I got the following plot, which appears pretty similar to what we got in the previous post, but _slightly worse_:
 
 ![polyfit_std_bern_reg_50]({{ "/assets/polyfit_std_bern_reg_50.png" | absolute_url }})
 
@@ -348,11 +351,11 @@ Let's crank up the degree to 100 by setting `deg = 100`. I got the following ima
 
 ![polyfit_std_bern_reg_100]({{ "/assets/polyfit_std_bern_reg_100.png" | absolute_url }})
 
-Appears _slightly worse_ than what we achieved by directly fitting the Bernstein form, but appears close.
+Again,  _slightly worse_ than what we achieved by directly fitting the Bernstein form, but appears close.
 
-From a practical perspective, this little trick has little value. First, there two technical reasons: manually fitting models rather than relying on standard tools, such as _SciKit-Learn_ appears to be troublesome, and in terms of computational efficiency, we need to deal with the additional matrix $$\mathbf{Q}_n$$. But most importantly, the standard Vandermonde matrix _and_ the basis transition matrix $$\mathbf{Q}_n$$ are _extremely_ ill conditioned. This makes it harder to use them in practice and get good results in larger scale problems, regardless of if we solve analytically, or we chose a gradient-based optimizer such as SGD or Adam. This is exactly the reason our results were slightly worse - they are  mathematically equivalent, but are harder to precisely compute numerically.
+There two technical issues with our idea. First, manually fitting models rather than relying on standard tools, such as _SciKit-Learn_ appears to be troublesome, and in terms of computational efficiency, we need to deal with the additional matrix $$\mathbf{Q}_n$$. Second, and most importantly, the standard Vandermonde matrix _and_ the basis transition matrix $$\mathbf{Q}_n$$ are _extremely_ ill conditioned. This makes hard to actually solve the fitting problem and obtain coefficients that are close to the true optimal coefficients. This is true regardless if we chose direct matrix inversion, CVXPY, or an SGD-based optimizer from PyTorch or TensorFlow.
 
-Due to inefficiency and ill conditioning  this trick has a little value in practice, but provides us with an important insight. We see that achieving good regularization requires a sophisticated **non-diagonal**  matrix in the regularization term. It's not a formal statement, but probably any "good" basis will have a non-diagonal transition matrix. This means that the _standard trick in ML of rescaling features to have unit variance, or min-max scaling, applied to the standard Vandermonde matrix $$\mathbf{V}$$, has a little chance of success_. 
+Due to inefficiency and ill conditioning this trick has a little value in practice. But provides us with an important insight: achieving good regularization requires a sophisticated **non-diagonal**  matrix in the regularization term. It's not a formal statement, but probably any "good" basis will have a non-diagonal transition matrix to the standard basis. This means that _fitting a polynomial in the standard basis using typical ML tricks of rescaling the columns of the Vandermonde matrix has a little chance of success_. And it doesn't matter if we rescale using min-max scaling, or standardization to zero mean and unit variance. To fit a polynomial, we need to use a "good" basis directly.
 
 # Conclusion
 
