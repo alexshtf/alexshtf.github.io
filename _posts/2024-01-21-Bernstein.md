@@ -220,23 +220,23 @@ Both properties show that for the fitting, rather the interpolation tasks we nee
 
 # The Bernstein basis
 
-A remedy is provided by the [Bernstein basis](https://en.wikipedia.org/wiki/Bernstein_polynomial) $$\mathbb{B}_n = \{  B_{0,n}, \dots, B_{n, n} \}$$. These are $$n$$-degree polynomials defined by on $$[0, 1]$$ by:
+A remedy is provided by the [Bernstein basis](https://en.wikipedia.org/wiki/Bernstein_polynomial) $$\mathbb{B}_n = \{  b_{0,n}, \dots, b_{n, n} \}$$. These are $$n$$-degree polynomials defined by on $$[0, 1]$$ by:
 
 $$
-B_{i,n}(x) = \binom{n}{i} x^i (1-x)^{n-i}
+b_{i,n}(x) = \binom{n}{i} x^i (1-x)^{n-i}
 $$
 
 These polynomials are widely used in computer graphics to approximate curves and surfaces, but it appears that they're less known in the machine learning community. In fact, all the text you see on the screen when reading this post is rendered using Bernstein polynomials[^2]. We will study them more in depth in the next posts, but at this stage I would like to point out two simple properties that give an intuitive explanation of why they're useful in machine learning.
 
-First, note that each $$B_{i,n}$$ is an $$n$$-degree polynomial. Thus, when representing a polynomial using
+First, note that each $$b_{i,n}$$ is an $$n$$-degree polynomial. Thus, when representing a polynomial using
 
 $$
-p_n(x) = \alpha_0 B_{0,n}(x) + \alpha_1 B_{1,n}(x) + \dots + \alpha_n B_{n,n}(x),
+p_n(x) = \alpha_0 b_{0,n}(x) + \alpha_1 b_{1,n}(x) + \dots + \alpha_n b_{n,n}(x),
 $$
 
 all the coefficients have the same "units". 
 
-If the formula of $$B_{i,n}(x)$$ seems familiar - you are correct. It is exactly the probability mass function of the binomial distribution for obtaining $$i$$ successes in a sequence of trials whose success probability is $$x$$. Therefore, $$p_n(x) \geq 0$$,  and $$\sum_{i=0}^n p_i(x) = 1$$ for any $$x \in [0, 1]$$. Consequently, the polynomial $$p_n(x)$$ is just a weighted average of the coefficients $$\alpha_0, \dots, \alpha_n$$. So not only the coefficients have the same "units", their "units" are also the same as the model's labels. Thus, they're much easier to regularize - they're all on the same "scale".
+If the formula of $$b_{i,n}(x)$$ seems familiar - you are correct. It is exactly the probability mass function of the binomial distribution for obtaining $$i$$ successes in a sequence of trials whose success probability is $$x$$. Therefore, $$b_{i,n}(x) \geq 0$$,  and $$\sum_{i=0}^n b_{i,n}(x) = 1$$ for any $$x \in [0, 1]$$. Consequently, the polynomial $$p_n(x)$$ is just a weighted average of the coefficients $$\alpha_0, \dots, \alpha_n$$. So not only the coefficients have the same "units", their "units" are also the same as the model's labels. Thus, they're much easier to regularize - they're all on the same "scale".
 
 Finally, due to the equivalence with the binomial distribution p.m.f, we can implement a "Vandermonde" matrix in Python using the `scipy.stats.binom.pmf` function.
 
