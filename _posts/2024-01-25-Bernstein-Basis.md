@@ -15,12 +15,24 @@ $$
 b_{i,n}(x) = \binom{n}{i} x^i (1-x)^{n-i},
 $$
 
-empirically and visually. We will see how to use the coefficients to achieve a higher degree of control over the shape of the function we fit. Then, we'll explore them more theoretically, and see that they are indeed a basis -  they represent the same model class as the classical power basis $$\{1, x, x^2, \dots, x^n\}$$. All the results are reproducible from this [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/bernstein_basis.ipynb).
-
+empirically and visually. We will see how to use the coefficients to achieve a higher degree of control over the shape of the function we fit. Then, we'll explore them more theoretically, and see that they are indeed a basis -  they represent the same model class as the classical power basis $$\{1, x, x^2, \dots, x^n\}$$. All the results are reproducible from this [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/bernstein_basis.ipynb). 
 # Shape preserving properties
 
-This is something we should have probably done earler, but let's plot the Bernstein polynomials to see what they look like. Below, we plot the basis $$\mathbb{B}_{7}$$ using the `bernvander` function from the previous post.
+To study the shape preserving properties, we will rely on the `bernvander` function we've implemented in the last post, that given the numbers $$x_1, \dots, x_m$$, computes the Bernstein Vandermonde matrix of a given degree $$n$$, that contains all the polynomials evaluated at all the given points:
+
+$$
+\begin{pmatrix}
+b_{0,n}(x_1) & b_{1, n}(x_1) &\dots & b_{n, n}(x_1) \\
+b_{0,n}(x_2) & b_{1, n}(x_2) &\dots & b_{n, n}(x_2) \\
+\vdots & \vdots & \ddots & \vdots \\
+b_{0,n}(x_m) & b_{1, n}(x_m) &\dots & b_{n, n}(x_m) \\
+\end{pmatrix}
+$$
+
+
+This is something we should have probably done earler, but let's plot the Bernstein polynomials to see what they look like. Below, we plot the basis $$\mathbb{B}_{7}$$ using the `bernvander` function.
 <!-- {% raw %} -->
+
 ```python
 import matplotlib.pyplot as plt
 import numpy as np
