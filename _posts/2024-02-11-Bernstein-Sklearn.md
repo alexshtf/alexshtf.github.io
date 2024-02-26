@@ -4,7 +4,7 @@ title:  “SkLearning with Bernstein Polynomials"
 tags: [machine-learning, feature-engineering, polynomials, polynomial-regression, scikit-learn]
 description: We implement an Scikit-Learn transformer to generate Bernstein polynomial features, and try it out on the adult income data-set.
 comments: true
-image: /assets/control_coefficients.gif
+image: /assets/bernstein_pipeline_chart.png
 ---
 
 # Intro
@@ -444,7 +444,7 @@ Test metric = -63534.49228
 
 This time the RMSE is $$63534.49228$$. The Bernstein basis got us a $$3.1\%$$ improvement! If we look closer at the output, we can see that the tuned Bernstein polynomial is of degree 50, whereas the best tuned power basis polynomial is of degree 31. We already saw that high degree polynomials in the Bernstein basis are easy to regularize, and our tuner probably saw the same phenomenon, and cranked up the degree to 50. 
 
-How are our polynomial features compared to a simple linear model? Well, let's see. For a simple linear model we'll just have to pass a "do nothing" feature transformer that will just pass the features through as is, and produce another tuned model. Note, that this time there is no degree to tune.
+How are our polynomial features compared to a simple linear model? Well, let's see. To re-use all our existing code instead of writing a new pipeline, we'll just use a "do nothing" feature transformer that implements the identity function. Note, that this time there is no degree to tune.
 
 ```python
 class IdentityTransformer(BaseEstimator, TransformerMixin):
