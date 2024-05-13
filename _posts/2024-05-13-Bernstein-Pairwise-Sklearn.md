@@ -225,7 +225,7 @@ And last but not least, let's use the `PolynomialFeatures` class that the Scikit
 A multivariate polynomial with $$7$$ variables of degree $$d$$ has 
 
 $$
-{7 + d - 1 \choose d}
+{7 + d \choose d}
 $$
 
 coefficients. It can be easily shown using the [stars and bars](https://en.wikipedia.org/wiki/Stars_and_bars_%28combinatorics%29) technique in combinatorics. Choosing $$d = 7$$ we get 1716 coefficients, which is pretty close.  With $$d=6$$ we get less than 1323 coefficients, so using polynomials of max degree 7 seems like a reasonable choice.
