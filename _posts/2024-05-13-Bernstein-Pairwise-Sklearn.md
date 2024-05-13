@@ -1,15 +1,16 @@
 ---
+
 ≠layout: post
 title:  "SkLearning with Bernstein Polynomials - continued"
 tags: [machine-learning, feature-engineering, polynomials, polynomial-regression, scikit-learn]
 description: We implement an Scikit-Learn transformer to generate polynomial feature interactions using the Bernstein and the Power basis, and compare the performance of Bernstein pairwise interactions to the power basis, and to the Scikit-Learn polynomial transformer that produces interactions of equivalent length.
 comments: true
-image: /assets/bernstein_pipeline_chart.png
+image: /assets/bernstein_tensor_product.png
 ---
 
 # Intro
 
-In the [previous post]({{ page.previous.url }}) we built a Scikit-Learn component that you can already integrate into your pipelines to train models whose numerical features are represented in the Bernstein basis. Feature interactions is a simple and effective feature engineering trick, and this post builds upon this knowledge and improves the component we built by introducing _pairwise interactions_ between numerical features. This post is a direct continuation of the previous post, and I will assume that you are familiar with what we built so far. If what you see here looks like [Klingon](https://en.wikipedia.org/wiki/Klingon_language), and you don't know Klingon, please take your time to read the posts on polynomial features from the [beginning]({% post_url 2024-01-21-Bernstein %}). As previously, the code is available in a [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/bernstein_scikit_inter.ipynb) that you can open in Google Colab. Due to the nature of this post, the notebook extends the code from the last post with additional experiments, rather than being written from scratch.
+In the [previous post]({{ page.previous.url }}) we built a Scikit-Learnß component that you can already integrate into your pipelines to train models whose numerical features are represented in the Bernstein basis. Feature interactions is a simple and effective feature engineering trick, and this post builds upon this knowledge and improves the component we built by introducing _pairwise interactions_ between numerical features. This post is a direct continuation of the previous post, and I will assume that you are familiar with what we built so far. If what you see here looks like [Klingon](https://en.wikipedia.org/wiki/Klingon_language), and you don't know Klingon, please take your time to read the posts on polynomial features from the [beginning]({% post_url 2024-01-21-Bernstein %}). As previously, the code is available in a [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/bernstein_scikit_inter.ipynb) that you can open in Google Colab. Due to the nature of this post, the notebook extends the code from the last post with additional experiments, rather than being written from scratch.
 
 # A recap
 
