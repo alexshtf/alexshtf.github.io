@@ -4,7 +4,7 @@ title:  "A Bernstein SkLearn model calibrator"
 tags: [machine-learning, feature-engineering, polynomials, polynomial-regression, scikit-learn]
 description: We demonstrate an important use-case for Bernstein basis regularization in model calibration. We briefly discuss the use-cases of a well-calibrated machine learned classification model, and develop a simple calibrator that improves upon the ones provided by Scikit-Learn using regularization of the Bernstein basis.
 comments: true
-image: /assets/bernstein_tensor_product.png
+image: /assets/svm_calibration_isotonic_bern_func.png
 ---
 
 # Intro
@@ -15,7 +15,7 @@ Statistically-inclined readers probably know that logistic regression tends to p
 
 In many applications we want the score to represent some interpretable confidence in the prediction, and one way to achieve this is _calibration_.  A model is calibrated, if the scores it produces are probabilities that are consistent with the empirical frequency of observing a positive sample. One formal way to define calibration is as following:
 
->A supervised model $f$ trained on samples $$(x, y)\sim \mathcal{D}$$ with $$y \in \{0, 1\}$$  _calibrated_ if
+>A supervised model $$f$$ trained on samples $$(x, y)\sim \mathcal{D}$$ with $$y \in \{0, 1\}$$  _calibrated_ if
 >
 >$$
 >\mathbb{E}[y|f(x)] = f(x)
@@ -161,12 +161,14 @@ $$
 $$
 
 In theory, we would like to plot the points
+
 $$
 (\mathbb{E}[y|f(x)], f(x)) \qquad (x, y) \sim \mathcal{D},
 $$
+
 but we cannot, since we only have access to a finite data-set, not the distribution that generated it. Thus, in practice we resort to approximation by binning the outputs of $$f(x)$$ into sub-intervals of $$[0, 1]$$ and using averages instead of means. This is implemented by Scikit-Learn in the `CalibrationDisplay` class. 
 
-Let's try it out with a very _naive_ calibrator - we will just take the output of our SVM, and pass it through the sigmoid function $$\sigma(z) = (1+\exp(-z))^{-1}$$. This will produce values in $$[0, 1]$$ that we can use:
+Let's try it out with a very _naive_ calibrator - we will just take the output of our SVM, and pass it through the sigmoid function $$\sigma(y) = (1+\exp(-y))^{-1}$$. This will produce values in $$[0, 1]$$ that we can use:
 
 ```python
 y_pred = pipeline.decision_function(X_test)
@@ -177,7 +179,7 @@ plt.show()
 
 I got the following plot:
 
-![](../assets/sigmoid_svm_calibration.png)
+![]( {{ "/assets/sigmoid_svm_calibration.png" | absolute_url }} )
 
 In a perfectly calibrated classifier, the blue calibration curve should align with the dotted black line - the average prediction in each bin should align with the empirical positive sample frequency.
 
@@ -266,7 +268,8 @@ plt.show()
 ```
 Here is the output:
 
-![svm_calibration_platt](../assets/svm_calibration_platt.png)
+![svm_calibration_platt]( {{ "/assets/svm_calibration_platt.png" | absolute_url }} )
+
 
 Looks a bit better. Some of the points lie on the diagonal line of perfect calibration, whereas others do not. However, looking at the metrics (in the title), we see that all of them were significantly improved, by orders of magnitude. This means that the points we see as mis-calibrated in the curve probably have little samples in the corresponding bins. Therefore, it is likely that their effect on the miscalibration error is quite small. It would be nice if Scikit-Learn could show the weight of each point using the point size, so we could see it visually - but unfortunately it does not.
 
@@ -295,7 +298,7 @@ plt.show()
 
 I obtained the following plot:
 
-![svm_calibration_isotonic](../assets/svm_calibration_isotonic.png)
+![svm_calibration_isotonic]({{ "/assets/svm_calibration_isotonic.png" | absolute_url }})
 
 Looks much better! And the three metrics were improved as well. We can also plot the piecewise-constant function:
 
@@ -306,7 +309,7 @@ plt.title(f'Caibrator with {len(calibrator.f_.x)} points')
 plt.show()
 ```
 
-![svm_calibration_isotonic_func](../assets/svm_calibration_isotonic_func.png)
+![svm_calibration_isotonic_func]({{ "/assets/svm_calibration_isotonic_func.png" | absolute_url }})
 
 We can see that our classifier produced scores approximately between -2 and 2 on the calibration set, and the best-fit piecewise constant function has 118 "jumps". 
 
@@ -320,8 +323,9 @@ $$
 \omega(y) = \sum_{i=0}^n u_i b_{i,n}(y),
 $$
 
-where   $$\{ b_{i,n} \}_{i=0}^n$$ is the $$n$$-degree Bernstein basis. Then having $$u_{i+1} \geq u_i$$ implies that $$\omega$$ is increasing. Therefore, we can fit our calibrator to the calibration set $$(\hat{y}_1, y_1), \dots, (\hat{y}_m, y_m)$$ by solving a constrained polynomial regression problem using the Bernstein basis. Denoting $$\mathbf{b}(y) = (b_{0,n}(y), \dots, b_{n,n}(y))^T$$, we need to solve:
+where   $$\{ b_{i,n} \}_{i=0}^n$$ is the $$n$$-degree Bernstein basis. Then having $$u_{i+1} \geq u_i$$ implies that $$\omega$$ is increasing. Therefore, we can fit our calibrator to the calibration set $$(\hat{y}_1, y_1), \dots, (\hat{y}_m, y_m)$$ by solving a constrained polynomial regression problem using the Bernstein basis. 
 
+Denoting $$\mathbf{b}(y) = (b_{0,n}(y), \dots, b_{n,n}(y))^T$$, we need to solve the following constrained least-squares regression problem:
 $$
 \begin{aligned}
 \min_{\mathbb{u}} &\quad \sum_{j=1}^m \left( \mathbf{b}(\hat{y}_j)^T \mathbf{u} - y_j \right)^2 \\
@@ -348,9 +352,9 @@ $$
 \omega(y) = \mathbf{b}(y)^T \mathbf{u}^*.
 $$
 
-The only issue stems from the fact that the underlying model's predictions $$y_j$$ are not necessarily in $$[0, 1]$$. As we already saw, the remedy comes from a simple min-max scaling.  So let's code our Bernstein calibrator!
+The only issue stems from the fact that the underlying model's predictions $$y_j$$ are not necessarily in $$[0, 1]$$, but the Bernstein basis requires inputs in that range. As we already saw, the remedy comes from a simple min-max scaling.  So let's code our Bernstein calibrator!
 
-As you probably guessed, the Calibrator is just another Scikit-Learn classifier that wraps its underlying classifier, and applies the calibration procedure on top of its predictions.  The convex optimization problem will be solved by [CVXPY](https://www.cvxpy.org/), which we encountered before in this series. For the code in this post to work correctly, please make sure you have version 1.5 or above.  So here it is:
+As you probably guessed, the Calibrator is just another Scikit-Learn classifier that applies the calibration procedure on top of a wrapped uncalibrated classifier.  The convex optimization problem will be solved by [CVXPY](https://www.cvxpy.org/), which we encountered before in this series. For the code in this post to work correctly, please make sure you have version 1.5 or above.  So here it is:
 ```python
 from sklearn.base import ClassifierMixin, MetaEstimatorMixin, BaseEstimator
 import cvxpy as cp
@@ -426,7 +430,7 @@ plt.show()
 ```
 I got the following result:
 
-![svm_calibration_isotonic_bern](../assets/svm_calibration_isotonic_bern.png)
+![svm_calibration_isotonic_bern]({{ "/assets/svm_calibration_isotonic_bern.png" | absolute_url }})
 
 Nice! All error metrics became smaller. The claibration curve looks good. And our model has a much smaller number of parameters than the isotonic one - only 21 coefficients, instead of 118. We can also plot the calibration function $$\omega(y)$$, with the Bernstein coefficients as control points:
 
@@ -445,7 +449,7 @@ plt.show()
 
 I got the following plot:
 
-![svm_calibration_isotonic_bern_func](../assets/svm_calibration_isotonic_bern_func.png)
+![svm_calibration_isotonic_bern_func]({{ "/assets/svm_calibration_isotonic_bern_func.png" | absolute_url }})
 
 So maybe we can work with an even lower degree? Let's try fitting a polynomial calibrator of degree 10:
 
@@ -460,7 +464,7 @@ plt.show()
 
 The result is below:
 
-![svm_calibration_isotonic_bern_lowdeg](../assets/svm_calibration_isotonic_bern_lowdeg.png)
+![svm_calibration_isotonic_bern_lowdeg]({{ "/assets/svm_calibration_isotonic_bern_lowdeg.png" | absolute_url }})
 
 The curve looks a bit worse, but the metrics still outperform isotonic regression.
 
@@ -513,7 +517,7 @@ plt.show()
 ```
 The result is:
 
-![svm_calibration_isotonic_bern_sigmoid](../assets/svm_calibration_isotonic_bern_sigmoid.png)
+![svm_calibration_isotonic_bern_sigmoid]({{ "/assets/svm_calibration_isotonic_bern_sigmoid.png" | absolute_url }})
 
 Nice! With a degree of 10, we achieved a similar result than least-squares fitting with a degree of 20. To summarize, here are the metrics. The best metric is highlighted.
 
