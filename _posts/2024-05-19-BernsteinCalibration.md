@@ -9,7 +9,7 @@ image: /assets/svm_calibration_isotonic_bern_func.png
 
 # Intro
 
-We continue our journey in the land of polynomial regression and the Bernstein basis, that we began in [this post]({% post_url 2024-01-21-Bernstein %}), through another interesting landscape. There are many settings in which a model is trained to predict an abstract, meaningless score, which is later used for classification or ranking. For example, consider a linear support-vector machine (SVM) classifier. When classifying a sample, we only care about the sign of the score. If we take our SVM, and multiply its weights vector by a positive factor - we obtain the same classifier exactly. The scores are meaningless - only their sign is meaningful. Another example is the _learning to rank_ setting. Our model produces a score that is used to rank items, and select the top-$k$ items to the user. The scores themselves are not meaningful - only their relative order is. 
+We continue our journey in the land of polynomial regression and the Bernstein basis, that we began in [this post]({% post_url 2024-01-21-Bernstein %}), through another interesting landscape. There are many settings in which a model is trained to predict an abstract, meaningless score, which is later used for classification or ranking. For example, consider a linear support-vector machine (SVM) classifier. When classifying a sample, we only care about the sign of the score. If we take our SVM, and multiply its weights vector by a positive factor - we obtain the same classifier exactly. The scores are meaningless - only their sign is meaningful. Another example is the _learning to rank_ setting. Our model produces a score that is used to rank items, and select the top-$$k$$ items to the user. The scores themselves are not meaningful - only their relative order is. 
 
 Statistically-inclined readers probably know that logistic regression tends to produce calibrated models out of the box. However, when the underlying logistic-regression model is a neural network, rather than a linear model, this is not the case. Indeed, there is a well-known paper by Guo et. al[^1] that shows otherwise. 
 
@@ -217,7 +217,7 @@ ECE = 0.30732883382620496
 
 At this stage it doesn't tell us much, until we begin improving it. 
 
-In addition to the ECE, the standard cross-entropy loss and the mean-squared error loss can also help us quantify miscalibration.  In the context of probability calibration, the mean-squared error is known as the breier score. However, they have an inherent weakness - they quantify both miscalibration and discriminative power[^3]. For example, if our classifier is better at differentiating positive and negative samples than a competing classifier, these two losses show an improvement, even if its calibration error remains the same. Alternatively, improving only the calibration error without improving discriminative power also reduces these losses. However, since in this post the classifier remains identical due to the monotonic nature of calibrators, and only its calibration error changes, these two metrics are useful. Both are implemented in Scikit-Learn and we can use them:
+In addition to the ECE, the standard cross-entropy loss and the mean-squared error loss can also help us quantify miscalibration.  In the context of probability calibration, the mean-squared error is known as the breier score. However, they have an inherent weakness - they quantify both miscalibration and discriminative power[^3]. For example, if our classifier is better at differentiating positive and negative samples than a competing classifier, these two losses show an improvement, even if its calibration error remains the same. Alternatively, improving only the calibration error without improving discriminative power also reduces these losses. Since in this post the classifier remains identical due to the monotonic nature of calibrators, and only its calibration error changes, these two metrics are useful. Both are implemented in Scikit-Learn and we can use them:
 
 ```python
 from sklearn.metrics import (
@@ -234,7 +234,7 @@ The output is
 (0.19391187428082382, 0.5748329800290517)
 ```
 
-Now let's improve those numbers using calibrators designed for the task.
+Now let's improve those numbers using calibrators designed for the task. The ECE is not a very reliable metric due to the approximation by binning, but we still include it, since it is widely used in papers on model calibration.
 
 # Working with Scikit-Learn built-in calibrators
 
@@ -313,7 +313,7 @@ plt.show()
 
 We can see that our classifier produced scores approximately between -2 and 2 on the calibration set, and the best-fit piecewise constant function has 118 "jumps". 
 
-There are two interesting observations we can make. First, a piecewise-constant function can harm ranking and classification, since it's not strictly increasing by definition. Two samples having different, but nearby scores might be mapped to the same score. Second, the number of jumps may become large as the size of the calibration data-set increases. This means that inference may also become expensive, since computing $$\omega(y)$$ requires performing a lookup for the interval $$y$$ belongs to. So can we do better?
+There are two interesting observations we can make. First, a piecewise-constant function can harm ranking and classification, since it's not strictly increasing by definition. Two samples having different, but nearby scores might be mapped to the same output. Second, the number of jumps may become large as the size of the calibration data-set increases. This means that inference may also become expensive, since computing $$\omega(y)$$ requires performing a lookup for the interval $$y$$ belongs to. So can we do better?
 
 # Calibration with Bernstein polynomials
 
@@ -323,12 +323,13 @@ $$
 \omega(y) = \sum_{i=0}^n u_i b_{i,n}(y),
 $$
 
-where   $$\{ b_{i,n} \}_{i=0}^n$$ is the $$n$$-degree Bernstein basis. Then having $$u_{i+1} \geq u_i$$ implies that $$\omega$$ is increasing. Therefore, we can fit our calibrator to the calibration set $$(\hat{y}_1, y_1), \dots, (\hat{y}_m, y_m)$$ by solving a constrained polynomial regression problem using the Bernstein basis. 
+where   $$\{ b_{i,n} \}_{i=0}^n$$ is the $$n$$-degree Bernstein basis. Then having $$u_{i+1} \geq u_i$$ implies that $$\omega$$ is increasing. Moreover, if at least for one one index $j$ we have $$u_{j+1} > u_j$$, then $$\omega$$ is strictly increasing. Therefore, we can fit our calibrator to the calibration set $$(\hat{y}_1, y_1), \dots, (\hat{y}_m, y_m)$$ by solving a constrained polynomial regression problem using the Bernstein basis.  As long as not all coefficients are equal, we will obtain a strictly increasing calibrator!
 
 Denoting $$\mathbf{b}(y) = (b_{0,n}(y), \dots, b_{n,n}(y))^T$$, we need to solve the following constrained least-squares regression problem:
+
 $$
 \begin{aligned}
-\min_{\mathbb{u}} &\quad \sum_{j=1}^m \left( \mathbf{b}(\hat{y}_j)^T \mathbf{u} - y_j \right)^2 \\
+\min_{\mathbf{u}} &\quad \sum_{j=1}^m \left( \mathbf{b}(\hat{y}_j)^T \mathbf{u} - y_j \right)^2 \\
 \text{s.t.} 
   &\quad 0 \leq u_i \leq 1, & i = 0, \dots, n \\
   &\quad u_{i} \geq u_{i-1}, & i = 1, \dots, n
@@ -339,7 +340,7 @@ Letting $$\hat{\mathbf{V}}$$ be the Vandermonde matrix whose rows are $$\mathbf{
 
 $$
 \begin{aligned}
-\min_{\mathbf{u}} &\quad \sum_{j=1}^m \left( \hat{\mathbf{V}} \mathbf{u} - y_j \right)^2 \\
+\min_{\mathbf{u}} &\quad \| \hat{\mathbf{V}} \mathbf{u} - \mathbf{y} \|^2  \\
 \text{s.t.} 
   &\quad 0 \leq u_i \leq 1, & i = 0, \dots, n \\
   &\quad u_{i} \geq u_{i-1}, & i = 1, \dots, n
@@ -354,7 +355,7 @@ $$
 
 The only issue stems from the fact that the underlying model's predictions $$y_j$$ are not necessarily in $$[0, 1]$$, but the Bernstein basis requires inputs in that range. As we already saw, the remedy comes from a simple min-max scaling.  So let's code our Bernstein calibrator!
 
-As you probably guessed, the Calibrator is just another Scikit-Learn classifier that applies the calibration procedure on top of a wrapped uncalibrated classifier.  The convex optimization problem will be solved by [CVXPY](https://www.cvxpy.org/), which we encountered before in this series. For the code in this post to work correctly, please make sure you have version 1.5 or above.  So here it is:
+As you probably guessed, the Calibrator is just another Scikit-Learn classifier that applies the calibration procedure on top of a wrapped uncalibrated classifier.  We use [CVXPY](https://www.cvxpy.org/), which we encountered before in this series, to solve the above-mentioned minimization problem. For the code in this post to work correctly, please make sure you have version 1.5 or above.  So here it is:
 ```python
 from sklearn.base import ClassifierMixin, MetaEstimatorMixin, BaseEstimator
 import cvxpy as cp
