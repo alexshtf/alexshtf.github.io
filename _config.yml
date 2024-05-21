@@ -24,7 +24,8 @@ github_username:  alexshtf
 linkedin_username: alexshtf
 google_analytics: G-4S4DZQYFHM
 google_site_verification: rjnh8Vn7SLOIBKgGMei2oc5VP-dVUr9j_wR5fucMn-o
-# paginate: true
+paginate: 6
+links_to_prev_next: true
 
 disqus:
   shortname: alexshtf-github-io
