@@ -25,3 +25,9 @@
   overflow-x: auto;
   white-space: nowrap;
 }
+
+.nextprevlink {
+  @include relative-font-size(1.25); 
+  flex: 1 1 0; 
+  width: 45%;  
+}
