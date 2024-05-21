@@ -34,9 +34,12 @@ $$
 
 If the calibrator $$\omega$$ is an increasing function, classification or ranking remain unaffected, since the relative order of scores is preserved. 
 
-In this post we will use the power of the Bernstein basis in controlling the function we fit to devise _monotonic_ calibrators $$\omega$$ that fit the requirements.  Then, we compare the performance of our Bernstein calibrators to two built-in calibrators available in the Scikit-Learn package, that implements two well-known algorithms that are widely used to calibrate models throughout the industry. I recommend readers to take a look at the [model calibration tutorial](https://scikit-learn.org/stable/auto_examples/calibration/plot_calibration.html#sphx-glr-auto-examples-calibration-plot-calibration-py) of the Scikit-Learn package as well. As usual, the code is available in a [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/bernstein_calibration.ipynb) you can try in Google Colab.
+In this post we will use the power of the Bernstein basis in controlling the function we fit to devise _monotonic_ calibrators $$\omega$$​ that fit the requirements.  Then, we compare the performance of our Bernstein calibrators to two built-in calibrators available in the Scikit-Learn package, that implements two well-known algorithms that are widely used to calibrate models throughout the industry. I recommend readers to take a look at the [model calibration tutorial](https://scikit-learn.org/stable/auto_examples/calibration/plot_calibration.html#sphx-glr-auto-examples-calibration-plot-calibration-py) of the Scikit-Learn package as well. As usual, the code is available in a [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/bernstein_calibration.ipynb) you can try in Google Colab.
+
+The idea of using shape-restricted polynomial regression for probabilistic calibration was, to the best of my knowledge, first proposed by Wang et. al. [^7] in 2019, so it's quite new.
 
 # Working example - diabetes prediction
+
 Throughout this post we will work with a support-vector machine classifier trained to predict diabetes on the CDC Diabetes Prediction Dataset. To easily access it, we can intall the ucimlrepo dataset that allow us to download it from the UCI machine-learning dataset repository:
 ```bash
 pip install ucimlrepo
@@ -546,3 +549,4 @@ My next, and final post in the series will be of a more exploratory nature - of 
 [^4]: Platt, John. _Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods."_ Advances in large margin classifiers 10.3 (1999)
 [^5]:R.E. Miles. _The Complete Amalgamation into Blocks, by Weighted Means, of a Finite Set of Real Numbers._ Biometrika 46.3 (1959)
 [^6]: D. J. Bartholomew. _A Test of Homogeneity for Ordered Alternatives. II_ Biometrika 46.3 (1959)
+[^7]: Yongqiao Wang, Lishuai Li, Chuangyin Dang. _Calibrating Classification Probabilities with Shape-Restricted Polynomial Regression_. IEEE Transactions on Pattern Analysis and Machine Intelligence 41.8 (2019)
