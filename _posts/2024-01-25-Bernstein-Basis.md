@@ -238,8 +238,9 @@ Not bad! Now we will study the Bernstein basis from a more theoretical perspecti
 
 # The Bernstein polynomials as a basis
 
-So, is it really a basis? First, let's note the set $$\mathbb{B}_n$$ of n-th degree Bernstein poynomials indeed has $$n+1$$ polynomial functions. So it remains to be convinced that any polynomial can be expressed as a weighted sum of these $$n+1$$ functions. It turns out that for any $$k < n$$, we can write:
+So, is it really a basis? If it is, then there should be a simple transition matrix for going back and forth between the standard and the Bernstein basis. In this case, solving a regression problem with both bases should be equivalent. So why should we bother working with the Bernstein basis? We explore those questions below.
 
+First, let's begin by showing that it's indeed a basis. Note that the set $$\mathbb{B}_n$$ of n-th degree Bernstein poynomials indeed has $$n+1$$ polynomial functions. So it remains to be convinced that any polynomial can be expressed as a weighted sum of these $$n+1$$ functions. It turns out that for any $$k < n$$, we can write:
 $$
 x^k = \sum_{j=k}^n \frac{\binom{j}{k}}{\binom{n}{k}} b_{j, n}(x) = \sum_{j=k}^n q_{j,k} b_{j,n}(x)
 $$
@@ -365,7 +366,7 @@ Let's crank up the degree to 100 by setting `deg = 100`. I got the following ima
 
 Again,  _slightly worse_ than what we achieved by directly fitting the Bernstein form, but appears close.
 
-There two technical issues with our idea. First, manually fitting models rather than relying on standard tools, such as _SciKit-Learn_ appears to be troublesome, and in terms of computational efficiency, we need to deal with the additional matrix $$\mathbf{Q}_n$$. Second, and most importantly, the standard Vandermonde matrix _and_ the basis transition matrix $$\mathbf{Q}_n$$ are _extremely_ ill conditioned. This makes hard to actually solve the fitting problem and obtain coefficients that are close to the true optimal coefficients. This is true regardless if we chose direct matrix inversion, CVXPY, or an SGD-based optimizer from PyTorch or TensorFlow.
+There two technical issues with our idea. First, manually fitting models rather than relying on standard tools, such as _SciKit-Learn_ appears to be troublesome, and in terms of computational efficiency, we need to deal with the additional matrix $$\mathbf{Q}_n$$. Second, and most importantly, the standard Vandermonde matrix _and_ the basis transition matrix $$\mathbf{Q}_n$$ are _extremely_ [ill conditioned](https://en.wikipedia.org/wiki/Condition_number)[^9]. This makes hard to actually solve the fitting problem and obtain coefficients that are close to the true optimal coefficients. This is true regardless if we chose direct matrix inversion, CVXPY, or an SGD-based optimizer from PyTorch or TensorFlow.
 
 Due to inefficiency and ill conditioning this trick has a little value in practice. But provides us with an important insight: achieving good regularization requires a sophisticated **non-diagonal**  matrix in the regularization term. It's not a formal statement, but probably any "good" basis will have a non-diagonal transition matrix to the standard basis. This means that _fitting a polynomial in the standard basis using typical ML tricks of rescaling the columns of the Vandermonde matrix has a little chance of success_. And it doesn't matter if we rescale using min-max scaling, or standardization to zero mean and unit variance. To fit a polynomial, we need to use a "good" basis directly.
 
@@ -385,3 +386,4 @@ The next post will be more engineering oriented. We'll see how to use the Bernst
 [^6]: Niculescu-Mizil, A., & Caruana, R. (2005, August). Predicting good probabilities with supervised learning. In *Proceedings of the 22nd international conference on Machine learning* (pp. 625-632).
 [^7]:Platt, J. (1999). Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods. *Advances in large margin classifiers*, *10*(3), 61-74.
 [^8]:Zadrozny, B., & Elkan, C. (2002, July). Transforming classifier scores into accurate multiclass probability estimates. In *Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining* (pp. 694-699).
+[^9]: Intuitively, a matrix is _ill conditioned_ if numerical algorithms fail to accurately perform computations with this matrix, such as matrix multiplication, solving a linear system, or training a machine learned model.
