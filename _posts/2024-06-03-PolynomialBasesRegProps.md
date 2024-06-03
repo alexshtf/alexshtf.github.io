@@ -11,7 +11,7 @@ image: /assets/assets/bases_bias_var_viz_0.1.png
 
 Throughout this series, beginning [here]({% post_url 2024-01-21-Bernstein %}), we demonstrated various properties and applications of polynomial regression on different datasets. We used the Bernstein basis to demonstrate the importance of chosing a "good" polynomial basis, and that other well-known bases may be unfit for machine learning tasks. In this post, that concludes the series, we will try to understand _why_ this happens by studying various regularization properties of the bases we encountered, including the standard power basis, the Chebyshev basis, the Legendre basis, and the Bernstein basis.
 
-In this post we will not prove theorems, but rather demonstrate using an example. Therefore, there will be plenty of code and plots. And along the way we'll learn some interesting tricks with linear regression and polynomials. So let's get started!
+In this post we will not prove theorems, but rather demonstrate using an example. Therefore, there will be plenty of code and plots. And along the way we'll learn some interesting tricks with linear regression and polynomials. All the code from this post is available in this [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/polynomial_basis_stat_props.ipynb). So let's get started!
 
 # The bias-variance tradeoff
 
@@ -78,7 +78,7 @@ def fit_eval(vander_fn, eval_at, deg=20, n=40, reg_coef=0., ax=None, **plot_kws)
 
 We can see by the default parameters that by default we sample 40 points, and fit a polynomial of degree 20. We will not change that throughout the post, but you are welcome to play with the notebook as you wish. 
 
-Note the code in the `if reg_coef > 0` block in the function above. There is an interesting trick there for re-using existing libraries for least-squares regression, which are reliable and numerically stable, to solve a ridge regression problem. Note, that:
+Note the code in the `if reg_coef > 0` block in the function above. There is an interesting trick there for re-using existing NumPy libraries for least-squares regression, which are reliable and numerically stable, to solve a _regularized_ least-squares problem. Note, that:
 $$
 \| A w - y\|^2 + \alpha \|w\|^2 = 
 \sum_{j=1}^m ( a_j^T w - y_j )^2 + \sum_{i=1}^n (\sqrt{\alpha} w_i - 0)^2 = 
@@ -92,7 +92,7 @@ y \\ 0
 \right\|^2
 $$
 
-So, a ridge regression problem is reducible to a simple least-squares problem, with a data matrix padded by $$\sqrt{\alpha} I$$, and the vector padded by zeros. That's exactly what the code does. The reason I used this trick is to rely only on a small set of Python libraries, and avoid dependencies on scikit-learn and others.
+So, a regularized regression problem is reducible to a simple least-squares problem, with a data matrix padded by $$\sqrt{\alpha} I$$, and the labels vector padded by zeros. That's exactly what the code in the aforementioned block does. The reason I used this trick is to rely only on a small set of Python libraries, and avoid dependencies on scikit-learn and others.
 
 So let's see how it works:
 
@@ -189,7 +189,7 @@ Ideally, we would like both the bias and the variance to be small. A small bias 
 Typically, when measuring the bias, the deviation from the true function is _squared_. This is convenient, since the squared bias and the variance are a decomposition of the mean squared error. Informally, speaking:
 
 $$
-\mathbb{E}[\mathrm{error}^2] = \mathbb{E}[\mathrm{bias}^2] + \mathbb{E}[\mathrm{variance}]
+\mathbb{E}[\mathrm{error}^2] = \mathbb{E}[\mathrm{bias}^2] + \mathrm{variance}
 $$
 
 A more formal introduction can be found in the above-linked wikipedia article, and references therein. 
@@ -230,7 +230,7 @@ plot_all_bases(reg_coef=1, ylim=[-1.5, 1.5])
 
 It appears that these two bases do not improve with regularization - their bias increases, without a significant improvement improvement to the variance. So both components of the estimation procedure are crucial - the regularization **and** the basis.
 
-Visualization is nice, but let's measure these effects. We will try several regularization strengths, and for each strength - we will compute the average bias and variance we encounter among the evaluation points. Computing the mean squared bias and the variance for a given basis is straightforward:
+Visualization is nice, but let's measure these effects. We will try several regularization strengths, and for each strength - we will compute the average bias and variance we encounter among the evaluation points. Since both the bias and the variance vary along the interval $$[-1, 1]$$, we will average the squared bias and variance over the interval. Computing the mean squared bias and the variance for a given basis is straightforward:
 
 ```python
 def bias_variance_tradeoff(vander_fn, reg_coefs, nx=1000, **fit_eval_kwargs):
@@ -239,9 +239,13 @@ def bias_variance_tradeoff(vander_fn, reg_coefs, nx=1000, **fit_eval_kwargs):
   vars = []
   for reg_coef in reg_coefs:
     y_samples, y_true = fit_eval_samples(xs, vander_fn, reg_coef=reg_coef, **fit_eval_kwargs)
-    # average bias
+    
+    # mean squared bias over the samples, averaged over the interval [-1, 1]
     bias_agg = np.mean((np.mean(y_samples, axis=0) - y_true) ** 2)
+    
+    # variance over the samples, averaged over the interval [-1, 1]
     variance_agg = np.mean(np.var(y_samples, axis=0))
+    
     biases.append(bias_agg)
     vars.append(variance_agg)
 
@@ -474,11 +478,13 @@ It appears it does. Empirically, we are able to fit increasing polynomials of de
 
 Is a factor of two always sufficient to reduce the representation gap? If not - what is the relationship between the higher degree fit with increasing coefficients and the degree of the original polynomial? Personally, I don't know. But it's an interesting question. What is known is that among the bases that have direct shape control properties via their coefficients, which are colloquially known as "normalized totally-positive bases", the Bernstein basis is the unique basis with "optimal" shape control properties. The meaning of the optimality criterion is out of the scope of this post, but I refer the readers to the paper _Shape preserving representations and optimality of the Bernstein basis_[^4] for reference. As we mentioned before, these properties are extensively used in computer graphics to represent curves and shapes, including all the text you are reading on the screen. 
 
-It is possible to use the minimal degree via [semidefinite optimization](https://en.wikipedia.org/wiki/Semidefinite_programming) by exploiting the theory of sum-of-squares polynomials, but this is out of the scope of this post. Moreover, the heavier computational burdain of semidefinite optimization typically makes this technique less applicable to fitting models to large amounts of data. Interested readers are referred to the book _Semidefinite Optimization and Convex Algebraic Geometry_[^3]. Personally, I found it clear and readable to scientists versed in the language of convex optimization.
+It is possible to use the minimal degree via [semidefinite optimization](https://en.wikipedia.org/wiki/Semidefinite_programming) by exploiting the theory of sum-of-squares polynomials, but this is out of the scope of this post. Moreover, the heavier computational burdain of semidefinite optimization typically makes this technique less applicable to fitting models to large amounts of data. Interested readers are referred to the book _Semidefinite Optimization and Convex Algebraic Geometry_[^3]. 
 
 # Concluding remarks
 
-This exploration of polynomial regression certainly taught me a lot. I learned that polynomials are not to be feared when designing regression models, when using a proper basis. The simplicity of polynomials is appealing - they have only one hyperparameter to tune, which is their degree. There are plenty of other function bases that can be used when fitting a nonlinear model using linear regression techniques, such as cubic splines, or radial basis functions. All of them are very useful, but they require more hyperparameter tuning, which may result in longer model fitting times and a slower model experimentation feedback loop. For example, splines, which are essentially piecewise polynomials with continuous (higher order) derivatives, require specifying their degree, the number of break-points, and the degree of derivative continuity.  But given enough computational resources and data, these techniques probably perform better than polynomials.
+This exploration of polynomial regression certainly taught me a lot. I learned that polynomials are not to be feared when designing regression models, when using a proper basis. The simplicity of polynomials is appealing - they have only one hyperparameter to tune, which is their degree. There are plenty of other function bases that can be used when fitting a nonlinear model using linear regression techniques, such as cubic splines, or radial basis functions. All of them are very useful, but they require more hyperparameter tuning, which may result in longer model fitting times and a slower model experimentation feedback loop. For example, splines, which are essentially piecewise polynomials with continuous (higher order) derivatives, require specifying their degree, the number of break-points, and the degree of derivative continuity.  But given enough computational resources and data, these techniques probably perform better than polynomials. 
+
+I hope you enjoyed this series as much as I did, and the next posts will probably be on a different subject.
 
 ---
 
