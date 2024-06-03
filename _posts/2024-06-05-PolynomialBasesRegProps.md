@@ -187,6 +187,7 @@ The difference between the average polynomial and the true function is called th
 Ideally, we would like both the bias and the variance to be small. A small bias means that _on average_ over the samples, our polynomial represents the truth. A low variance means that regardless of the specific data-set, we will be always close to this truth, meaning that we will generalize well. 
 
 Typically, when measuring the bias, the deviation from the true function is _squared_. This is convenient, since the squared bias and the variance are a decomposition of the mean squared error. Informally, speaking:
+
 $$
 \mathbb{E}[\mathrm{error}^2] = \mathbb{E}[\mathrm{bias}^2] + \mathbb{E}[\mathrm{variance}]
 $$
