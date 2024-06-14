@@ -36,6 +36,8 @@ title: About me
 ## Thesis
 - [Optimal Power Flow in Networks with a Tree Topology]({{ "assets/thesis.pdf" | absolute_url }})
 
+<iframe src="https://github.com/sponsors/alexshtf/card" title="Sponsor" height="225" width="600" style="border: 0;"></iframe>
+
 ## Links
 - [StackOverflow profile](https://stackoverflow.com/users/532057/alex-shtof)
 - [Math StackExchange profile](https://math.stackexchange.com/users/5073/alex-shtof)
