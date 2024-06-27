@@ -13,9 +13,8 @@ title: About me
 
 ## Projects
 - [Incremental proximal point](https://github.com/alexshtf/inc_prox_pt) - a library of algorithms for building incremental proximal-point methods for machine learning.
-- [AutoDiff](https://github.com/alexshtf/autodiff) - a .NET library for automatically computing derivatives of mathematical functions.
 - [TREM OPF Solver](https://github.com/alexshtf/trem_opf_solver) - A MATLAB solver for a class of optimal power flow problems using the Tree Reduction and Expansion Method. See paper below.
-- [Machine learning proximal operators library](https://github.com/alexshtf/inc_prox_pt) - A library of proximal operator implementations of functions useful in machine learning, for implementing algorithms such as online proximal point, or stochastic proximal iteration.
+- [AutoDiff](https://github.com/alexshtf/autodiff) - a .NET library for automatically computing derivatives of mathematical functions.
 
 ## Publications
 - **Rotem Stram, Rani Abboud, Alex Shtoff, Oren Somekh, Ariel Raviv, Yair Koren** Mystique: A Budget Pacing System for Performance Optimization in Online Advertising. _to appear in The Web Conference 2024_
