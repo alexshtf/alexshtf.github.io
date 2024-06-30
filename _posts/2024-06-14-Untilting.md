@@ -141,7 +141,7 @@ Doesn't look like our line, so maybe we aren't learning fast enough with such a 
 ```python
 pytorch_fit(x, y, 
             criterion=StrippedTiltedLoss(MSELoss(), t=1), 
-            make_optim_fn=lambda params: torch.optim.SGD(params, lr=1e-6))
+            make_optim_fn=lambda params: torch.optim.SGD(params, lr=1e-4))
 ```
 
 Now I got an output:
