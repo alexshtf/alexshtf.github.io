@@ -511,7 +511,6 @@ So our network has 4513 trainable parameters. As we shall see, using sparsity in
 def parametrize_neuron_inputs(network):
   for layer in network.linear_layers():
     num_inputs = layer.weight.shape[1]
-    print(num_inputs)
     torch.nn.utils.parametrize.register_parametrization(
         layer, 'weight', InputsHadamardParametrization(num_inputs))
 
@@ -662,7 +661,7 @@ Again, it does not appear to overfit.
 
 ## How should we work in practice?
 
-You may have noticed that I manually chose the learning rate and the weight decay for the parametrized network, and a different learning rate and weight-decay for the shrunk network. In practice, we should do hyperparameter tuning, and select the best combination that optimizes for some metric on an evaluation set. Namely, each hyperparameter tuning experiment performs two phases. In the first phase, it trains a parametrized network and shrinks it. The parametrization helps 'discover' the correct sparsity pattern. Then, in the second phase, we train the shrunk network, and then evaluates its performance. This is because we have no way of knowing in advance which hyperparameters will induce the 'optimal' sparsity pattern. So a pesudo-code for hyperparameter tuning experiment may like this:
+You may have noticed that I manually chose the learning rate and the weight decay for the parametrized network, and a different learning rate and weight-decay for the shrunk network. In practice, we should do hyperparameter tuning, and select the best combination that optimizes for some metric on an evaluation set. Namely, each hyperparameter tuning experiment performs two phases, just like what we did with our neural network in this post. In the first phase, it trains a parametrized network and shrinks it. The parametrization helps 'discover' the correct sparsity pattern. Then, in the second phase, we train the shrunk network, and then evaluates its performance. This is because we have no way of knowing in advance which hyperparameters will induce the 'optimal' sparsity pattern. So a pesudo-code for hyperparameter tuning experiment may like this:
 
 ```python
 def tuning_objective(phase_1_lr, phase_1_alpha, phase_2_lr, phase_2_alpha):
@@ -677,14 +676,14 @@ def tuning_objective(phase_1_lr, phase_1_alpha, phase_2_lr, phase_2_alpha):
   return evaluate_performance(network)
 ```
 
-We let our hyperparameter tuner discover the correct parameters for the two phases.
+So I recommend relying on the hyperparameter tuner to discover good parameters for the above objective, just like we rely on gradient descent to discover the 'right' sparsity pattern.
 
-The idea of training first with sparsity inducing regularization, and then again without it, is not new. In fact, it's decades old, and has been long known by statisticians doing Lasso:  we first use Lasso for feature selection, and then re-train your model on the subset of features _wihtout_ Lasso!  This is because sparsity inducing regularization typically hurts performance by reducing the remaining model weights too aggressively. This was a kind of "crasftman-knowledge", but recently some papers [^8][^9] formally analyzed this approach. This idea also has some resemblance to relaxed Lasso[^10].
+The idea of training first with sparsity inducing regularization, and then again without it, is not new. In fact, many statisticians working with [Lasso](https://en.wikipedia.org/wiki/Lasso_(statistics)) do something similar:  we first use Lasso for feature selection, and then re-train the model on the selected features _wihtout_ Lasso.  This is because sparsity inducing regularization typically hurts performance by shrinking the remaining model weights too aggressively. This was a kind of "crasftman-knowledge", but recently some papers [^8][^9] formally analyzed this approach and made it more publicly known. This idea also has some resemblance to relaxed Lasso[^10].
 
-Finally, if we have an inference "budget", we may add a "cost" for too many parameters. For example, in the above tuning objective, we can replace the return statement by:
+Finally, if we have an inference "budget", we may choose to inform our hyperparameter tuner that the cost for exceeding the budget is very high. For example, in the above tuning objective, we can replace the return statement by:
 
 ```python
-  return evaluate_performance(network) + 1000 * np.maximum(number_of_parameters(network) - budget, 0)
+  return evaluate_performance(network) + 1000 * max(number_of_parameters(network) - budget, 0)
 ```
 
 This way the tuner will try to avoid exceeding the budget, because of the high cost of each additional model parameter. Of course, the cost doesn't have to be that extreme,  and we can make it much less than 1000 units for each additional parameter, depending on our requirements.
