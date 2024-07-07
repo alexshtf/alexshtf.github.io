@@ -33,7 +33,7 @@ $$
 
 Note, that $$(Q)$$ uses L2 regularization! As it turns out[^1], any local minimum $$(Q)$$ is also a local minimum of $$(P)$$.  L2 regularization is native to PyTorch in the form of the `weight_decay` parameter to its optimizers. But more importantly, [parametrizations](https://pytorch.org/tutorials/intermediate/parametrizations.html) are also a native beast in PyTorch!
 
-We first begin with implementing this idea in PyTorch for a simple linear model, and then extend it to Neural Networks. As always, the code is available in a notebook that you can deploy on Google Colab.
+We first begin with implementing this idea in PyTorch for a simple linear model, and then extend it to Neural Networks. As always, the code is available in a notebook that you can deploy on Google Colab. This is, of course, _not_ the best method to achieve sparsity. But it's an extremmely simple one, easy to try out for your model, and fun!
 
 # Parametrizing a linear model
 
