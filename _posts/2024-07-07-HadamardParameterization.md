@@ -614,16 +614,16 @@ Here is the output:
 Layer (type:depth-idx)                   Output Shape              Param #
 ==========================================================================================
 Network                                  [1, 1]                    --
-├─Linear: 1-1                            [1, 4]                    36
-├─ReLU: 1-2                              [1, 4]                    --
-├─Linear: 1-3                            [1, 2]                    10
-├─ReLU: 1-4                              [1, 2]                    --
-├─Linear: 1-5                            [1, 3]                    9
-├─ReLU: 1-6                              [1, 3]                    --
-├─Linear: 1-7                            [1, 1]                    4
+├─Linear: 1-1                            [1, 18]                   162
+├─ReLU: 1-2                              [1, 18]                   --
+├─Linear: 1-3                            [1, 15]                   285
+├─ReLU: 1-4                              [1, 15]                   --
+├─Linear: 1-5                            [1, 9]                    144
+├─ReLU: 1-6                              [1, 9]                    --
+├─Linear: 1-7                            [1, 1]                    10
 ==========================================================================================
-Total params: 59
-Trainable params: 59
+Total params: 601
+Trainable params: 601
 Non-trainable params: 0
 Total mult-adds (M): 0.00
 ==========================================================================================
@@ -634,7 +634,7 @@ Estimated Total Size (MB): 0.00
 ==========================================================================================
 ```
 
-Only 59 trainable parameters! So let's train its 59 remaining weights, now without any parametrizations:
+Only 601 trainable parameters! So let's train its 601 remaining weights, now without any parametrizations:
 
 ```python
 epoch_costs = train_model(train_ds, network, torch.nn.MSELoss(),
@@ -654,10 +654,8 @@ eval_network(network)
 The output is:
 
 ```python
-Test loss = 0.2864
+Test loss = 0.2385
 ```
-
-Again, it does not appear to overfit.
 
 ## How should we work in practice?
 
