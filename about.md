@@ -17,6 +17,7 @@ title: About me
 - [AutoDiff](https://github.com/alexshtf/autodiff) - a .NET library for automatically computing derivatives of mathematical functions.
 
 ## Publications
+- **Alex Shtoff, Michael Viderman, Naama Haramaty Krasne, Oren Somekh, Ariel Raviv, Tularam Ban** Low Rank Field-Weighted Factorization Machines for Low Latency Item Recommendation. _18th ACM Conference on Recommender Systems (RecSys 2024)_ ([Paper](https://github.com/michaelviderman/pytorch-fm/blob/dev/low_rank_fwfm___RecSys_2024__Camera_Ready_%20(1).pdf))
 - **Rotem Stram, Rani Abboud, Alex Shtoff, Oren Somekh, Ariel Raviv, Yair Koren** Mystique: A Budget Pacing System for Performance Optimization in Online Advertising. _to appear in The Web Conference 2024_
 - **Alex Shtoff, Yohay Kaplan, Ariel Raviv** [Improving conversion rate prediction via self-supervised pre-training in online advertising](https://www.computer.org/csdl/proceedings-article/bigdata/2023/10386162/1TUOD56sBZ6). in 2023 IEEE International Conference on Big Data (BigData). doi: 10.1109/BigData59044.2023.10386162
 - **Yohay Kaplan, Yair Koren, Alex Shtoff, Oren Somekh** Conversion-Based Dynamic-Creative-Optimization in Native Advertising. _2022 IEEE International Conference on Big Data (BigData)_ ([Preprint](https://arxiv.org/abs/2211.11524))
