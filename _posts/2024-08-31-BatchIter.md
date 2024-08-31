@@ -486,7 +486,7 @@ That's fast, and it appears we are done :)
 
 # Summary
 
-We wrote two batch iteration utilities - one for iterating over individual samples, and another one for iterating over groups of samples. Both are useful for different settings, and I hope you will find them useful to accelerate your experiments on a small scale, before you reach a larger scale. It certainly made me more productive, especially when working on experiments for papers.
+We wrote two batch iteration utilities - one for iterating over individual samples, and another one for iterating over groups of samples. Both are useful for different settings, and I hope you will find them useful to accelerate your experiments on a small scale, before you reach a larger scale. It certainly made me more productive, especially when working on experiments for papers. And most importantly, if you have a better way of implementing these utilities - please let me know!
 
 ---
 
