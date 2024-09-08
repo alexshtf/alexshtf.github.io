@@ -54,6 +54,19 @@ layout: base
     {%- include links_to_prev_next.html -%}
   {%- endif -%}
   <hr>
+  {% if page.series %}
+  <div>
+    <h4>This post is part of the series "<i>{{ page.series }}"</i>, and is not self-contained.</h4>
+    <h4>Series posts:<h4>
+    <ol>
+      {% assign posts = site.posts | where: "series", page.series | sort: "date" %}
+      {% for post in posts %}
+      <li>{% if post.url == page.url %}{{ post.title }} <i>(this post)</i>{% else %}
+          <a href="{{ post.url }}">{{ post.title }}</a>{% endif %}</li>
+      {% endfor %}
+    </ol>
+  </div>
+  {% endif %}
   <div class="post-content e-content" itemprop="articleBody">
     {{ content }}
   </div>

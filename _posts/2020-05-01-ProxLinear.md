@@ -4,6 +4,7 @@ title:  “Selective approximation - the prox-linear method for training arbitra
 tags: [machine-learning, optimization, proximal-point, prox-linear, online-optimization, online-learning, theory]
 description: Introducing a partial approximation approach, where we decompose the losses into parts we want to keep, and parts we want to approximate. The parts we would like to keep are the ones we can still handle efficiently by the methods we have developed so far for regularized convex-on-linear losses.
 comments: true
+series: "Proximal point"
 image: /assets/proxlinear_vs_adagrad.png
 ---
 

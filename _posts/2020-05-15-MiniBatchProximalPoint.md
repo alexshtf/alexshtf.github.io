@@ -4,8 +4,8 @@ title:  “Proximal Point with Mini Batches"
 tags: [machine-learning, optimization, proximal-point, online-optimization, online-learning, theory]
 description: Present the mini-batch version of the stochastic proximal point algorithm, which uses a mini-batch of training samples
 comments: true
+series: "Proximal point"
 image: /assets/proxpt_ls_minibatch_focus.png
-
 ---
 
 Throughout our journey in the proximal point land we looked for efficient implementations for minimizing the average loss $$\frac{1}{n} \sum_{i=1}^n f_i(x)$$ using the stochastic proximal point method: at iteration $$t$$, select $$f \in \{f_1, \dots, f_n\}$$, and compute

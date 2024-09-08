@@ -3,6 +3,7 @@
 title:  “Proximal Point is, after all, yet another gradient method"
 tags: [machine-learning, optimization, proximal-point, online-optimization, online-learning, theory]
 description: We make a short pause from deriving efficient proximal point implementations, and try to understand what the method is really about. We explore various ways to interpret it, except for the ‘white box’ idea presented at the beginning of this series.
+series: "Proximal point"
 comments: true
 ---
 

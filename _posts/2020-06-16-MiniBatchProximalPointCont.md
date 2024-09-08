@@ -4,6 +4,7 @@ title: “Proximal Point with Mini Batches - Convex On Linear"
 tags: [machine-learning, optimization, proximal-point, stochastic-optimization, theory]
 description: The mini-batch version of the proximal point method for convex-on-linear losses requires solving a low-dimensional convex dual problem. We dive deeper into solving the dual problem for losses of interest for the machine learning community.
 comments: true
+series: "Proximal point"
 image: /assets/proxpt_logreg_minibatch.png
 ---
 

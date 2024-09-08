@@ -4,6 +4,7 @@ title:  “SkLearning with Bernstein Polynomials"
 tags: [machine-learning, feature-engineering, polynomials, polynomial-regression, scikit-learn]
 description: We implement an Scikit-Learn transformer to generate Bernstein polynomial features, and try it out on the adult income data-set.
 comments: true
+series: "Polynomial features in machine learning"
 image: /assets/bernstein_pipeline_chart.png
 ---
 

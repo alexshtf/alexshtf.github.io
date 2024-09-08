@@ -4,6 +4,7 @@ title:  "A Bernstein SkLearn model calibrator"
 tags: [machine-learning, feature-engineering, polynomials, polynomial-regression, scikit-learn]
 description: We demonstrate an important use-case for Bernstein basis regularization in model calibration. We briefly discuss the use-cases of a well-calibrated machine learned classification model, and develop a simple calibrator that improves upon the ones provided by Scikit-Learn using regularization of the Bernstein basis.
 comments: true
+series: "Polynomial features in machine learning"
 image: /assets/svm_calibration_isotonic_bern_func.png
 ---
 

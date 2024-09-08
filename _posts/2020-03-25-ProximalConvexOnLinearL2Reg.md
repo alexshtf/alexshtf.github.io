@@ -4,6 +4,7 @@ title:  “Proximal Point - regularized convex on linear I"
 tags: [machine-learning, optimization, proximal-point, online-optimization, online-learning, logistic-regression, regularization]
 comments: true
 description: "Implementing the Stochastic proximal point method for convex over linear losses with regularization, with a logistic regression example"
+series: "Proximal point"
 ---
 
 We continue our endeavor of looking for a practical and efficient implementation of the stochastic proximal point method, which aims to minimize the average loss $$\frac{1}{n} \sum_{i=1}^n f_i(x)$$ over $$n$$ training samples by, iteratively,  selecting  $$f \in \{f_1, \dots, f_n \}$$ and computing
@@ -237,5 +238,4 @@ $$
 
 
 The blue part encompasses the dependency on $$r(x)$$, and it seems we have to re-derive it for every regularizer. But is it indeed so? It turns out we don’t always have to - it can be expressed in terms of another well-known concept in optimization, similar to the convex conjugate, which we introduce in the next post. That way, a practitioner does not have to perform the tedious and error prone process of deriving the blue part on her own. Instead, she can pick it up from a catalog which can be found in many textbooks or papers. Stay tuned!
-
 

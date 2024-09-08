@@ -4,6 +4,7 @@ title: “Proximal Point to the Extreme - Factorization Machines"
 tags: [machine-learning, optimization, proximal-point, stochastic-optimization, recommender-systems]
 description: This is the final episode of the proximal point series. Here, we try to take the method to the extreme, and train a 2nd order factorization machine without linear approximations.
 comments: true
+series: "Proximal point"
 # image: /assets/proxpt_reg_logreg_minibatch.png
 
 ---
