@@ -27,6 +27,16 @@ This post is devoted to demonstrating this overhead, and presenting an alternati
 
 I know typical posts on this blog are mathematically inclined, but not this one. This one is purely about coding, so let's get started!
 
+**\*\*Update\*\***
+
+The utilities developed in this post were converted to a small Python library you can install with
+
+```
+pip install batch-iter
+```
+
+The source code is in this [GitHub repo](https://github.com/alexshtf/torch_batch_iter).
+
 # DataLoader overhead
 
 Let's try to measure the overhead of the DataLoader class first, before trying to solve it. To that end, let's generate a data-set for a nonlinear problem:
