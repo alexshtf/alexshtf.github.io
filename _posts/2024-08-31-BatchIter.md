@@ -224,7 +224,7 @@ There are applications where we want to iterate over mini-batches composed of _g
 
 Here, will built a utility class for iterating over grouped samples. We assume that the input consists of samples, each having a _group id, and that each group appears consecutively.  The shuffling process shuffles entire groups, rather than individual samples. This is illustrated below - we have a group-id, and $$n$$ tensors $$T_1, \dots, T_n$$ that comprise our dataset:
 
-![group_shuffling]({{"/assets/group_shuffling.png" | absolute_yrl}})
+![group_shuffling]({{"/assets/group_shuffling.png" | absolute_url}})
 
 Similarly, our utility assumes that the mini-batch size specifies the number of groups in each mini-batch, rather than the number of samples. This plays nicely with list-wise learning to rank, since each group produces _one_ loss value for the entire group. Therefore, with a mini-batch of $$k$$ groups, we shall have a sample of $$k$$ losses.
 
