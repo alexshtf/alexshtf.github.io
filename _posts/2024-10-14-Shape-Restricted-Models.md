@@ -19,6 +19,8 @@ There is a vast amount of literature on learning $$f(z)$$ with constraints on th
 
 There is  also the idea of _Lattice Networks_[^1], and a nice TensorFlow library that implements them called [TensorFlow Lattice](https://www.tensorflow.org/lattice/overview). They are designed for modeling functions of the form $$f(\mathbf{x}, \mathbf{z})$$, where $$\mathbf{z}$$ is a _vector_ comprised of several features for which we want to constraint the shape of $$f$$. They are more generic than the idea I present here, but are also more expensive. This post is about a _scalar_ $$z$$, meaning that we have only _one_ shape-constrained feature. This lets us do something interesting and specialized for this case. 
 
+The idea I present here is probably _not_ new, even though I couldn't find literature on that. Probably, since I didn't know what buzzwords to look for. So if you know some prior work I could cite, please let me know!
+
 As customary, the code is available in a [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/shape_constrained_models.ipynb) you can deploy to Google Colab and play around with. So let's dive in!
 
 # Bernstein polynomials strike again
@@ -541,6 +543,8 @@ This one isn't! If we think about it - there is a good reason. Our synthetic dat
 
 In this post we saw an interesting combination of neural networks with Bernstein polynomials that allow learning shape constraints. This is useful when the shape constraint is actually a _constraint_, i.e. required for the predictions of the model to be correct from a mathematical or business perspective. Moreover, it's a form of regularization, since that's what regularization often is - injecting _prior knowledge_ about the hypothesis class into the fitting procedure.
 
+The idea of constraining coefficients of a function in a given basis to constrain its shape works not only for Bernstein polynomials, but also for the [B-Spline basis](https://en.wikipedia.org/wiki/B-spline)[^8]. Probably also for a variety of other 'shape-preserving' bases that I never heard about. So you're welcome to try this idea with those bases as well, if you believe they suit your needs. 
+
 An interesting variation could be designing a polynomial that is monotonic, non-negative, convex or concave over the entire real line $$(-\infty, \infty)$$. There is an interesting theorem that dates back to Hilbert's 1888 paper[^6], that any polynomial $$p(z)$$ of degree $$2d$$ is non-negative over the entire real line if and only if it is a sum of squares of polynomials. Alternatively, this can be phrased as the existance of a positive-semidefinite matrix $$\mathbf{P} \in \mathbb{R}^{d \times d}$$ such that the polynomial can be written as
 
 $$
@@ -564,4 +568,6 @@ Now let's get back to the realm of Bernstein polynomials. What happens if we wan
 [^6]:Hilbert, D. (1888). Über die darstellung definiter formen als summe von formenquadraten. *Mathematische Annalen*, *32*(3), 342-350.
 
 [^7]: Grigoriy Blekherman, Pablo A. Parrilo, and Rekha R. Thomas. _Semidefinite Optimization and Convex Algebraic Geometry_. SIAM (2012)
+
+[^8]: Carl De-Boor. _A practical guide to splines_. (1993)
 
