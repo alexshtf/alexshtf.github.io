@@ -4,7 +4,6 @@ title:  "Shape restricted function models"
 tags: [pytorch,machine-learning,monotonic-regression,bernstein,polynomial-regression]
 description: Fitting shape-restricted functions with ease using PyTorch.
 comments: true
-series: "Constrained function models"
 image: /assets/increasing_function_model.png
 ---
 
