@@ -1,8 +1,8 @@
 ---
 layout: post
-title:  "Shape restricted function models"
-tags: [pytorch,machine-learning,monotonic-regression,bernstein,polynomial-regression]
-description: Shape-restricted functions via polyhedral constraints
+title:  "Shape restricted function models with polyhedral constraints"
+tags: [pytorch,machine-learning,monotonic-regression,bernstein,polynomial-regression,polyhedral-cone]
+description: Advanced shape restrictions, such as combinations of monotonicity and convexity / concavity using polyhedral cones
 comments: true
 series: "Shape restricted models"
 image: /assets/cone.png
