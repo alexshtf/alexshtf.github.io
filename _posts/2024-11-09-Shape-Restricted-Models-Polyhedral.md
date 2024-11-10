@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Shape restricted function models via polyhedral cpmes"
+title:  "Shape restricted function models via polyhedral cones"
 tags: [pytorch,machine-learning,monotonic-regression,bernstein,polynomial-regression,polyhedral-cone]
 description: Advanced shape restrictions, such as combinations of monotonicity and convexity / concavity using polyhedral cones
 comments: true
