@@ -102,11 +102,11 @@ $$
 
 The theorem ensures that for every $$\mathbf{A}$$ representing the inequalities, we have a corresponding $$\mathbf{R}$$ representing the generator rays, and vice versa.
 
-Why is it useful? A machine-learned model can easily produce a non-negative vector $$\mathbf{t}$$ using known activation functions, such as `ReLU` or `SoftPlus`. Then, we can use a linear layer with matrix $$\mathbf{R}$$ to compute  a vector $$\mathbf{R} \mathbf{t}$$ in our desired cone. Therefore, a concatenation of a non-negativity layer and a linear layer with an appropriate matrix can be thought of as a "polyhedral cone" layer: it generates vectors that lie in a polyhedral cone of our choice. This is illustrated below:
+But why an ML practitioner would be interested in this result? A machine-learned model can easily produce a non-negative vector $$\mathbf{t}$$ using known activation functions, such as `ReLU` or `SoftPlus`. Then, we can use a linear layer with matrix $$\mathbf{R}$$ to compute  a vector $$\mathbf{R} \mathbf{t}$$ in our desired cone. Therefore, a concatenation of a non-negativity layer and a linear layer with an appropriate matrix can be thought of as a "polyhedral cone" layer: it generates vectors that lie in a polyhedral cone of our choice. This is illustrated below:
 
 ![polyedral_cone_layer]({{"assets/polyedral_cone_layer.png" | absolute_url}})
 
-Note, that in this case $$\mathbf{R}$$ is not _learned_, but rather is a constant matrix specifically designed to generate the cone we need. 
+Note, that in this case $$\mathbf{R}$$ is not _learned_, but rather is a constant matrix specifically designed to generate the cone we need. So the reason polyhedral cones are useful in ML is because we can make sure that our neural network produces vectors that lie in the cone, _by design_, using elementary tools that every ML practitioner knows: `ReLU` activations and linear layers!
 
 To end our discussion of the generator ray representation, we note that we can have two generators that are just the negation of each other, i.e $$\mathbf{r}_i = -\mathbf{r}_j$$. For example, consider the matrix:
 
