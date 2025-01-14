@@ -223,13 +223,15 @@ plot_predictions(exp_smooth, 'Exp-Smoothing', [0.1, 0.5, 0.9], '$\\alpha$')
 Well, we can see that a small $$\alpha$$ smoothed out the revenue trend a lot, as expected. We give a higher weight to historical samples, and lower weight to recent samples. This is reversed for higher values of $$\alpha$$, where the smoothed-out curve tends to give a higher weight to recent samples and discard history faster. So how well does it perform? Well, let's measure _two_ prediction errors:
 
 1.   Root Mean-Squared Error: $$\mathrm{RMSE} =\sqrt{ \frac{1}{n} \sum_{i=1}^n (y_i - y_i^{\mathrm{true}} )^2 }$$
-2.   Mean relative error: $$\mathrm{MRE} = \frac{1}{n} \sum_{i=1}^n \frac{2|y_i - y_i^{\mathrm{true}}|}{y_i + y_i^{\mathrm{true}}}$$
+2.   Mean relative error: $$\mathrm{MRE} = \frac{1}{n} \sum_{i=1}^n \frac{|y_i - y_i^{\mathrm{true}}|}{\max(\varepsilon,y_i^{\mathrm{true}})}$$
 
-The root mean-squared error is what actually the squared loss is optimizing for. The square-root is typically added to restore the units of the euro back to the original units of the predicted variable. How many percents are we away from the true prediction? Note, that here we use a _symmetrized_ version of the relative error, to account for the fact that $$y_i$$ or $$y_i^{\mathrm{true}}$$ may be zero. Let's implement the two metrics:
+The root mean-squared error is what actually the squared loss aims to optimize for. The square-root is typically added to restore the units to the original units of the predicted variable. 
+
+The relative error here measures the error in fractions of the true value, with $$\varepsilon>0$$ is a small parameter that avoids division by zero. This is what typically the right error to use for sums of money - how many percents are we away from the true prediction? This kind of relative error is an extremely common one, and is meaningful to business people. Let's implement the two metrics:
 
 ```python
-def mean_relative_error(y, yref):
-    return np.mean(np.abs(y - yref) / np.maximum(y, yref))
+def mean_relative_error(y, yref, epsilon=0.01):
+    return np.mean(np.abs(y - yref) / np.maximum(epsilon, yref))
 
 def rmse(y, y_ref):
     return np.sqrt(np.mean(np.square(y - y_ref)))
@@ -274,9 +276,11 @@ plot_errors(exp_smooth, np.linspace(0.01, 1, 30), '$\\alpha$')
 
 ![exp_smooth_errors](../assets/smooth_ogd/exp_smooth_errors.png)
 
-The relative error is plotted on the left y-axis, whereas the RMSE is on the right y-axis. We can see two interesting phenomena:
+The relative error is plotted on the left y-axis, whereas the RMSE is on the right y-axis. The plotted relative error is in fractions, rather than percents. So a relative error of 3 means we're 300% off. 
 
-*   The prediction error heavily depends on the step-size.
+We can see two interesting phenomena:
+
+*   The prediction error heavily depends on the step-size. And the differences between step-sizes are _enormous_: ~100% relative error vs. ~700%.
 *   The relative error, which is what we truly care about, does not necessarily correlate with the RMSE. Indeed, a larger $$\alpha$$ degrades the RMSE, but actually improves the relative error.
 
 How much does it depend on the step-size? Well let's try visualizing the mean relative error for four different ad campaigns as a function of the step-size. The four ad campaigns are generated with four different random seeds.
