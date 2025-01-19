@@ -12,11 +12,13 @@ title: About me
 - Software development: design principles, TDD and BDD, C++, C#, F#
 
 ## Projects
+- [Proximal point with exponential losses](https://github.com/alexshtf/exp_prox_pt) - a tiny Python library containing an fast and numerically accurate PyTorch and NumPy implementations of the proximal operator of exponential loss functions (Poisson Regression, Tilted Loss, etc)
 - [Incremental proximal point](https://github.com/alexshtf/inc_prox_pt) - a library of algorithms for building incremental proximal-point methods for machine learning.
 - [TREM OPF Solver](https://github.com/alexshtf/trem_opf_solver) - A MATLAB solver for a class of optimal power flow problems using the Tree Reduction and Expansion Method. See paper below.
 - [AutoDiff](https://github.com/alexshtf/autodiff) - a .NET library for automatically computing derivatives of mathematical functions.
 
 ## Publications
+- **Alex Shtoff, Elie Abboud, Rotem Stram, Oren Somekh** Function Basis Encoding of Numerical Features in Factorization Machines. _Transactions on Machine Learning Research (TMLR, 2024)_ ([Paper](https://openreview.net/pdf?id=M4222IBHsh), [Code](https://github.com/alexshtf/cont_features_paper))
 - **Alex Shtoff, Michael Viderman, Naama Haramaty Krasne, Oren Somekh, Ariel Raviv, Tularam Ban** Low Rank Field-Weighted Factorization Machines for Low Latency Item Recommendation. _18th ACM Conference on Recommender Systems (RecSys 2024)_ ([Paper](https://github.com/michaelviderman/pytorch-fm/blob/dev/low_rank_fwfm___RecSys_2024__Camera_Ready_%20(1).pdf)), ([Code](https://github.com/michaelviderman/pytorch-fm/blob/dev/))
 - **Rotem Stram, Rani Abboud, Alex Shtoff, Oren Somekh, Ariel Raviv, Yair Koren** [Mystique: A Budget Pacing System for Performance Optimization in Online Advertising](https://dl.acm.org/doi/10.1145/3589335.3648342). _Companion Proceedings of the ACM on Web Conference 2024 (WWW '24)_ ([Code](https://github.com/yahoo/BudgetPacingSimulation))
 - **Alex Shtoff, Yohay Kaplan, Ariel Raviv** [Improving conversion rate prediction via self-supervised pre-training in online advertising](https://www.computer.org/csdl/proceedings-article/bigdata/2023/10386162/1TUOD56sBZ6). in 2023 IEEE International Conference on Big Data (BigData). doi: 10.1109/BigData59044.2023.10386162
@@ -29,9 +31,12 @@ title: About me
 - **Alex Shtof, Alexander Agathos, Yotam Gingold, Ariel Shamir, Daniel Cohen‐Or** [Geosemantic Snapping for Sketch‐Based Modeling](https://onlinelibrary.wiley.com/doi/full/10.1111/cgf.12044) _Computer Graphics Forum 32 (2pt2), 245-253 (May 2013)_  
   ([paper]({{ "/assets/geosemantic.pdf" | absolute_url }}), [paper supplemental]({{ "/assets/geosemantic_supplemental.pdf" | absolute_url }}), [video](https://www.youtube.com/watch?v=YsqdFFU6T2c))
 
-## Conference talks
-
-- Globally Solving a Class of Optimal Power Flow Problems in Radial Networks, _International Symposium on Mathematical Programming (July 2018)_ ([presentation]({{ "assets/ismp2018.pdf" | absolute_url }})).
+## Academic service
+- Area Chair, The Web Conference 2025
+- Reviewer, ICLR 2025
+- External Reviewer, RecSys 2024
+- External Reviewer, SIGIR 2024
+- External Reviewer, CIKM 2023
 
 ## Thesis
 - [Optimal Power Flow in Networks with a Tree Topology]({{ "assets/thesis.pdf" | absolute_url }})
