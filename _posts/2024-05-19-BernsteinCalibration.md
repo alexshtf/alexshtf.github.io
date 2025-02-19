@@ -221,7 +221,7 @@ ECE = 0.30732883382620496
 
 At this stage it doesn't tell us much, until we begin improving it. 
 
-In addition to the ECE, the standard cross-entropy loss and the mean-squared error loss can also help us quantify miscalibration.  In the context of probability calibration, the mean-squared error is known as the breier score. However, they have an inherent weakness - they quantify both miscalibration and discriminative power[^3]. For example, if our classifier is better at differentiating positive and negative samples than a competing classifier, these two losses show an improvement, even if its calibration error remains the same. Alternatively, improving only the calibration error without improving discriminative power also reduces these losses. Since in this post the classifier remains identical due to the monotonic nature of calibrators, and only its calibration error changes, these two metrics are useful. Both are implemented in Scikit-Learn and we can use them:
+In addition to the ECE, the standard cross-entropy loss and the mean-squared error loss can also help us quantify miscalibration.  In the context of probability calibration, the mean-squared error is known as the Brier score. However, they have an inherent weakness - they quantify both miscalibration and discriminative power[^3]. For example, if our classifier is better at differentiating positive and negative samples than a competing classifier, these two losses show an improvement, even if its calibration error remains the same. Alternatively, improving only the calibration error without improving discriminative power also reduces these losses. Since in this post the classifier remains identical due to the monotonic nature of calibrators, and only its calibration error changes, these two metrics are useful. Both are implemented in Scikit-Learn and we can use them:
 
 ```python
 from sklearn.metrics import (
@@ -526,7 +526,7 @@ The result is:
 
 Nice! With a degree of 10, we achieved a similar result than least-squares fitting with a degree of 20. To summarize, here are the metrics. The best metric is highlighted.
 
-| Calibrator                               | ECE         | Breier      | LogLoss     |
+| Calibrator                               | ECE         | Brier      | LogLoss     |
 | ---------------------------------------- | ----------- | ----------- | ----------- |
 | Platt                                    | 0.01295     | 0.09746     | 0.31395     |
 | Isotonic                                 | 0.00737     | 0.09707     | 0.31289     |
