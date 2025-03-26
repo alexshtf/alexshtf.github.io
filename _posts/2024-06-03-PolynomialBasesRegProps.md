@@ -485,8 +485,6 @@ It is possible to use the minimal degree via [semidefinite optimization](https:/
 
 This exploration of polynomial regression certainly taught me a lot. I learned that polynomials are not to be feared when designing regression models, when using a proper basis. The simplicity of polynomials is appealing - they have only one hyperparameter to tune, which is their degree. There are plenty of other function bases that can be used when fitting a nonlinear model using linear regression techniques, such as cubic splines, or radial basis functions. All of them are very useful, but they require more hyperparameter tuning, which may result in longer model fitting times and a slower model experimentation feedback loop. For example, splines, which are essentially piecewise polynomials with continuous (higher order) derivatives, require specifying their degree, the number of break-points, and the degree of derivative continuity.  But given enough computational resources and data, these techniques probably perform better than polynomials. 
 
-I hope you enjoyed this series as much as I did, and the next posts will probably be on a different subject.
-
 ---
 
 [^1]: In theory, a least-squares estimator is unbiased. But it appears we don't have enough samples so that our average polynomial approaches the true mean, and it appears as if we have bias.
