@@ -269,11 +269,11 @@ fig.show()
 
 ![california_housing_legendre_double_descent]({{"assets/california_housing_legendre_double_descent.png"  | absolute_url}})
 
-It's interesting to see that the test error of polynomial features of degree 30,000 is quite small, but it isn't better than low degree polynomials. I'm pretty sure that if we crank up the degree to a few millions it will be, but that would be an overkill. I want to take this post in a different direction.
+It's interesting to see that the test error of polynomial features of degree 40,000 is quite small, but it isn't better than low degree polynomials. I'm pretty sure that if we crank up the degree to a few millions it will be, but that would be an overkill. I want to take this post in a different direction.
 
 # Pruning
 
-First, let's see if pruning the "tail" of the polynomial even makes sense - meaning that higher degrees simply add more intricate details to an already well-formed polynomial. To that end, let's plot the polynomial we obtained for each feature by taking only the first $k$ coefficients, for various values of $k$.
+First, let's see if pruning the "tail" of the polynomial even makes sense - meaning that higher degrees simply add more intricate details to an already well-formed polynomial. To that end, let's plot the polynomial we obtained for each feature by taking only the first $$k$$ coefficients, for various values of $$k$$.
 
 Recall, that our pipeline has a step named `model`, which is a linear regression model. We can access its coefficients:
 
@@ -283,10 +283,10 @@ print(lin_reg.coef_.shape)
 ```
 
 ```
-(240000,)
+(320000,)
 ```
 
-We see that we have exactly $$8 \times 30{,}000 = 240{,}000$$ coefficients. This is because we have 8 columns, each represented by 30,000 coefficients of a polynomial of degree 30,000 without its bias term. We can access the coefficients of each polynomial by reshaping these coefficients into a matrix of 8 rows. This is exactly what the following function does - extracts the coefficient matrix, with a row of coefficients for each feature:
+We see that we have exactly $$8 \times 40{,}000 = 320{,}000$$ coefficients. This is because we have 8 columns, each represented by 40,000 coefficients of a polynomial of degree 40,000 without its bias term. We can access the coefficients of each polynomial by reshaping these coefficients into a matrix of 8 rows. This is exactly what the following function does - extracts the coefficient matrix, with a row of coefficients for each feature:
 
 ```python
 def get_feature_coefs(pipeline):
@@ -554,10 +554,10 @@ print(f'Test error = {test_error:.4f}')
 Test error = 59406.7395
 ```
 
-Very close to what we achieved with pruning. Want to see the polynomials?
+Very close to what we achieved with pruning. So our pruned model is not bad at all, and can be seen as a reasonable baseline.
 
 # Recap
 
 The idea of truncating high degree polynomials to approximate functions is not new - the entire field of approximation theory is built on top of this idea. In fact, the phenomenal course of Nick Trefethen, Approximation theory and approximation practice, and his book by the same name, gave me the inspiration to study it more thoroughly and gaining deeper understanding of the applicability of these ideas in machine learning. 
 
-The idea here is by no means the best way to build a simple model with polynomial features, and it may be the case that a more thorough attempt to fit a regularized model will yield a better test error. However, the objective of this post is different - it's gaining a new insight. It's understanding that over-parametrization is what lets the model learn, automatically,  to separate signal from noise. This separation is manifested in the decaying coefficient spectrum. This magical property can even let us us extract the "simple" model hiding inside the over-parametried "complex" model. And it is this observation that will take us to the next posts in this series!
+The idea here is by no means the best way to build a simple model with polynomial features, and it may be the case that a more thorough attempt to fit a regularized model will yield a better test error. However, the objective of this post is different - it's gaining a new insight. It's understanding that over-parametrization is what lets the model learn, automatically,  to separate signal from noise. That the Legendre basis lets us _elicit_ this separation explicitly - by observing that the fit model has a decaying coefficient spectrum. This magical property can even let us us extract the "simple" model hiding inside the over-parametried "complex" model. And it is this observation that will take us to the next posts in this series!
