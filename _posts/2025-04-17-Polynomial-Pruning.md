@@ -13,7 +13,7 @@ Last time we did a small curve fitting exercise - we fit high degree polynomials
 
 In this post we shall study this phenomenon not for fitting a curve, but for fitting a regression model to our favorite dataset in this blog - the California Housing dataset. When writing this post I learned something surprising and new, and I hope to surprise you as well. This may not be a new state of the art method, but it is a surprising insight, heavily inspired by a short online [discussion](https://x.com/bremen79/status/1907132804313272371)  with Prof. Francesco Orabona about what does it mean for a model to be "simple". In fact, this discussion is what led me to write this post.
 
-As always, the code can be found in a [notebook]() you can deploy to Colab and play with yourself. So let's get started!
+As always, the code can be found in a [notebook]() you can deploy to Colab and play with yourself. There will be no formulas or math in this post - mostly code and plots. So let's get started!
 
 # Double-descent with california housing
 
@@ -107,7 +107,7 @@ print(np.polynomial.legendre.legvander(X, 4).reshape(4, -1))
  [ 1.     0.8    0.46   0.08  -0.233  1.     1.     1.     1.     1.   ]]
 ```
 
-Now we see two "blocks" of Legendre Vandermonde matrices, concatenated horizontally - one block for every column.
+Now we see two "blocks" of Legendre Vandermonde matrices, concatenated horizontally - one block for every column. Each block has 5 columns, corresponding to the five basis functions of degree 4.
 
 Finally, note that we have a column of ones - this column is the "bias" term of each polynomial. But we don't want a bias term for every polynomial - we want *one* bias term for the entire model. So we will have to remove these columns of ones, and let the linear regression model in Scikit-Learn have its own bias. Now we're ready to write our transformer. There is some boilerplate, but everything substantial I already explained above.
 ```python
@@ -135,7 +135,8 @@ class LegendreScalarPolynomialFeatures(TransformerMixin, BaseEstimator):
         # of shape
         vander = np.polynomial.legendre.legvander(X, self.degree)
         if not self.include_bias:
-            vander = vander[..., 1:]
+            # discard the column of ones for each feature
+            vander = vander[..., 1:] 
 
         # reshape to concatenate the Vandermonde matrices horizontally
 		n_rows = X.shape[0]
@@ -184,14 +185,15 @@ Test error = 63475.8142
 
 It appears large, but we're dealing here with sums of money representing housing prices - hundreds of thousands of dollars. So it's not *that* large.
 
-Now let's try to reproduce our double descent. We will iterate over several degrees, fit a pipeline to the training data, and compute the test errors. Note, that we compute _test errors_ and not _validation errors_, because we care about observing the generalization power, and _not_ tuning some parameter. Moreover, to make it run faster we sample a subset of the training set - 5000 out of the 13700 rows. Here is the code:
+Now let's try to reproduce our double descent. We will iterate over several degrees, fit a pipeline to the training data, and compute the test errors. Note, that we compute _test errors_ and not _validation errors_, because we care about observing the generalization power, and _not_ tuning some parameter. Moreover, to make it run in a reasonable time, we sample a subset of the training set - 5000 out of the 13700 rows. Here is the code:
 
 ```python
 degrees = list(range(1, 10)) + np.geomspace(10, 40000, 12).astype(np.int32).tolist()
 train_rmses = []
 test_rmses = []
 
-# sample training set
+# sample training set - note that it's already randomly permuted
+# by the train-test split.
 n_samples = 5000
 X_train_samples = X_train.iloc[:n_samples, :]
 y_train_samples = y_train.iloc[:n_samples]
@@ -249,9 +251,9 @@ np.corr(X_train["total_rooms"], X_train["total_bedrooms"])
  [0.94465316 1.        ]]
 ```
 
-This means, for instance, that the additional parameters we add to represent the total bedrooms does not necessarily add more information allowing us to memorize the training set. Thus, it's not very trivial where this "memorization threshold" is in terms of the polynomial degree. But it is somewhere between 1959 and 4165, since we see that the train error drops to zero somewhere in between.
+This means, for instance, that the block of Legendre features for total bedrooms does not necessarily add more information. Thus, it's not very trivial where this "memorization threshold" is in terms of the polynomial degree. But it is somewhere between 1959 and 4165, since we see that the train error drops to zero somewhere in between.
 
-We can also plot it the double descent curve using the train and test errors we just stored:
+We can also plot the double descent curve using the train and test errors we just stored:
 
 ```python
 fig, ax = plt.subplots()
@@ -269,7 +271,7 @@ fig.show()
 
 ![california_housing_legendre_double_descent]({{"assets/california_housing_legendre_double_descent.png"  | absolute_url}})
 
-It's interesting to see that the test error of polynomial features of degree 40,000 is quite small, but it isn't better than low degree polynomials. I'm pretty sure that if we crank up the degree to a few millions it will be, but that would be an overkill. I want to take this post in a different direction.
+It's interesting to see that the test error of polynomial features of degree 40,000 is quite small, but it it's worse than that if the low degree polynomials. I'm pretty sure that if we crank up the degree to a few millions it will be better, but that would be an overkill. Having demonstrated the double descent, I want to take this post in a different direction.
 
 # Pruning
 
@@ -509,55 +511,126 @@ It appears we squeezed an additional half a percent. The test error went down fr
 
 # Comparing to regularized regression
 
-Pruning is all nice, but don't we all learn to actually use regularization and tune the regularization coefficient? Well, let's try this as well. It's quite simple - construct a similar pipeline with a `Ridge` regression object, that puts L2 regularization. Then, tune both the regularization coefficient and the degree of the polynomials using Scikit-Learn's ability to perform hyperparameter search. Since I want to limit my computational budget, I will use randomized search with 1,000 trials, so it finishes reasonably fast:
+Pruning is all nice, but don't we all learn to actually use regularization and tune the regularization coefficient? Well, let's try this as well. It's quite simple - construct a similar pipeline with a `Ridge` regression object, that adds L2 regularization to least-squares regression. Then, tune both the regularization coefficient and the degree of the polynomials using [HyperOpt](https://hyperopt.github.io/hyperopt/), which is a pretty good hyperparameter tuner that comes preinstalled with Colab. First, we define a function that creates a pipeline with Ridge regression model given a polynomial degree and the regularization coefficient:
 
 ```python
 from sklearn.linear_model import Ridge
-from sklearn.model_selection import RandomizedSearchCV
 
-# construct a pipeline with Ridge regression
-pipeline = Pipeline([
+def make_ridge_pipeline(degree, alpha):
+    pipeline = Pipeline([
         ('minmaxscaler', MinMaxScaler(feature_range=(-1, 1), clip=True)),
-        ('polyfeats', LegendreScalarPolynomialFeatures()),
-        ('model', Ridge()),
+        ('polyfeats', LegendreScalarPolynomialFeatures(degree=degree)),
+        ('model', Ridge(alpha=alpha)),
     ])
-
-# tune the coefficient
-grid = {
-    'polyfeats__degree': list(range(1, 100)),    # polynomial degree
-    'model__alpha': np.geomspace(1e-3, 1e3, 50)  # reg coef
-}
-
-# find the best parameters
-search = RandomizedSearchCV(
-    estimator=pipeline, param_distributions=grid, 
-    scoring='neg_root_mean_squared_error', 
-    n_iter=1000, # limit the number of trials
-    n_jobs=-1)   # run in parallel
-search.fit(X_train_samples, y_train_samples)
-
-print(search.best_params_)
+    return pipeline
 ```
 
-```
-{'polyfeats__degree': 99, 'model__alpha': np.float64(8.286427728546842)}
-```
-
-We see that our hyperparameter search polynomials of degree 99 - so it isn't afraid of high degree polynomials as well 😀. What about the test error?
+Now, to employ HyperOpt, we define a function that computes the quality of a set of hyper parameters by fitting a model and evaluating it on a validation set. While defining it, we annotate each hyperparameter with how it should be searched - degrees are search uniformly, whereas regularization coefficients are searched in log-space. Finally invoke HyperOpt's `fmin` function that is going to search the space for the best hyperparameters. Here is the code:
 
 ```python
-test_error = root_mean_squared_error(y_test, search.predict(X_test))
+from hyperopt import hp, fmin, tpe
+
+def score(
+        degree: hp.uniformint('degree', 1, 500),
+        alpha: hp.loguniform('alpha', np.log(1e-3), np.log(1e3))
+):
+    pipeline = make_ridge_pipeline(degree, alpha)
+    pipeline.fit(X_train_samples, y_train_samples)
+    y_pred = pipeline.predict(X_valid)
+    error = root_mean_squared_error(y_valid, y_pred)
+    return error
+
+best_params = fmin(
+    score, space='annotated', algo=tpe.suggest, max_evals=500,
+    rstate=np.random.default_rng(42)
+)
+
+print(best_params)
+```
+
+The `fmin` function shows a progress bar of the 500 trials, which took approximately four minutes, and then we print the best parameters:
+
+```
+100%|██████████| 500/500 [04:04<00:00,  2.05trial/s, best loss: 57888.41179388089]
+{'alpha': np.float64(8.319252707439558), 'degree': np.float64(102.0)}
+```
+
+We see that our hyperparameter search polynomials of degree 102 - so the Ridge regression isn't afraid of high degree polynomials either 😀. What about the test error? Let's fit a model with the best hyperparameters, and compute the test error:
+
+```python
+best_degree = int(best_params['degree'])
+best_alpha = best_params['alpha']
+best_pipeline = make_ridge_pipeline(best_degree, best_alpha).fit(X_train_samples, y_train_samples)
+
+test_error = root_mean_squared_error(y_test, best_pipeline.predict(X_test))
 print(f'Test error = {test_error:.4f}')
 ```
 
 ```
-Test error = 59406.7395
+Test error = 59598.0548
 ```
 
-Very close to what we achieved with pruning. So our pruned model is not bad at all, and can be seen as a reasonable baseline.
+Very close to what we achieved with pruning. So our pruned model is not bad at all, and can be seen as a reasonable baseline.But wait - we have a pretty high degree polynomial here as well. It's not of degree 40,000, but "only" 102, but it's still high. Maybe we can further improve the model by applying the same pruning trick to the regularized model? 
 
-# Recap
+Just for the sake of it - let's look how the spectra of the polynomials the regularized model learned look like.
 
-The idea of truncating high degree polynomials to approximate functions is not new - the entire field of approximation theory is built on top of this idea. In fact, the phenomenal course of Nick Trefethen, Approximation theory and approximation practice, and his book by the same name, gave me the inspiration to study it more thoroughly and gaining deeper understanding of the applicability of these ideas in machine learning. 
+```python
+plot_spectra(best_pipeline)
+```
 
-The idea here is by no means the best way to build a simple model with polynomial features, and it may be the case that a more thorough attempt to fit a regularized model will yield a better test error. However, the objective of this post is different - it's gaining a new insight. It's understanding that over-parametrization is what lets the model learn, automatically,  to separate signal from noise. That the Legendre basis lets us _elicit_ this separation explicitly - by observing that the fit model has a decaying coefficient spectrum. This magical property can even let us us extract the "simple" model hiding inside the over-parametried "complex" model. And it is this observation that will take us to the next posts in this series!
+![california_housing_regularized_spectra]({{"assets/california_housing_regularized_spectra.png" | absolute_url}})
+
+At first glance the bahavior seems similar - the coefficients decay towards zero, some more rapidly, some slower. Now let's prune the model to see what happens to our test error, by applying the same per-feature pruning logic we had before:
+
+```python
+degrees_to_try = range(0, best_degree)
+pruned_pipeline = deepcopy(best_pipeline)
+
+for feature in range(X_train.shape[1]):
+    best_deg = 0
+    best_error = np.inf
+    for deg in degrees_to_try:
+        candidate = prune_feature(pruned_pipeline, feature, deg)
+        pred = candidate.predict(X_valid)
+        error = root_mean_squared_error(y_valid, pred)
+        if error <= best_error:
+            best_error = error
+            best_deg = deg
+
+    print(f"Best degree for feature {X_train.columns[feature]}: {best_deg}, validation error: {best_error}")
+    pruned_pipeline = prune_feature(pruned_pipeline, feature, best_deg)
+```
+
+```
+Best degree for feature longitude: 100, validation error: 57886.75083218771
+Best degree for feature latitude: 99, validation error: 57884.23600560439
+Best degree for feature housing_median_age: 77, validation error: 57832.46845479303
+Best degree for feature total_rooms: 1, validation error: 57258.77663424223
+Best degree for feature total_bedrooms: 13, validation error: 56978.72710952217
+Best degree for feature population: 27, validation error: 56673.91509748052
+Best degree for feature households: 27, validation error: 56453.035725897564
+Best degree for feature median_income: 8, validation error: 56142.80647476099
+```
+
+Note something interesting - the total rooms feature got a _linear_ function, it's degree is one. But the total bedrooms feature got a polynomial of degree 13. We saw before that these two features are highly correlated - so remembering a lot of parameters for both of them, intuitively, wouldn't make sense. It's just a conjecture,  since I don't have a formal proof, but I believe that the correlation between these two features we saw before is what made the regularized Ridge model "choose" to put the overall slope into the total rooms polynomial, and the finer details into the total bedrooms polynomial.
+
+What about the test error? 
+
+```python
+test_error = root_mean_squared_error(y_test, pruned_pipeline.predict(X_test))
+print(f'Test error = {test_error:.4f}')
+```
+
+```
+Test error = 58598.2801
+```
+
+Nice! We just reduced it from 59598.05 to 58598.28, by 1000 dollars, just by using the fact that the Legendre basis acts like a frequency spectrum whose higher frequencies can be pruned.
+
+# Summary
+
+The idea of truncating the spectrum of a function is, of course, not new. It probably dates back to Fourier, and his celebrated Fourier series. Of course, Fourier series are a great fit for _periodic_ functions, such as models as a function of the time of day. But it's not a very good fit for a generic feature that exhibits no periodic nature. 
+
+Legendre polynomials are one example of a non-periodic "spectrum" composed of orthogonal functions. The ideas of representing by truncating a series of orthogonal functions is abundant in signal processing, and entire research streams on signal and image denoising were built on top of this idea. What we did here was just drawing some inspiration from other scientific fields into machine learning. In some sense, we "denoised" the high degree polynomials by truncating them at lower degrees.  
+
+The idea here is by no means the best way to build a simple model with polynomial features, and it may be the case that a more thorough attempt to fit a regularized model will yield a better test error. However, the objective of this post is different - it's gaining a new insight. It's understanding that over-parametrization is what lets the model learn, automatically,  to separate signal from noise. That the Legendre polynomial basis lets us elicit this separation _explicitly_ - by observing that the fit model has a decaying coefficient spectrum that can be "denoised". This wonderful property let us extract the simple model hiding inside the over-parametried model. And it is exactly this insight that will take us to the next posts in this series!
