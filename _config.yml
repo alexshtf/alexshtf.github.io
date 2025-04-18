@@ -27,6 +27,8 @@ google_site_verification: rjnh8Vn7SLOIBKgGMei2oc5VP-dVUr9j_wR5fucMn-o
 links_to_prev_next: true
 
 remote_theme: jekyll/minima
+disqus:
+  shortname: alexshtf-github-io
 
 minima:
   social_links:
