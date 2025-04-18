@@ -13,7 +13,7 @@ Last time we did a small curve fitting exercise - we fit high degree polynomials
 
 In this post we shall study this phenomenon not for fitting a curve, but for fitting a regression model to our favorite dataset in this blog - the California Housing dataset. When writing this post I learned something surprising and new, and I hope to surprise you as well. This may not be a new state of the art method, but it is a surprising insight, heavily inspired by a short online [discussion](https://x.com/bremen79/status/1907132804313272371)  with Prof. Francesco Orabona about what does it mean for a model to be "simple". In fact, this discussion is what led me to write this post.
 
-As always, the code can be found in a [notebook]() you can deploy to Colab and play with yourself. There will be no formulas or math in this post - mostly code and plots. So let's get started!
+As always, the code can be found in a [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/calirofnia_housing_legendre_pruning.ipynb) you can deploy to Colab and play with yourself. There will be no formulas or math in this post - mostly code and plots. So let's get started!
 
 # Double-descent with california housing
 
