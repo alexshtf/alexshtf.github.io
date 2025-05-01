@@ -33,6 +33,7 @@ title: About me
   ([paper]({{ "/assets/geosemantic.pdf" | absolute_url }}), [paper supplemental]({{ "/assets/geosemantic_supplemental.pdf" | absolute_url }}), [video](https://www.youtube.com/watch?v=YsqdFFU6T2c))
 
 ## Academic service
+- Reviewer, KDD 2025
 - Area Chair, The Web Conference 2025
 - Reviewer, ICLR 2025
 - External Reviewer, RecSys 2024
