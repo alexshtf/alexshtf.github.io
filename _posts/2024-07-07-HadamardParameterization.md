@@ -1,5 +1,5 @@
 ---
-≠layout: post
+layout: post
 title:  "Fun with sparsity in PyTorch via Hadamard product parametrization"
 tags: [pytorch,machine-learning,sparse,sgd,hadamard-parametrization,factorization-machine]
 description: We demonstrate how we can reduce model size by pruning un-needed neurons.

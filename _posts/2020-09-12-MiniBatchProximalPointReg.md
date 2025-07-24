@@ -1,5 +1,5 @@
 ---
-≠layout: post
+layout: post
 title: “Proximal Point with Mini Batches - Regularized Convex On Linear"
 tags: [machine-learning, optimization, proximal-point, stochastic-optimization, theory]
 description: The mini-batch version of the proximal point method for regularized convex-on-linear losses requires solving a low-dimensional convex dual problem. We explore how the regularizer fits in the dual problem, so that our computational complexity will be linear in the dimension of the model.
