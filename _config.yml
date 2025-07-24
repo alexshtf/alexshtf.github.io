@@ -26,26 +26,33 @@ google_analytics: G-4S4DZQYFHM
 google_site_verification: rjnh8Vn7SLOIBKgGMei2oc5VP-dVUr9j_wR5fucMn-o
 links_to_prev_next: true
 
-remote_theme: jekyll/minima
-disqus:
-  shortname: alexshtf-github-io
+remote_theme: "jekyll/minima@79af56ab8c586ebcfaff136c1378b79e0c38abb2"
 
 minima:
   social_links:
-    - { platform: github, user_url: "https://github.com/alexshtf" }
-    - { platform: x, user_url: "https://x.com/AlexShtf" }
-    - { platform: linkedin, user_url: "https://www.linkedin.com/in/alexshtf" }
-    - { platform: stackoverflow, user_url: "https://stackoverflow.com/users/532057/alex-shtoff" }
-    - { platform: google_scholar, user_url: "https://scholar.google.com/citations?user=XcpQMwwAAAAJ&hl=en" }
+    - title: GitHub
+      icon: github
+      url: "https://github.com/alexshtf"
+    - title: X
+      icon: x-twitter
+      url: "https://x.com/AlexShtf"
+    - title: LinkedIn
+      icon: linkedin
+      url: "https://www.linkedin.com/in/alexshtf"
+    - title: Stack Overflow
+      icon: stack-overflow
+      url: "https://stackoverflow.com/users/532057/alex-shtoff"
+    - title: Google Scholar
+      icon: google-scholar
+      url: "https://scholar.google.com/citations?user=XcpQMwwAAAAJ"
 
 author:
   name: Alex Shtoff
   email: alex.shtf@gmail.com
-  
+
 # Build settings
 markdown: kramdown
 
-  
 kramdown:
   math_engine: mathjax
   syntax_highlighter: rouge
