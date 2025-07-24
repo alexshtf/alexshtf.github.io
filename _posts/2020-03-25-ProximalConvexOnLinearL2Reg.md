@@ -1,5 +1,5 @@
 ---
-≠layout: post
+layout: post
 title:  “Proximal Point - regularized convex on linear I"
 tags: [machine-learning, optimization, proximal-point, online-optimization, online-learning, logistic-regression, regularization]
 comments: true

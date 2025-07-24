@@ -1,5 +1,5 @@
 ---
-≠layout: post
+layout: post
 title:  “Proximal Point with Mini Batches"
 tags: [machine-learning, optimization, proximal-point, online-optimization, online-learning, theory]
 description: Present the mini-batch version of the stochastic proximal point algorithm, which uses a mini-batch of training samples
