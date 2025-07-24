@@ -53,6 +53,7 @@ plugins:
   - jekyll-feed
   - jekyll-sitemap
   - jekyll-remote-theme
+  - jekyll-seo-tag
 
 header_pages:
   - about.md
