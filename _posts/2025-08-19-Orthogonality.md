@@ -18,6 +18,7 @@ The Legendre basis is informative, in this sense, only if our features are unifo
 # Orthogonality = informativeness
 
 So that we all are on the same page, let's recall why orthogonalit bases produce uncorrelated features.  Recall, the two polynomials $$P_i$$ and $$P_j$$ defined on $$[-1, 1]$$ are orthogonal if
+
 $$
 \langle P_i, P_j \rangle = \int_{-1}^1 P_i(x) P_j(x) dx = 0,
 $$
@@ -340,33 +341,41 @@ $$
 
 may span a radically different set of functions. Especially if we take only a finite number of basis functions, like we do in machine learning. 
 
-For example, if our original basis was bounded, but the ratio $$\sqrt{\frac{w}{u}}$$ isn't, then the new basis suddenly consists of unbounded functions that may grow to infinity.  Alternatively, if the ratio $$\sqrt{\frac{w}{u}}$$ decays towards zero, then the new basis also decays towards zero. 
+For example, if our original basis was bounded, but the ratio $$\sqrt{w / u}$$ isn't, then the new basis suddenly consists of unbounded functions that may grow to infinity.  Alternatively, if this ratio decays towards zero, then the new basis also decays towards zero. 
 
 For example, suppose one of our features is the total time the user spent on our website in the last month. Probably, the effect of this feature on user behavior "saturates" at some point - users who spent 5 minutes may be different than the ones that spent 10 minutes, but those that spent 1000 minutes may not be that different from those that spent 10000 minutes. We certainly would _not_ want a function that grows to infinity, as the value of our raw feature grows!
 
-This is the main reason, I believe, this trick is less useful in ML, unless we actually want to design a certain class of models with prescribed properties, such as growth or decay, but also adapt to a given feature distribution. You can also mix and mach both approaches to design a family of feature orthogonal w.r.t the weight of your choice, but also have the desired properties you want, such as growth or decay. These desired properties are the _inductive bias_ you build into your model to help it generalize better to unseen data. 
+You can also mix and mach both approaches to design a family of feature orthogonal w.r.t the weight of your choice, but also have the desired properties you want, such as growth or decay. These desired properties are the _inductive bias_ you build into your model to help it generalize better to unseen data. 
 
 This mixing and matching sounds easy, but it may not be so. We'll give a simple example, just to give you the feeling. Suppose my total time on the website has a distribution with CDF $$U$$, and I want features that decay towards zero, because the effect of this total time eventually flattens out. If we take some mapping $$T: [0, \infty) \to [-1, 1]$$, we can construct a basis from Legendre polynomials:
+
 $$
 P_0(T(x)), P_1(T(x)), P_2(T(x)), ...
 $$
+
 This basis will be orthogonal w.r.t the weight $$T'(x)$$. But it does _not_ decay towards zero, so we might want to multiply it by some function that decays towards zero, such as $$\frac{1}{1+x}$$, and get the basis:
+
 $$
 \underbrace{\frac{P_0(T(x))}{1+x}}_{Q_0(x)}, \underbrace{\frac{P_1(T(x))}{1+x}}_{Q_1(x)}, ...
 $$
+
 According to what we saw, $$Q_0, Q_1, ...$$ is orthogonal w.r.t the weight function $$T'(x) (1 + x)^2$$. And we want this one to be aligned with our data distribution, meaning:
+
 $$
 T'(x) (1 + x^2) = a U'(x),
 $$
+
 for some constant $$a > 0$$. Equivalently
+
 $$
 T(x) = a\int \frac{U'(x)}{1+x^2}dx + b,
 $$
-where $$a$$ and $$b$$ are chosen such that $$T$$ maps to the right interval. Of course, your decaying function doesn't have to be the one we chose, it can also be something like $$\exp(-x)$$, or whatever you choose. This is where your "feature engineering" voodoo kicks in.
 
-This will ensure that our features are both orthogonal w.r.t the right weight function, the PDF of the data distribution, and also decay towards zero. But it's quite challenging to do in practice. You will both have to estimate some distribution $$U$$ from the data, and then compute an integral. Definitely not something we're used to doing at work. Thus, unless you're absolutely sure you have to build these inductive biases into your model, i.e. safety or regulations, then I wouldn't go in this direction. Definitely a huge effort compared to just stacking a `QuantileTransformer` before your Legendre basis. But it's possible to do it, and I hope you appreciate the fact that you can actually do it.
+where $$a$$ and $$b$$ are chosen such that $$T$$ maps to the right interval.  This will ensure that our features are both orthogonal w.r.t the right weight function, the PDF of the data distribution, and also decay towards zero. Of course, your decaying function doesn't have to be the one we chose, it can also be something like $$\exp(-x)$$, or whatever you choose. This is where your "feature engineering" voodoo kicks in. 
 
-Conducting an experiment to demonstrate this trick requires carefully studying data-sets and understanding which inductive biases I want to put in, so I'll leave this part as is - just theoretical. But I think it's nice having this tool in our feature engineering arsenal.
+But now we saw why this approach is less useful in practice - complexity. You will both have to estimate some distribution $$U$$ from the data, and then compute an integral. Definitely not something we're used to doing at work. Thus, unless you're absolutely sure you have to build these inductive biases into your model, i.e. safety or regulations, then I wouldn't go in this direction. Definitely a huge effort compared to just stacking a `QuantileTransformer` before your your favorite orthogonal basis. But it's possible to do it, and I hope you appreciate the fact that you can actually do it.
+
+Conducting an experiment to demonstrate this trick will require significant effort. I would have to carefully choose the inductive bias I want to put in, fit data distributions to the data, and design my mapping. So I'll leave this part as is - just theoretical. But I think it's nice knowing it's possible, and having this tool in our feature engineering arsenal.
 
 # Summary
 
