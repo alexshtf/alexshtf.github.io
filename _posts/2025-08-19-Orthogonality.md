@@ -11,8 +11,13 @@ series: "Polynomial features in machine learning"
 
 Yes, I'm making a joke of the tendency to put the words "attention" and "alignment" in any ML paper 😎. Now let's see how this provocative title is related to our adventures in the land of polynomial features. 
 
-The Legendre polynomial basis serverd us well in recent posts about orthogonality. One interesting thing we saw is that its _orthogonality_ is, in some sense _informativeness_. Recall, the two polynomials $$P_i$$ and $$P_j$$ defined on $$[-1, 1]$$ are orthogonal if
+The Legendre polynomial basis serverd us well in recent posts about polynomial features. One interesting thing we saw is that its _orthogonality_ is, in some sense _informativeness_. This is because it produces uncorrelated features, and hence each basis function, in some sense, carries information that the other basis functions do not. I'd like to devote this post to studying it a bit deeper.
 
+The Legendre basis is informative, in this sense, only if our features are uniformly distributed. But real data isn't uniformly distributed. So in this post I'd like to discuss two ways in which can deal with this practical issue. The associated notebook for reproducing all results is [here](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/orthogonality_informativeness.ipynb).
+
+# Orthogonality = informativeness
+
+So that we all are on the same page, let's recall why orthogonalit bases produce uncorrelated features.  Recall, the two polynomials $$P_i$$ and $$P_j$$ defined on $$[-1, 1]$$ are orthogonal if
 $$
 \langle P_i, P_j \rangle = \int_{-1}^1 P_i(x) P_j(x) dx = 0,
 $$
@@ -23,9 +28,9 @@ $$
 0 = \int_{-1}^1 P_i(x) P_j(x) dx \sim \frac{2}{n} \sum_{k=1}^n P_i(x_k) P_j(x_k).
 $$
 
-So any column in the data-set the model observes during training is _uncorelated_ to the other columns coming from the same orthogonal basis, and thus any such column is in some sense _informative_.
+Hence, any column in the data-set the model observes during training is _uncorelated_ to the other columns coming from the same orthogonal basis, and thus in some sense carry information that the other columns do not have.
 
-Of course, feature informativeness is not always sufficient but is necessary. And I'd like to devote this post to studying it a bit deeper. Real data isn't uniformly distributed, and from an intuitive perspective, we can try to "uniformize" it by mapping raw features to quantiles. But does it really work here, both theoretically and practically? This is what we shall explore in this post. The associated notebook for reproducing all results is [here](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/orthogonality_informativeness.ipynb).
+Informativeness, of course, is not the only important trait of a good basis for non-linear features. In fact, even the _norms_ of the orthogonal basis are important, as argued a well-written and enlightening [paper](https://arxiv.org/abs/1903.09139)[^2] by Muthukumar et. al. But here, in this post, we focus mainly on orthogonality as informativeness.
 
 # Weighted orthogonality
 
@@ -37,25 +42,25 @@ $$
 
 The contribution of every two components at index $$i$$ is weighted by the weight $$w_i$$.
 
-Similarly, given a  _weight function_ $$w(x) \geq 0$$  integrable over the domain $$D$$. We can define a weighted inner product between two functions on that domain:
+Similarly, given a  _weight function_ $$w(x)>0$$  integrable over the domain $$D$$, we can define a weighted inner product between two functions on that domain:
 
 $$
 \langle f, g\rangle_w = \int_{D} f(x)g(x)w(x)dx
 $$
 
-In particular, we can say that the Legendre basis is orthogonal on $$D = [-1, 1]$$ according to the _uniform weight_ $$w(x) = 1$$.
+The contribution at each point $$x$$ to the integral is weighted by the weight $$w(x)$$. The Legendre basis, for example, is orthogonal on $$D = [-1, 1]$$ according to the _uniform weight_ $$w(x) = 1$$.
 
-Why is it interesting? Well, suppose without loss of generality that $$w(x)$$ is normalized such that  $$\int_{D} w(x) = 1$$. If it's not, we can always divide it by its integral. So it can be thought of as PDF of some distribution a probability distribution over $$x$$. Now the inner product is again just an expectation, and therefore if our data points $$x_1, \dots, x_n$$ come from the distribution with PDF $$w$$, then:
+But how is it related to ML? Well, suppose without loss of generality that $$w(x)$$ is normalized such that  $$\int_{D} w(x) = 1$$. If it's not, we can always divide it by its integral. Now, it can be thought of as PDF of some probability distribution  over $$x$$, and therefore the inner product is just an expectation. Therefore if our data points $$x_1, \dots, x_n$$ come from that distribution, then
 
 $$
 \langle f, g \rangle_w = \mathbb{E}_x \left[ f(x) g(x) \right] \sim \frac{1}{n} \sum_{i=1}^n f(x_i) g(x_i).
 $$
 
-Given some raw feature $$x$$ distributed according to this distribution, the two features $$f(x)$$ and $$g(x)$$ are uncorrlated. Imagine we know, or can estimate the distribution $$W$$ and its PDF $$w$$ - how do we come up with a basis of functions orthogonal according to weight of our choice? 
+Consequently, if $$f$$ and $$g$$ are orthogonal w.r.t our inner product, the two features $$f(x)$$ and $$g(x)$$ are uncorrlated, or informative. 
+
+If we know the distribution of our data, or can estimate it, we would like to construct an orthogonal basis that is orthogonal w.r.t its PDF as a weight. The differential equations community has been doing it for a long time - they are interested by approximating differential equation solutions using simple basis functions. The two simple tricks in this post are taken from a recent survey paper by Shen and Wang[^1]. One of them I believe is useful in practice, whereas the other one is harder to control and apply in ML models, but it's so simple that it's worth mentioning.
 
 # The mapping trick
-
-Turns out the differential equations community dealt with similar issues, and came up with many solutions. Here we will consider the simplest one, which I think is best described in a recent survey paper by Shen and Wang[^1].  
 
 Let's focus on the Legendre basis that is orthogonal on $$[-1, 1]$$. Instead of min-max scaling, which we did in previous posts, suppose we use some invertible and differentiable function $$\phi: D \to [-1, 1]$$ that maps our feature from its original domain. In terms of the raw feature, our basis functions are
 
@@ -309,14 +314,67 @@ We see similar results. Our almost orthogonal basis outperforms naive scaling.
 
 Obviously, in practice the degree is a tunable parameter. Its performance should be tested on a validation set, and the best configuraion should then be employed on the test set. But if the same phenomenon happens across many degrees - the conclusion is quite obvious, at least for this dataset.
 
-# Summary
-
 This is not a paper, and this is not a thorough benchmark on a variety of data-sets. This is not the point - the point is that even though data speak, theory guides. And its guidance can be oftentimes useful, if you listen carefully. 
 
-Now it appears clear why the provocative title fits this post - we indeed paid close attention to the alignment between our non-linear features and the data distribution. This alignment is manifested in the form of the weight of the inner-product space our basis functions live in.
+# The square root trick
+
+Suppose we have two functions $$f, g$$ orthogonal w.r.t some weight $$w$$, but we care about orthogonality w.r.t the weight $$u$$. We can use the very deep mathematical result that multiplying and dividing by the same number has no effect:
+
+$$
+f(x) g(x) w(x) = \sqrt{\frac{w(x)}{u(x)}} f(x) \sqrt{\frac{w(x)}{u(x)}} g(x) u(x)
+$$
+
+This looks a bit hairy, but all we did was multiply and divide by $$u(x)$$. Consequently, if $$\langle f, g \rangle_w = 0$$, then
+
+$$
+\left\langle \sqrt{\frac{w}{u}}f, \sqrt{\frac{w}{u}} g \right \rangle_u = 0.
+$$
+
+So taking a basis $$Q_0, Q_1, \dots$$ orthogonal w.r.t $$w$$, by multiplying all functions by $$\sqrt{\frac{w}{u}}$$ we obtain a basis orthogonal w.r.t $$u$$. This reminds the well-known [importance sampling](https://en.wikipedia.org/wiki/Importance_sampling) Monte-Carlo method, where we can choose a more convenient distribution to sample from by multiplying and dividing by a density.
+
+This seems useful, right? Easy peasy - just multiply all basis functions by a ratio of two functions, and we're done. But it's not that simple, because the new basis 
+
+$$
+\sqrt{\frac{w}{u}} Q_0, \sqrt{\frac{w}{u}} Q_1, \dots 
+$$
+
+may span a radically different set of functions. Especially if we take only a finite number of basis functions, like we do in machine learning. 
+
+For example, if our original basis was bounded, but the ratio $$\sqrt{\frac{w}{u}}$$ isn't, then the new basis suddenly consists of unbounded functions that may grow to infinity.  Alternatively, if the ratio $$\sqrt{\frac{w}{u}}$$ decays towards zero, then the new basis also decays towards zero. 
+
+For example, suppose one of our features is the total time the user spent on our website in the last month. Probably, the effect of this feature on user behavior "saturates" at some point - users who spent 5 minutes may be different than the ones that spent 10 minutes, but those that spent 1000 minutes may not be that different from those that spent 10000 minutes. We certainly would _not_ want a function that grows to infinity, as the value of our raw feature grows!
+
+This is the main reason, I believe, this trick is less useful in ML, unless we actually want to design a certain class of models with prescribed properties, such as growth or decay, but also adapt to a given feature distribution. You can also mix and mach both approaches to design a family of feature orthogonal w.r.t the weight of your choice, but also have the desired properties you want, such as growth or decay. These desired properties are the _inductive bias_ you build into your model to help it generalize better to unseen data. 
+
+This mixing and matching sounds easy, but it may not be so. We'll give a simple example, just to give you the feeling. Suppose my total time on the website has a distribution with CDF $$U$$, and I want features that decay towards zero, because the effect of this total time eventually flattens out. If we take some mapping $$T: [0, \infty) \to [-1, 1]$$, we can construct a basis from Legendre polynomials:
+$$
+P_0(T(x)), P_1(T(x)), P_2(T(x)), ...
+$$
+This basis will be orthogonal w.r.t the weight $$T'(x)$$. But it does _not_ decay towards zero, so we might want to multiply it by some function that decays towards zero, such as $$\frac{1}{1+x}$$, and get the basis:
+$$
+\underbrace{\frac{P_0(T(x))}{1+x}}_{Q_0(x)}, \underbrace{\frac{P_1(T(x))}{1+x}}_{Q_1(x)}, ...
+$$
+According to what we saw, $$Q_0, Q_1, ...$$ is orthogonal w.r.t the weight function $$T'(x) (1 + x)^2$$. And we want this one to be aligned with our data distribution, meaning:
+$$
+T'(x) (1 + x^2) = a U'(x),
+$$
+for some constant $$a > 0$$. Equivalently
+$$
+T(x) = a\int \frac{U'(x)}{1+x^2}dx + b,
+$$
+where $$a$$ and $$b$$ are chosen such that $$T$$ maps to the right interval. Of course, your decaying function doesn't have to be the one we chose, it can also be something like $$\exp(-x)$$, or whatever you choose. This is where your "feature engineering" voodoo kicks in.
+
+This will ensure that our features are both orthogonal w.r.t the right weight function, the PDF of the data distribution, and also decay towards zero. But it's quite challenging to do in practice. You will both have to estimate some distribution $$U$$ from the data, and then compute an integral. Definitely not something we're used to doing at work. Thus, unless you're absolutely sure you have to build these inductive biases into your model, i.e. safety or regulations, then I wouldn't go in this direction. Definitely a huge effort compared to just stacking a `QuantileTransformer` before your Legendre basis. But it's possible to do it, and I hope you appreciate the fact that you can actually do it.
+
+Conducting an experiment to demonstrate this trick requires carefully studying data-sets and understanding which inductive biases I want to put in, so I'll leave this part as is - just theoretical. But I think it's nice having this tool in our feature engineering arsenal.
+
+# Summary
+
+Now it appears clear why the provocative title fits this post - we indeed paid close attention to the alignment between our non-linear features and the data distribution. This alignment is manifested in the form of the weight of the inner-product space our basis functions live in. I will repeat myself here as well - data speaks, but theory guides, if you care to listen.
 
 I believe our adventures with continuous numerical feature engineering using polynomials have come to a  conclusion. Our next adventures may be about related or totally different subject. It has been a very enlightening experience for me, and I hope it was enlightening for you as well.
 
 # References
 
 [^1]: Shen, J. and Wang, L.L., 2009. Some recent advances on spectral methods for unbounded domains. *Communications in computational physics*, *5*(2-4), pp.195-241.
+[^2]: Muthukumar, V., Vodrahalli, K., Subramanian, V. and Sahai, A., 2019. Harmless interpolation of noisy data in regression. *arXiv preprint arXiv:1903.09139*.
