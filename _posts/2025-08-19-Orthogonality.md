@@ -346,7 +346,7 @@ may span a radically different set of functions. Especially if we take only a fi
 
 For example, if our original basis was bounded, but the ratio $$\frac{1}{u}$$ isn't, then the new basis suddenly consists of unbounded functions that may grow to infinity.  Alternatively, if this ratio decays towards zero, then the new basis functions also decay towards zero. 
 
-Let's look at a concrete case to understand the issue. Suppose one of our feature $$x$$ is the total time the user spent on our website in the last month. Probably, the effect of this feature on user behavior "flattens" at some point - users who spent 5 minutes may be different than the ones that spent 10 minutes, but those that spent 10 hours may not be that different from those that spent 20. We certainly would _not_ want a function that grows to infinity as $$x$$ grows!
+Let's look at a concrete case to understand the issue. Suppose our feature $$x$$ is the total time the user spent on our website in the last month. Probably, the effect of this feature on user behavior "flattens" at some point - users who spent 5 minutes may be different than the ones that spent 10 minutes, but those that spent 10 hours may not be that different from those that spent 20. We certainly would _not_ want a function that grows to infinity as $$x$$ grows!
 
 But this idea of dividing by $$u$$ gives us some degree of control. You can mix it with the mapping approach to design a family of feature orthogonal w.r.t the weight of your choice, but also have the desired properties you want, such as growth or decay. These desired properties are the _inductive bias_ you bake into your model to help it generalize better to unseen data. 
 
