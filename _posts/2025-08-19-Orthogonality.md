@@ -59,7 +59,7 @@ $$
 
 Consequently, if $$f$$ and $$g$$ are orthogonal w.r.t our inner product, the two features $$f(x)$$ and $$g(x)$$ are uncorrlated, or informative. 
 
-If we know the distribution of our data, or can estimate it, we would like to construct an orthogonal basis that is orthogonal w.r.t its PDF as a weight. The differential equations community has been doing it for a long time - they are interested by approximating differential equation solutions using simple basis functions. The two simple tricks in this post are taken from a recent survey paper by Shen and Wang[^1]. One of them I believe is useful in practice, whereas the other one is harder to control and apply in ML models, but it's so simple that it's worth mentioning.
+If we know the distribution of our data, or can estimate it, we would like to construct an orthogonal basis that is orthogonal w.r.t its PDF as a weight. The differential equations community has been doing it for a long time - they are interested by approximating differential equation solutions using simple basis functions. The two simple tricks in this post are taken from a recent survey paper by Shen and Wang[^1]. One of them I believe is useful in practice, whereas the other one is harder to control and apply in ML models. But I believe both approaches are worth mentioning.
 
 # The mapping trick
 
@@ -211,21 +211,21 @@ pipeline = Pipeline([
     ('lin-reg', LinearRegression()),
 ])
 pipeline.fit(X_train, y_train)
-root_mean_squared_error(y_valid, pipeline.predict(X_valid))
+root_mean_squared_error(y_test, pipeline.predict(X_test))
 ```
 
 ```
-58461.45430931264
+62672.703496184964
 ```
 
-Appears to be working. Finally, let's compare to our min-max scaling strategy we tried in previous posts:
+Let's compare to our min-max scaling strategy we tried in previous posts:
 
 ```python
 from sklearn.preprocessing import MinMaxScaler
 
 def minmax_legendre_features(degree=8):
     return Pipeline([
-        ('scaler', MinMaxScaler(clip=True)),
+        ('scaler', MinMaxScaler(feature_range=(-1, 1), clip=True)),
         ('polyfeats', LegendreScalarPolynomialFeatures(degree=degree)),
     ])
 
@@ -234,86 +234,89 @@ pipeline = Pipeline([
     ('lin-reg', LinearRegression()),
 ])
 pipeline.fit(X_train, y_train)
-root_mean_squared_error(y_valid, pipeline.predict(X_valid))
+root_mean_squared_error(y_test, pipeline.predict(X_test))
 ```
 
 ```
-60655.269850602985
+63426.15965332127
 ```
 
 So at least for the default Legendre polynomial degree, the approximately orthogonal features appear to work quite well. What Let's try to compare several degrees:
 
 ```python
-for deg in range(1, 51, 5):
+for deg in range(1, 22, 2):
     pipeline = Pipeline([
         ('minmax-legendre', minmax_legendre_features(degree=deg)),
         ('lin-reg', LinearRegression()),
     ])
     pipeline.fit(X_train, y_train)
-    minmax_rmse = root_mean_squared_error(y_valid, pipeline.predict(X_valid))
+    minmax_rmse = root_mean_squared_error(y_test, pipeline.predict(X_test))
 
     pipeline = Pipeline([
         ('ortho-features', ortho_features_pipeline(degree=deg)),
         ('lin-reg', LinearRegression()),
     ])
     pipeline.fit(X_train, y_train)
-    ortho_rmse = root_mean_squared_error(y_valid, pipeline.predict(X_valid))
+    ortho_rmse = root_mean_squared_error(y_test, pipeline.predict(X_test))
 
     print(f'Degree = {deg}, minmax_rmse = {minmax_rmse:.2f}, ortho_rmse = {ortho_rmse:.2f}')
 ```
-
+The output is:
 ```
-Degree = 1, minmax_rmse = 64221.56, ortho_rmse = 70346.28
-Degree = 6, minmax_rmse = 61380.99, ortho_rmse = 60371.41
-Degree = 11, minmax_rmse = 59600.98, ortho_rmse = 58963.64
-Degree = 16, minmax_rmse = 59042.73, ortho_rmse = 57859.88
-Degree = 21, minmax_rmse = 58242.86, ortho_rmse = 55976.41
-Degree = 26, minmax_rmse = 57573.14, ortho_rmse = 55552.21
-Degree = 31, minmax_rmse = 57825.45, ortho_rmse = 54469.87
-Degree = 36, minmax_rmse = 58483.18, ortho_rmse = 54647.26
-Degree = 41, minmax_rmse = 58489.10, ortho_rmse = 55516.40
-Degree = 46, minmax_rmse = 58228.28, ortho_rmse = 54655.46
+Degree = 1, minmax_rmse = 67775.24, ortho_rmse = 74588.32
+Degree = 3, minmax_rmse = 65137.16, ortho_rmse = 67551.46
+Degree = 5, minmax_rmse = 64054.74, ortho_rmse = 65010.42
+Degree = 7, minmax_rmse = 63523.41, ortho_rmse = 63297.67
+Degree = 9, minmax_rmse = 63440.02, ortho_rmse = 61606.44
+Degree = 11, minmax_rmse = 63305.14, ortho_rmse = 61438.60
+Degree = 13, minmax_rmse = 65575.86, ortho_rmse = 61237.12
+Degree = 15, minmax_rmse = 175047.47, ortho_rmse = 60611.78
+Degree = 17, minmax_rmse = 175270.39, ortho_rmse = 60680.52
+Degree = 19, minmax_rmse = 781416.93, ortho_rmse = 60111.46
 ```
 
-At least on this dataset, the truly orthogonal features appear to be slightly better. What about Ridge regression? Maybe it's somewhat different?
+At least on this dataset, the truly orthogonal features appear to be better. Note, how the error of the naively-scaled basis rapidly increases - we're losing informativeness. Of course, we know that if we crank-up the degree to 10,000, we will observe double descent, and all the other nice stuff we saw in previous posts. But that's not the point of this post.
+
+What about Ridge regression? Maybe it's somewhat different? It should be - regularization should "tame" the behavior of the min-max scaled features. But are the orghogonal features still better?
 
 ```python
 from sklearn.linear_model import RidgeCV
 
-for deg in range(1, 51, 5):
+for deg in range(1, 22, 2):
     pipeline = Pipeline([
         ('minmax-legendre', minmax_legendre_features(degree=deg)),
         ('lin-reg', RidgeCV()),
     ])
     pipeline.fit(X_train, y_train)
-    minmax_rmse = root_mean_squared_error(y_valid, pipeline.predict(X_valid))
+    minmax_rmse = root_mean_squared_error(y_test, pipeline.predict(X_test))
 
     pipeline = Pipeline([
         ('ortho-features', ortho_features_pipeline(degree=deg)),
         ('lin-reg', RidgeCV()),
     ])
     pipeline.fit(X_train, y_train)
-    ortho_rmse = root_mean_squared_error(y_valid, pipeline.predict(X_valid))
+    ortho_rmse = root_mean_squared_error(y_test, pipeline.predict(X_test))
 
     print(f'Degree = {deg}, minmax_rmse = {minmax_rmse:.2f}, ortho_rmse = {ortho_rmse:.2f}')
 ```
-
+The output is
 ```
-Degree = 1, minmax_rmse = 64229.96, ortho_rmse = 70225.96
-Degree = 6, minmax_rmse = 61331.81, ortho_rmse = 60228.50
-Degree = 11, minmax_rmse = 60766.44, ortho_rmse = 58894.79
-Degree = 16, minmax_rmse = 60439.46, ortho_rmse = 57715.60
-Degree = 21, minmax_rmse = 60184.00, ortho_rmse = 55896.34
-Degree = 26, minmax_rmse = 59718.13, ortho_rmse = 55648.70
-Degree = 31, minmax_rmse = 58930.99, ortho_rmse = 54366.58
-Degree = 36, minmax_rmse = 58237.94, ortho_rmse = 54820.64
-Degree = 41, minmax_rmse = 58440.19, ortho_rmse = 55436.90
-Degree = 46, minmax_rmse = 58080.09, ortho_rmse = 54969.96
+Degree = 1, minmax_rmse = 67771.06, ortho_rmse = 74482.30
+Degree = 3, minmax_rmse = 65121.63, ortho_rmse = 67485.67
+Degree = 5, minmax_rmse = 64077.37, ortho_rmse = 64971.80
+Degree = 7, minmax_rmse = 63541.46, ortho_rmse = 63380.61
+Degree = 9, minmax_rmse = 63394.64, ortho_rmse = 61650.67
+Degree = 11, minmax_rmse = 62889.19, ortho_rmse = 61386.24
+Degree = 13, minmax_rmse = 62305.72, ortho_rmse = 61192.17
+Degree = 15, minmax_rmse = 62276.36, ortho_rmse = 60649.21
+Degree = 17, minmax_rmse = 62045.29, ortho_rmse = 60677.81
+Degree = 19, minmax_rmse = 61883.94, ortho_rmse = 60165.78
+Degree = 21, minmax_rmse = 61802.18, ortho_rmse = 59526.32
 ```
 
-We see similar results. Our almost orthogonal basis outperforms naive scaling.
+It appears they are. Except for the initial low-degree polynomials, the orthogonal features we obtained by composing the the (empirical) CDF appear to outperform naive min-max scaling.
 
-Obviously, in practice the degree is a tunable parameter. Its performance should be tested on a validation set, and the best configuraion should then be employed on the test set. But if the same phenomenon happens across many degrees - the conclusion is quite obvious, at least for this dataset.
+Obviously, in practice the degree is a tunable parameter. Its performance should be tested on a validation set, and the best configuraion should then be employed on the test set for a final evaluation. But if the same phenomenon happens across many degrees, then I believe it's convincing enough.
 
 This is not a paper, and this is not a thorough benchmark on a variety of data-sets. This is not the point - the point is that even though data speak, theory guides. And its guidance can be oftentimes useful, if you listen carefully. 
 
@@ -384,6 +387,8 @@ Conducting an experiment to demonstrate this trick will require significant effo
 # Summary
 
 Now it appears clear why the provocative title fits this post - we indeed paid close attention to the alignment between our non-linear features and the data distribution. This alignment is manifested in the form of the weight of the inner-product space our basis functions live in. I will repeat myself here as well - data speaks, but theory guides, if you care to listen.
+
+Note, that the differential equations community puts a different emphasis on these orthogonal bases. The weight function plays a different role, and the "inductive bias" we talked about in the multiplication trick is less relevant - they care about approximation power, and less about inductive biases. Both are related, but not exactly the same. So reading the paper by Shen and Wang may be interesting, but focuses on different things.
 
 # References
 
