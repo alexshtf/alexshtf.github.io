@@ -285,7 +285,7 @@ $$
 \operatorname{LogSumExp}(\mathbf{x}) = \ln\left( \sum_i e^{x_i} \right).
 $$
 
-Who! Exponentials! They overflow easily! But for some reason statistics and ML textbooks are not trying to convince you not to use it. The contrary - they encourage it! Why? Because our ML packages know how to compute it in a numerically stable manner that is  _not_ by definition. The same with polynomials - we compute with polynomials _not_ by definition, but by using carefully designed algorithms.
+Whoa! Exponentials! They overflow easily! But for some reason statistics and ML textbooks are not trying to convince you not to use it. The contrary - they encourage it! Why? Because our ML packages know how to compute it in a numerically stable manner that is  _not_ by definition. The same with polynomials - we compute with polynomials _not_ by definition, but by using carefully designed algorithms.
 
 # Summary
 
