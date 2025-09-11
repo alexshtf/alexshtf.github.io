@@ -11,11 +11,14 @@ image: /assets/polyfit_bern_100_reg5em4.png
 # A myth
 
 When fitting a non-linear model using linear regression, we typically generate new features using non-linear functions. We also know that any function, in theory, can be approximated by a sufficiently high degree polynomial. This result is known as [Weierstrass approximation theorem](https://en.wikipedia.org/wiki/Stone%E2%80%93Weierstrass_theorem). But many blogs, papers, and even books tell us that high polynomials should be avoided. They tend to oscilate and overfit, and regularization doesn't help! They even scare us with images, such as the one below, when the polynomial fit using the data points (in red) is far away from the true function (in blue):
+
 ![Polynomial overfitting]({{ "/assets/poly_overfit.png" | absolute_url }})
 
 It turns out that it's just a MYTH. There's nothing inherently wrong with high degree polynomials, and in contrast to what is typically taught, high degree polynomials are easily controlled using standard ML tools, like regularization. The source of the myth stems mainly from two misconceptions about polynomials that we will explore here. In fact, not only they are great non-linear features, certain representations also provide us with powerful control over the shape of the function we wish to learn.
 
-A colab notebook with the code for reproducing the above results is available [here](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/polyfeatures.ipynb).
+Before digging in, I want to clarify that not  _all_ properties polynomials have a notorious image for will be explored in this post. We have an entire series for that. One of those is the claim that "the biggest problem" is extrapolation. But I hope that by the end of this series you will agree with my decision to postpone it to later posts, because it is actually  _not_ "the biggest problem". It's actually not a problem at all.
+
+A colab notebook with the code for reproducing the results in this post is available [here](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/polyfeatures.ipynb).
 
 # Approximation vs estimation
 
@@ -23,7 +26,7 @@ Vladimir Vapnik, in his famous book "The Nature of Statistical Learning Theory" 
 
 Indeed, higher degree polynomials have a higher capacity to approximate arbitrary functions. And since they have more coefficients, these coefficients are harder to estimate from data. But how does it differ from other non-linear features, such as the well-known [radial basis functions](https://en.wikipedia.org/wiki/Radial_basis_function)? Why do polynomials have such a bad reputation? Are they truly hard to estimate from data?
 
-It turns out that the primary source is the standard polynomial basis for n-degree polynomials $$\mathbb{E}_n = {1, x, x^2, ..., x^n}$$. Indeed, any degree $$n$$  polynomial can be written as a linear combination of these functions:
+It turns out that the primary source is the standard polynomial basis for n-degree polynomials $$\mathbb{E}_n = \{1, x, x^2, ..., x^n\}$$. Indeed, any degree $$n$$  polynomial can be written as a linear combination of these functions:
 
 
 $$
@@ -31,7 +34,7 @@ $$
 $$
 
 
-But the standard basis $$\mathbb{B}_n$$ is _awful_ for estimating polynomials from data. In this post we will explore other ways to represent polynomials that are appropriate for machine learning, and are readily available in standard Python packages. We note, that one advantage of polynomials over other non-linear feature bases is that the only hyperparameter is their _degree_. There is no "kernel width", like in radial basis functions[^1].
+But the standard basis $$\mathbb{E}_n$$ is _awful_ for estimating polynomials from data. In this post we will explore other ways to represent polynomials that are appropriate for machine learning, and are readily available in standard Python packages. We note, that one advantage of polynomials over other non-linear feature bases is that the only hyperparameter is their _degree_. There is no "kernel width", like in radial basis functions[^1].
 
 The second source of their bad reputation is misunderstanding of Weierstrass' approximation theorem. It's usually cited as "polynomials can approximate arbitrary continuous functions". But that's not entrely true. They can approximate arbitrary continuous functions **in an interval**. This means that when using polynomial features, the data must be normalized to lie in an interval. It can be done using min-max scaling, computing empirical quantiles, or passing the feature through a sigmoid. But we should avoid the use of polynomials on raw un-normalized features.
 
@@ -92,7 +95,7 @@ $$
 \end{pmatrix}
 $$
 
-The name of the function comes from the name of the matrix - the Vandermonde matrix. Let's use it to fit a polynomial of degree $$n=50$$.
+The name of the function comes from the name of the matrix - the Vandermonde matrix. Let's use it to fit a polynomial of degree $$n=50$$. Yes, a degree higher than the number of points. There is a reason - I promised you we'll learn not to feat high degree polynomials :)
 
 ```python
 from sklearn.linear_model import LinearRegression
@@ -113,7 +116,7 @@ plt.ylim([-5, 5])
 plt.show()
 ```
 
-As expected, we got the "scary" image from the beginning of this post. Indeed, the standard basis is awful for model fitting! We hope that regularization provides a remedy, but it does not. Maybe adding some L2 regularization helps? Let's use the `Ridge` class from the `sklearn.linear_model`  package to fit an L2 regularized model:
+As expected, we got the "scary" image from the beginning of this post. Indeed, the standard basis is awful for model fitting!  We hope that regularization provides a remedy, but it does not. Maybe adding some L2 regularization helps? Let's use the `Ridge` class from the `sklearn.linear_model`  package to fit an L2 regularized model:
 
 ```python
 from sklearn.linear_model import Ridge
@@ -133,7 +136,7 @@ We get the following result:
 
 ![polyfit_standard_ridge]({{ "/assets/polyfit_standard_ridge.png" | absolute_url }})
 
-The regularization coefficient coefficient of $$\alpha=10^{-7}$$ is large enough to break the model in $$[0,0.8]$$ but not large enough to avoid over-fitting in $$[0.8, 1]$$. Increasing the coefficient clearly won't help - the model will be broken even further in $$[0, 0.8]$$.
+The regularization coefficient coefficient of $$\alpha=10^{-7}$$ is large enough to excessively smooth out the model in $$[0,0.8]$$ but not large enough to avoid large oscilations in $$[0.8, 1]$$. Increasing the coefficient clearly won't help - the model will be overly smoothed even further in $$[0, 0.8]$$.
 
 Since we will be trying several polynomial bases, it makes sense to write a more generic function for our experiments that will accept various "Vandermonde" matrix functions of the basis of our choice, fit the polynomial using the `Ridge` class, and plot it with the original function and the sample points.
 
@@ -204,23 +207,14 @@ fit_and_plot(scaled_chebvander, n=50, alpha=10)
 
 ![polyfit_cheb_reg10]({{ "/assets/polyfit_cheb_reg10.png" | absolute_url }})
 
-Appears that our polynomial is both a bad fit for the function, and extremely oscilatory. Even worse when the standard basis! Interested readers can repeat the experiment with Legendre polynomials and see a slightly better, but similar result. So what's wrong? Is everything that approximation theory tries to teach us about polynomials wrong?
+Appears that our polynomial is both a bad fit for the function, and extremely oscilatory. Even worse when the standard basis! Interested readers can repeat the experiment with Legendre polynomials and see a slightly better, but similar result. You can also try making it of degree 29, so that the number of parameters is equal to the number of samples, and get even worse results! 
+So what's wrong?  Well, we will explore these two later in this series, but at this stage we'll say they are useful for the fitting problem in two cases - when the degree is either much smaller or much larger than the number of samples. And no, the much _larger_ is not a typo. This small experiment is here to demonstrate that results from approximation theory not always directly transfer to results in machine learning. The task of fitting differs form the task of approximation.
 
-The answer stems from the fundamental difference between two tasks: 
-
-- **Interpolation** - finding a polynomial that agrees with the approximated function $$f(x)$$ _exactly_ at a set of _carefully chosen_ points
-- **Fitting** - finding a polynomial that agrees _approximately_ with a given _noisy_ set of points, which are _out of our control_.
-
-The Chebyshev and Legendre bases perform extremely well at the the interpolation task, but not at the fitting task. It turns out that the polynomial $$T_k$$ in the Chebyshev basis, and the polynomial $$P_k$$ in the Legendre basis, are both $$k$$-degree polynomials. For example, $$T_1$$ is a linear function, whereas $$T_{50}$$ is a polynomial of degree 50. These two functions are radically different. Thus, the coefficient of $$T_1$$ and $$T_{50}$$ have "different units". This property is shared with the standard basis as well. Thus, we have two issues:
-
-1. A small change of the coefficient of a high degree basis function, say the coefficient $$\alpha_{50}$$, has a huge effect on the shape of the polynomial. Thus, a small perturbation in the input data, be it from noise or a slighly different data point $$x_i$$, has a *huge* effect of the fit model. 
-2. L2 regularization makes no sense! For reasonable functions, the coefficient $$\alpha_{50}$$ should be much smaller than the coefficient $$\alpha_1$$. This is regardless of the choice of the basis!
-
-Both properties show that for the fitting, rather the interpolation tasks we need something else.
+So let's introduce another interesting basis that we shall explore here and in the following posts, since it turns out to be extremely useful for various fitting tasks. 
 
 # The Bernstein basis
 
-A remedy is provided by the [Bernstein basis](https://en.wikipedia.org/wiki/Bernstein_polynomial) $$\mathbb{B}_n = \{  b_{0,n}, \dots, b_{n, n} \}$$. These are $$n$$-degree polynomials defined by on $$[0, 1]$$ by:
+The [Bernstein basis](https://en.wikipedia.org/wiki/Bernstein_polynomial) $$\mathbb{B}_n = \{  b_{0,n}, \dots, b_{n, n} \}$$ are $$n$$-degree polynomials defined by on $$[0, 1]$$ by:
 
 $$
 b_{i,n}(x) = \binom{n}{i} x^i (1-x)^{n-i}
@@ -236,7 +230,7 @@ $$
 
 all the coefficients have the same "units". 
 
-If the formula of $$b_{i,n}(x)$$ seems familiar - you are correct. It is exactly the probability mass function of the binomial distribution for obtaining $$i$$ successes in a sequence of trials whose success probability is $$x$$. Therefore, $$b_{i,n}(x) \geq 0$$,  and $$\sum_{i=0}^n b_{i,n}(x) = 1$$ for any $$x \in [0, 1]$$. Consequently, the polynomial $$p_n(x)$$ is just a weighted average of the coefficients $$\alpha_0, \dots, \alpha_n$$. So not only the coefficients have the same "units", their "units" are also the same as the model's labels. Thus, they're much easier to regularize - they're all on the same "scale".
+If the formula of $$b_{i,n}(x)$$ seems familiar - you are correct. It is exactly the probability mass function of the binomial distribution for obtaining $$i$$ successes in a sequence of trials whose success probability is $$x$$. Therefore, $$b_{i,n}(x) \geq 0$$,  and $$\sum_{i=0}^n b_{i,n}(x) = 1$$ for any $$x \in [0, 1]$$. Consequently, the polynomial $$p_n(x)$$ is just a weighted average of the coefficients $$\alpha_0, \dots, \alpha_n$$. So not only the coefficients have the same "units", their "units" are also the same as the model's outputs. Thus, they're much easier to regularize - they're all on the same "scale".
 
 Finally, due to the equivalence with the binomial distribution p.m.f, we can implement a "Vandermonde" matrix in Python using the `scipy.stats.binom.pmf` function.
 
@@ -273,11 +267,31 @@ fit_and_plot(bernvander, n=100, alpha=5e-4)
 
 ![polyfit_bern_100_reg5em4]({{ "/assets/polyfit_bern_100_reg5em4.png" | absolute_url }})
 
-This is a polynomial of degree 100, that does not overfit!
+This is a polynomial of degree 100, that does not overfit! 
+
+
+# Are we cheating?
+One last message I want to convey before we wrap up is that our nice results are _not_ cheating. You can in theory work with $$[-100, 100]$$ and use the basis
+
+$$
+\hat{b}_{i,n}(x) = b_{i,n}(\tfrac{x}{200} + 0.5),
+$$
+
+which is just Bernstein polynomials applied to normalized features. Why isn't it cheating? Because $$\hat{b}_{i,n}(x)$$ is _also_ a polynomial! Nobody forces to compute this polynomial by raising large magnitude numbers to high degrees. The way mathematical objects are _defined_ and the way they are employed _computationally_ can, and oftentimes should differ. 
+
+In fact, this is very common in machine learning! For example, consider the cross-entropy loss. Many of us train multi-class classifiers, and even all our LLMs are pre-trained with it! But at its core  is the function
+
+$$
+\operatorname{LogSumExp}(\mathbf{x}) = \ln\left( \sum_i e^{x_i} \right).
+$$
+
+Who! Exponentials! They overflow easily! But for some reason statistics and ML textbooks are not trying to convince you not to use it. The contrary - they encourage it! Why? Because our ML packages know how to compute it in a numerically stable manner that is  _not_ by definition. The same with polynomials - we compute with polynomials _not_ by definition, but by using carefully designed algorithms.
 
 # Summary
 
-The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as if it was an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers[^4][^5] using them to represent polynomial features. Their main advantage is ease of use - we can use high degree polynomials to exploit their approximation power, and easily control model complexity with just one hyperparameter - the regularization coefficient. 
+The notorious reputation of high-degree polynomials in the machine learning community is primarily a myth. Despite it, papers, books, and blog posts are based on this premise as if it was an axiom. Bernstein polynomials are little known in the machine learning community, but there are a few papers[^4][^5] using them to represent polynomial features. Their main advantage is ease of use - we can use high degree polynomials to exploit their approximation power, and ease of regularization with the right basis.
+
+I hope the post convinced you that high degree polynomials may be useful, and you want to discover more in this series. I hope the message that the main issue is the standard basis, and not the fact that we're working in $$[0, 1]$$ or any other "cheating" has been conveyed.  _Even_ in $$[0, 1]$$, we weren't able to get a good fit with the standard basisl!
 
 In the following posts we will explore the Bernstein basis in more detail. We will use it to create polynomial features for real-world datasets and test it versus the standard basis. Moreover, we will see how to regularize the coefficients to control the shape of the function we aim to represent.. For example, what if we know that the function we're aiming to fit is increasing? Stay tuned!
 
