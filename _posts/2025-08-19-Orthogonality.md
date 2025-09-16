@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Paying attention to feature distribution alignment"
-tags: [polynomial,legendre,fourier,machine learning,artificial intelligence,ai,alignment,attention]
+tags: ["machine learning", "feature engineering", "polynomials", "polynomial regression", "Legendre polynomials", "orthogonal polynomials", "feature scaling", "quantile transformer", "correlation analysis", "California housing dataset"]
 description: We discuss the meaning of weighted-orthogonality of function bases in feature engineering, and the relationship between the weight function and the feature distribution.
 comments: true
 image: assets/orthogonality_test_pipeline.png
