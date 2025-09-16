@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  “SkLearning with Bernstein Polynomials"
-tags: ["machine learning", "feature engineering", polynomials, "polynomial regression", scikit-learn]
+tags: ["machine learning", "feature engineering", "polynomials", "polynomial regression", "scikit-learn", "Bernstein polynomials", "hyperparameter optimization", "ridge regression", "feature scaling", "California housing dataset"]
 description: We implement an Scikit-Learn transformer to generate Bernstein polynomial features, and try it out on the adult income data-set.
 comments: true
 series: "Polynomial features in machine learning"
