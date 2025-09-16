@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  “Are polynomial features the root of all evil?"
-tags: [machine-learning, feature-engineering, polynomials, polynomial-regression]
+tags: ["machine learning", "feature engineering", polynomials, "polynomial regression"]
 description: There is a well-known myth in the machine learning community - high degree polynomials are bad for modeling. In this post we debunk this myth.
 comments: true
 series: "Polynomial features in machine learning"
