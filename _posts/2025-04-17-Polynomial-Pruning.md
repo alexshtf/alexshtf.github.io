@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Off with the polynomial's tail!"
-tags: [polynomial,legendre,fourier,machine learning,artificial intelligence,ai]
+tags: [polynomial, legendre, fourier, "machine learning", "artificial intelligence", ai]
 description: Overparametrized Legendre polynomial regression with scikit-learn, with a few surprising properties!
 comments: true
 image: assets/california_housing_pruned_polys.png
