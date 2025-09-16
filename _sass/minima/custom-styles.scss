@@ -1,3 +1,6 @@
+code, pre, kbd, samp {
+  font-family: $code-font-family;
+}
 
 .PageNavigation {
   font-size: 20px;
@@ -27,7 +30,7 @@
 }
 
 .nextprevlink {
-  @include relative-font-size(1.25); 
-  flex: 1 1 0; 
-  width: 45%;  
+  @include relative-font-size(1.25);
+  flex: 1 1 0;
+  width: 45%;
 }
