@@ -1,7 +1,14 @@
-$base-font-family: 'Computer Modern Sans', sans-serif, !default;
-$code-font-family: 'Computer Modern Typewriter', monospace;
+$base-font-family: 'Inter', 'Computer Modern Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !default;
+$code-font-family: 'JetBrains Mono', 'Computer Modern Typewriter', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace !default;
 
-$brand-color:       #828282 !default;
+$brand-color:       #2a9d8f !default;
 
-$content-width:    1000px;
-$on-laptop:        1000px;
+$content-width:    1080px !default;
+$on-laptop:        1000px !default;
+
+$primary-color:     #264653 !default;
+$secondary-color:   #2a9d8f !default;
+$accent-color:      #e76f51 !default;
+$surface-color:     #ffffff !default;
+$body-background:   #f4f7fb !default;
+$muted-text-color:  #5f6c7b !default;
