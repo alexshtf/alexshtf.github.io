@@ -12,6 +12,7 @@ title: About me
 - Software development: design principles, TDD and BDD, C++, C#, F#
 
 ## Projects
+- [torchcurves](https://github.com/alexshtf/torchcurves) - Learnable parametric curves with PyTorch for continuous embeddings, shape-restricted models, or KANs. ([PyPi](https://pypi.org/project/torchcurves/), [Docs](https://torchcurves.readthedocs.io/en/stable/))
 - [Proximal point with exponential losses](https://github.com/alexshtf/exp_prox_pt) - a tiny Python library containing an fast and numerically accurate PyTorch and NumPy implementations of the proximal operator of exponential loss functions (Poisson Regression, Tilted Loss, etc)
 - [Incremental proximal point](https://github.com/alexshtf/inc_prox_pt) - a library of algorithms for building incremental proximal-point methods for machine learning.
 - [TREM OPF Solver](https://github.com/alexshtf/trem_opf_solver) - A MATLAB solver for a class of optimal power flow problems using the Tree Reduction and Expansion Method. See paper below.
