@@ -180,15 +180,15 @@ $$
 \vert \lambda_k(\mathbf{A} + \mathbf{B}) - \lambda_k(\mathbf{A}) \vert \leq \|\mathbf{B}\|_{\mathrm{op}}.
 $$
 
-So if we take a symmetric matrix $$\mathbf{A}$$ and "corrupt" or "perturb" it by another symmetric matrix $$\mathbf{B}$$, the resulting eigenvalues do not change by more than $$\|\mathbf{B}\|_{\mathrm{op}}$$. 
+So if we take a symmetric matrix $$\mathbf{A}$$ and "corrupt" or "perturb" it by another symmetric matrix $$\mathbf{B}$$, the resulting eigenvalues do not change by more than {% raw %}$$\|\mathbf{B}\|_{\mathrm{op}}$${% endraw %}. 
 
-Now, consider our model family, and supposed that the first feature $$x_1$$ was perturbed by some noise $$\varepsilon$$. By the spectral stability property, our model's output will not change by more than $$|\varepsilon| \mathbf{A}_1$$. And in general, if our feature vector was perturbed by some noise $$\boldsymbol \varepsilon$$,  we have:
+Now, consider our model family, and supposed that the first feature $$x_1$$ was perturbed by some noise $$\varepsilon$$. By the spectral stability property, our model's output will not change by more than $$\lvert\varepsilon\rvert \mathbf{A}_1$$. And in general, if our feature vector was perturbed by some noise $$\boldsymbol \varepsilon$$,  we have:
 
 $$
 |f(\mathbf{x} + {\boldsymbol \varepsilon}) - f(\mathbf{x})| \leq \Biggl \|\sum_{i=1}^n \varepsilon_i \mathbf{A}_i \Biggr\|_{\mathrm{op}} \leq \sum_{i=1}^n |\varepsilon_i| \| \mathbf{A}_i \|_{\mathrm{op}}
 $$
 
-Now, we have two ways to interpret this bound. First, from the sandpoint of robustness - we have a direct bound on the possible change of the prediction as a function of the noise $$\boldsymbol \varepsilon$$. For example, if we care about the $$\ell_2$$ norm of the noise and want to know what happens our noise is bounded as $$\|\boldsymbol \varepsilon\|_2 \leq \alpha$$,  by the Cauchy-Schwartz inequality that the model's prediction changes by at most $$\alpha \sqrt{\sum_{i=1}^n \| \mathbf{A}_i \|^2_{\mathrm{op}}}$$.
+Now, we have two ways to interpret this bound. First, from the sandpoint of robustness - we have a direct bound on the possible change of the prediction as a function of the noise $$\boldsymbol \varepsilon$$. For example, if we care about the $$\ell_2$$ norm of the noise and want to know what happens our noise is bounded as {% raw %}$$\|\boldsymbol \varepsilon\|_2 \leq \alpha$${% endraw %},  by the Cauchy-Schwartz inequality that the model's prediction changes by at most {% raw %}$$\alpha \sqrt{\sum_{i=1}^n \| \mathbf{A}_i \|^2_{\mathrm{op}}}$${% endraw %}.
 
 The second way to think of the bound is from the standpoint of interpretability - the "importance" of feature $$x_i$$ is $$\| \mathbf{A}_i \|_{\mathrm{op}}$$, because a small change of $$\varepsilon$$ to feature $$x_i$$ will make the model's prediction change by at most $$\varepsilon \| \mathbf{A}_i \|_{\mathrm{op}}$$. So this operator norm is a bound on the _effect_ of feature $$x_i$$ on the model's prediction, just like the magnitude of the coefficients on a linear model.
 
@@ -448,7 +448,7 @@ def live_plot_training(dim, n_epochs):
     ))
     plot_progress(events, max_step=n_epochs)
 
-live_plot_training(5, 300)
+live_plot_training(5, 500)
 ```
 
 ![pow_spec_props_norms_5]({{"assets/pow_spec_props_norms_5.png" | absolute_url}})
@@ -482,7 +482,7 @@ As a reference, if you try fitting an gradient-boosted decision forest using XGB
 Another way we can use our understanding of the stability properties is to regularize the model by either imposing a bound on the maximum spectral norm, or adding a regularization term that penalizes the spectral norms, so our training code will be minimizing
 
 $$
-\min_{{\boldsymbol \mu},\mathbf{A}_{1:n}} \quad \underbrace{\frac{1}{N} \sum_{i=1}^N (f(\mathbf{x}_i;{\boldsymbol \mu},\mathbf{A}_{1:n}) - y_i)^2}_{\mathrm{loss}} + \underbrace{\alpha \sum_{i=1}^n \| \mathbf{A}_i \|_{\mathrm{op}}}_{\mathrm{penalty}}
+\min_{\mathbf{A}_{1:n}, \boldsymbol\mu} \quad \underbrace{\frac{1}{N} \sum_{i=1}^N (f(\mathbf{x}_i;\mathbf{A}_{1:n}, {\boldsymbol \mu}) - y_i)^2}_{\mathrm{loss}} + \underbrace{\alpha \sum_{i=1}^n \| \mathbf{A}_i \|_{\mathrm{op}}}_{\mathrm{penalty}}
 $$
 
 This is where we shall use the `regularizer` parameter of our training function that I promised you:
