@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Robustness, interpretability, and scaling of eigenvalue models"
-tags: ["machine learning", "deep learning", "adversarial robustness", "robustness", "scaling", "spectrum", "eigenvalue"]
+tags: ["machine learning", "deep learning", "adversarial robustness", "robustness", "scaling", "spectrum", "eigenvalue", "symmetric", "hermitian"]
 description: We discuss mathematical properties that relate to the robustness and interpretability of eigenvalues as models, and demonstrate those by training on a tabular dataset. We obtain a family that improves with scaling, while remaining interpretable and robust.
 comments: true
 image: assets/pow_spec_props_norms_reg_15.png
@@ -18,7 +18,7 @@ series: "Eigenvalues as models"
 
 # Intro
 
-We all want our models to perform well. But some of us would also like our models to be efficient, robust, or interpretable. So in this post we will discuss some mathematical properties of these models that are related to these three pillars. Robustness and interpretability may mean different things to different people, so let's explain what I mean in this post. As a general note - many things I am going to talk about are true for complex Hermitian matrices, but we focus on real symmetric matrices in the post, and this is the first and the last time I am talking about complex numbers in this series.
+We all want our models to perform well. But some of us would also like our models to be efficient, robust, or interpretable. So in this post we will discuss some mathematical properties of these models that are related to these three pillars. Robustness and interpretability may mean different things to different people, so let's explain what I mean in this post. As a general note - many things I am going to talk about are true for complex Hermitian matrices, but we focus on real symmetric matrices in the post. So this is the first and the last time I mention complex numbers in this series.
 
 The robustness that we shall explore mean robustness to _corruption_ or _noise_, meaning that bounded changes to the input yield bounded changes to the output, and this bound is _known_. This is important when we want to know that a small perturbation will not make our model "go wild" and predict something totally unreasonable.
 
@@ -34,7 +34,7 @@ $$
 f(\mathbf{x}) = \lambda_k \left(\mathbf{A}_0 + \sum_{i=1}^n x_i \mathbf{A}_i \right)
 $$
 
-Some of us may remember from linear algebra that eigenvalues of symmetric matrices are _invariant_ under orthogonal transformations. So the representation of our model is not unique - we can just replace all matrices $$\mathbf{A}_i$$ by $$\mathbf{Q}\mathbf{A}_i\mathbf{Q}^\intercal$$ for some orthogonal matrix $$\mathbf{Q}$$ and obtain exactly the same model. Redundancy, of course, But we can eliminate some of this redundancy.
+Some of us may remember from linear algebra that eigenvalues of symmetric matrices are _invariant_ under orthogonal transformations. So the representation of our model is not unique - we can just replace all matrices $$\mathbf{A}_i$$ by $$\mathbf{Q}\mathbf{A}_i\mathbf{Q}^\intercal$$ for some orthogonal matrix $$\mathbf{Q}$$ and obtain exactly the same model. Redundancy, of course, is not unique to this family. Matrix factorization models[^2] have a similar redundancy. But we can eliminate some of this redundancy.
 
 Since $$\mathbf{A}_0$$ is symmetric, it has a spectral decomposition:
 
@@ -54,7 +54,7 @@ $$
 f(\mathbf{x}) = \lambda_k \left( \operatorname{diag}({\boldsymbol \mu}) + \sum_{i=1}^n x_i \mathbf{A}_i \right),
 $$
 
-where $$\boldsymbol \mu$$ is a non-decreasing vector, and $$\mathbf{A}_i$$ are symmetric matrices. So let's implement such a model in PyTorch. Do that end, we will need a way to represent a non-decreasing vector, which is quite easy - use `torch.nn.softplus` to generate non-negative increments, and sum them up. Also, I don't know what is the right initialization for our $$\boldsymbol \lambda$$, so I chose uniformly spaced points between -1 and 1:
+where $$\boldsymbol \mu$$ is a non-decreasing vector, and $$\mathbf{A}_i$$ are symmetric matrices. So let's implement such a model in PyTorch. Do that end, we will need a way to represent a non-decreasing vector, which is quite easy - use `torch.nn.softplus` to generate non-negative gaps, and sum them up. Also, I don't know what is the right initialization for our $$\boldsymbol \mu$$, so I chose uniformly spaced points between -1 and 1:
 
 ```python
 import torch
@@ -85,7 +85,7 @@ tensor([-1.0000, -0.7778, -0.5556, -0.3333, -0.1111,  0.1111,  0.3333,  0.5556,
          0.7778,  1.0000], grad_fn=<CatBackward0>)
 ```
 
-Appears to be working. Now, this may not be the best way to parameterize a non-decreasing vector, and you probably can think of other ways, but it works reasonably well, as we shall see later in the post.
+Appears to be working. Now, this may not be the best way to parameterize a non-decreasing vector, and you probably can think of other ways, but it appears to works reasonably well when we train models later in this post.
 
 So now we can use it to implement a PyTorch module for the kind of functions we seek. The code is mostly straightforward, and the only thing requires explaining is the initialization of the matrices $$\mathbf{A}_i$$, that we shall talk about right after the code snippet:
 
@@ -113,9 +113,9 @@ class MultivariateSpectral(nn.Module):
         return eigvals[..., self.eigval_idx]
 ```
 
-Regarding initialization, I am making an educated guess here. It is known[^1] that matrices with random Gaussian entries have eigenvalues have a semicircle distribution in $$[-2\sqrt{n}, 2 \sqrt{n}]$$. Moreover, since we will be summing up `num_features` matrices, it makes sense to initialise our matrices to a normal distribution with a standard deviation of $$(\sqrt{n} \cdot \mathtt{num\_features})^{-1}$$. Here, too, I don't know if this is the best initialization, but it works reasonably well.
+Regarding initialization, I am making an educated guess here. It is known[^1] that the spectrum of $$n \times n$$ matrices with random Gaussian entries converges to the semicircle distribution in $$[-2\sqrt{n}, 2 \sqrt{n}]$$ as $$n$$ grows. Moreover, since we will be summing up `num_features` matrices, it makes sense to initialise our matrices to a normal distribution with a standard deviation of $$(\sqrt{n} \cdot \mathtt{num\_features})^{-1}$$. Here, too, I don't know if this is the best initialization, but it works reasonably well.
 
-As a sanity test, let's try learning a concave function - the same function from the previous post:
+As a sanity test, let's try learning the concave function from the previous post:
 ```python
 def f(x, y):
     return -torch.log(torch.exp(x-1) + torch.exp(y+0.5) + torch.exp(-x-y+0.5))
@@ -127,7 +127,7 @@ xy = torch.stack([x, y], dim=-1)
 z = f(x, y) + 0.2 * torch.randn(10000)
 ```
 
-Here is a simple training loop to see if the loss decreases - let's fit a _concave_ model with $$5 \times 5$$ matrices
+Here is a simple training loop to see if the loss decreases - let's fit a _concave_ model (smallest eigenvalue) with $$5 \times 5$$ matrices
 ```python
 import math
 from itertools import count
@@ -265,7 +265,7 @@ def train_epoch(
     return (epoch_loss / n_train).cpu().item()
 ```
 
-The regularizer will become useful later in this post, and at this stage you can just think of it as an additional price we back-prop through. And here is our pretty-standard training loop for the model, but with a twist: we `yield` intermediate results. Why? Turns out to be easier to work with - we fully decouple training code from reporting / plotting code:
+The regularizer will become useful later in this post - it's just an additional penalty beyond the loss. And here is our pretty-standard training loop for the model, but with a twist: we `yield` intermediate results. Why? It's convenient to work with - we fully decouple training code from reporting / plotting code:
 
 ```python
 def train_model_stream(
@@ -522,7 +522,9 @@ So now after we've seen plenty of stuff - it's time for a recap.
 
 # Summary
 
-We see that matrix eigenvalues let us find a nice sweet-spot between several opposing forces - performance, robustness, and interpretability.  We will study other mathematical properties in future posts that will let us understand on a deeper level what kind of information we can elicit from those models, but as of now we have a slightly more urgent concern - training is slow! It is slow both because we need a lot of epochs, but also because each epoch is slow. This makes experimentation hard - our feedback loop is slow as well. So this is something we shall try to address in the next post!
+We saw that matrix eigenvalues let us find a nice sweet-spot between several opposing forces - performance, robustness, and interpretability. Beyond just models for tabular data, this nice idea can also be employed for another use case we haven't yet discussed - ensembling. There, too, we care about the ensemble's prediction to behave "sensibly" w.r.t the predictions of the individual models, and there too we may care about robustness and interpretability. So it's nice to have a learnable ensembling technique that both improves with scaling, but remains robust and somewhat interpretable.
+
+We will study other mathematical properties in future posts that will let us understand on a deeper level what kind of information we can elicit from those models, but as of now we have a slightly more urgent concern - training is slow! It is slow both because we need a lot of epochs, but also because each epoch is slow. This makes experimentation hard - our feedback loop is slow as well. So this is something we shall try to address in the next post!
 
 
 
@@ -531,3 +533,4 @@ We see that matrix eigenvalues let us find a nice sweet-spot between several opp
 ---
 
 [^1]: Wigner, E. P. (1958). On the distribution of the roots of certain symmetric matrices. *Annals of Mathematics*, *67*(2), 325-327.
+[^2]: Koren, Y., Bell, R., & Volinsky, C. (2009). Matrix factorization techniques for recommender systems. *Computer*, *42*(8), 30-37.
