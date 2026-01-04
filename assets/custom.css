@@ -1,0 +1,10 @@
+body {
+  font-family: "Computer Modern Sans", sans-serif;
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: "Computer Modern Typewriter", monospace;
+}
