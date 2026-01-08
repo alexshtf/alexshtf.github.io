@@ -5,7 +5,7 @@ tags: [machine-learning, optimization, proximal-point, stochastic-optimization, 
 description: The mini-batch version of the proximal point method for regularized convex-on-linear losses requires solving a low-dimensional convex dual problem. We explore how the regularizer fits in the dual problem, so that our computational complexity will be linear in the dimension of the model.
 comments: true
 series: "Proximal point"
-image: /assets/proxpt_reg_logreg_minibatch.png
+image: /assets/proxpt_logreg_minibatch.png
 
 ---
 
@@ -114,4 +114,3 @@ The entire post series was devoted to deriving efficient implementations of the 
 [^fista]: Beck A. & Teboulle M. (2009) A fast iterative shrinkage-thresholding algorithm for linear inverse problems. _SIAM Journal on Imaging Science_, 2(11), 183–202.
 [^nag]: Nesterov Y. (1983) A method for solving the convex programming problem with convergence rate O(1/k^2). _Dokl. Akad. Nauk SSSR 269_, 543-547
 [^newton]: [https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization](https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization)
-
