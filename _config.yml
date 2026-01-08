@@ -28,6 +28,15 @@ links_to_prev_next: true
 
 remote_theme: "jekyll/minima@79af56ab8c586ebcfaff136c1378b79e0c38abb2"
 
+social:
+  name: Alex Shtoff
+  links:
+    - https://x.com/AlexShtf
+    - https://www.linkedin.com/in/alexshtf
+    - https://scholar.google.com/citations?user=XcpQMwwAAAAJ
+
+google_site_verification: AFhcSFevZ4nLpAy-yUTOi2zyrF4Z4gSP0IxfSM9QJZw
+
 minima:
   social_links:
     - title: GitHub

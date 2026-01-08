@@ -2,7 +2,7 @@
 layout: post
 title:  "Robustness, interpretability, and scaling of eigenvalue models"
 tags: ["machine learning", "eigenvalue models", "adversarial robustness", "interpretability", "spectral norm", "operator norm", "regularization"]
-description: We discuss mathematical properties that relate to the robustness and interpretability of eigenvalues as models, and demonstrate those by training on a tabular dataset. We obtain a family that improves with scaling, while remaining interpretable and robust.
+description: Eigenvalue models for tabular ML: interpretable feature interactions with robustness guarantees. Theory + scaling experiments.
 comments: true
 image: assets/pow_spec_props_norms_reg_15.png
 series: "Eigenvalues as models"
