@@ -20,7 +20,7 @@ series: "Eigenvalues as models"
 
 We all want our models to perform well. But some of us would also like our models to be efficient, robust, or interpretable. So in this post we will discuss some mathematical properties of these models that are related to these three pillars. Robustness and interpretability may mean different things to different people, so let's explain what I mean in this post. As a general note - many things I am going to talk about are true for complex Hermitian matrices, but we focus on real symmetric matrices in the post. So this is the first and the last time I mention complex numbers in this series.
 
-The robustness that we shall explore mean robustness to _corruption_ or _noise_, meaning that bounded changes to the input yield bounded changes to the output, and this bound is _known_. This is important when we want to know that a small perturbation will not make our model "go wild" and predict something totally unreasonable.
+The robustness that we shall explore means robustness to _corruption_ or _noise_, meaning that bounded changes to the input yield bounded changes to the output, and this bound is _known_. This is important when we want to know that a small perturbation will not make our model "go wild" and predict something totally unreasonable.
 
 Interpretability can also mean many things. It can be interpretability for us, scientists, so that we can explain what the model does to ourselves. Alternatively, it can mean that we can explain what the model does to a business stakeholder or a regulator. Or in the extreme case, it means we can actually explain to a user why our system made the decision it made based on their input, i.e., why am I not getting a better insurance premium? In this post we shall mostly talk about the first two aspects.
 
@@ -54,7 +54,7 @@ $$
 f(\mathbf{x}) = \lambda_k \left( \operatorname{diag}({\boldsymbol \mu}) + \sum_{i=1}^n x_i \mathbf{A}_i \right),
 $$
 
-where $$\boldsymbol \mu$$ is a non-decreasing vector, and $$\mathbf{A}_i$$ are symmetric matrices. So let's implement such a model in PyTorch. Do that end, we will need a way to represent a non-decreasing vector, which is quite easy - use `torch.nn.softplus` to generate non-negative gaps, and sum them up. Also, I don't know what is the right initialization for our $$\boldsymbol \mu$$, so I chose uniformly spaced points between -1 and 1:
+where $$\boldsymbol \mu$$ is a non-decreasing vector, and $$\mathbf{A}_i$$ are symmetric matrices. So let's implement such a model in PyTorch. To that end, we will need a way to represent a non-decreasing vector, which is quite easy - use `torch.nn.softplus` to generate non-negative gaps, and sum them up. Also, I don't know what is the right initialization for our $$\boldsymbol \mu$$, so I chose uniformly spaced points between -1 and 1:
 
 ```python
 import torch
@@ -164,7 +164,7 @@ Loss = 0.0510
 Loss = 0.0458
 ```
 
-OK. The model appears to be learning - the loss is decreasing. So now that we have done eliminating most of the redundancy, let's more to more interesting stuff.
+OK. The model appears to be learning - the loss is decreasing. So now that we have eliminated most of the redundancy, let's move on to more interesting stuff.
 
 # Spectral stability and its consequences
 
@@ -182,17 +182,17 @@ $$
 
 So if we take a symmetric matrix $$\mathbf{A}$$ and "corrupt" or "perturb" it by another symmetric matrix $$\mathbf{B}$$, the resulting eigenvalues do not change by more than {% raw %}$$\|\mathbf{B}\|_{\mathrm{op}}$${% endraw %}. 
 
-Now, consider our model family, and supposed that the first feature $$x_1$$ was perturbed by some noise $$\varepsilon$$. By the spectral stability property, our model's output will not change by more than $$\lvert\varepsilon\rvert \mathbf{A}_1$$. And in general, if our feature vector was perturbed by some noise $$\boldsymbol \varepsilon$$,  we have:
+Now, consider our model family, and suppose that the first feature $$x_1$$ was perturbed by some noise $$\varepsilon$$. By the spectral stability property, our model's output will not change by more than $$\lvert\varepsilon\rvert \| \mathbf{A}_1 \|_{\mathrm{op}}$$. And in general, if our feature vector was perturbed by some noise $$\boldsymbol \varepsilon$$, we have:
 
 $$
 |f(\mathbf{x} + {\boldsymbol \varepsilon}) - f(\mathbf{x})| \leq \Biggl \|\sum_{i=1}^n \varepsilon_i \mathbf{A}_i \Biggr\|_{\mathrm{op}} \leq \sum_{i=1}^n |\varepsilon_i| \| \mathbf{A}_i \|_{\mathrm{op}}
 $$
 
-Now, we have two ways to interpret this bound. First, from the sandpoint of robustness - we have a direct bound on the possible change of the prediction as a function of the noise $$\boldsymbol \varepsilon$$. For example, if we care about the $$\ell_2$$ norm of the noise and want to know what happens our noise is bounded as {% raw %}$$\|\boldsymbol \varepsilon\|_2 \leq \alpha$${% endraw %},  by the Cauchy-Schwartz inequality that the model's prediction changes by at most {% raw %}$$\alpha \sqrt{\sum_{i=1}^n \| \mathbf{A}_i \|^2_{\mathrm{op}}}$${% endraw %}.
+Now, we have two ways to interpret this bound. First, from the standpoint of robustness - we have a direct bound on the possible change of the prediction as a function of the noise $$\boldsymbol \varepsilon$$. For example, if we care about the $$\ell_2$$ norm of the noise and want to know what happens when {% raw %}$$\|\boldsymbol \varepsilon\|_2 \leq \alpha$${% endraw %}, the Cauchy-Schwarz inequality implies that the model's prediction changes by at most {% raw %}$$\alpha \sqrt{\sum_{i=1}^n \| \mathbf{A}_i \|^2_{\mathrm{op}}}$${% endraw %}.
 
 The second way to think of the bound is from the standpoint of interpretability - the "importance" of feature $$x_i$$ is $$\| \mathbf{A}_i \|_{\mathrm{op}}$$, because a small change of $$\varepsilon$$ to feature $$x_i$$ will make the model's prediction change by at most $$\varepsilon \| \mathbf{A}_i \|_{\mathrm{op}}$$. So this operator norm is a bound on the _effect_ of feature $$x_i$$ on the model's prediction, just like the magnitude of the coefficients on a linear model.
 
-We can use this knowledge in two ways. First, having trained a model, we can interrogate it for its robustness / feature important properties by computing the spectral norms of all feature matrices. Second, we can try to impose a regularization term that imposes a limit on these operator norms. So let's try the first idea - of observing the operator norms.
+We can use this knowledge in two ways. First, having trained a model, we can interrogate it for its robustness / feature-importance properties by computing the spectral norms of all feature matrices. Second, we can try to impose a regularization term that imposes a limit on these operator norms. So let's try the first idea - of observing the operator norms.
 
 # Observing stability bounds in practice
 
@@ -389,7 +389,7 @@ def plot_progress(events, max_step):
         2, 1, figsize=(8, 8), layout='constrained'
     )
 
-    # ceate empty line objects
+    # create empty line objects
     def plot_empty(ax, label):
         return ax.plot([], [], label=label)[0]
 
@@ -453,7 +453,7 @@ live_plot_training(5, 500)
 
 ![pow_spec_props_norms_5]({{"assets/pow_spec_props_norms_5.png" | absolute_url}})
 
-OK. Nice we can see that the model is learning, and after 500 epochs we observe that the resulting model's strongest four features are longitude, latitude, population, and median income. What happens when we increasse model size? Let's try $$15 \times 15$$ matrices:
+OK. We can see that the model is learning, and after 500 epochs we observe that the resulting model's strongest four features are longitude, latitude, population, and median income. What happens when we increase model size? Let's try $$15 \times 15$$ matrices:
 
 ```python
 live_plot_training(15, 500)
@@ -475,7 +475,7 @@ We see that the train and test errors go further down, and the four top features
 
 So what we got here is really interesting! We have a model that is nonlinear and improves with scaling, while remaining interpretable in terms of feature sensitivity / importance, and we have an easy way to know its robustness properties.
 
-As a reference, if you try fitting an gradient-boosted decision forest using XGBoost, you'll observe a test error of approximately $48,000. So the eigenvalue model we see here isn't close to what trees can achieve, but on the other hand, trees do not promise us stability or robustness to small perturbations. So it's a tradeoff. 
+As a reference, if you try fitting a gradient-boosted decision forest using XGBoost, you'll observe a test error of approximately $48,000. So the eigenvalue model we see here isn't close to what trees can achieve, but on the other hand, trees do not promise us stability or robustness to small perturbations. So it's a tradeoff.
 
 # Sensitivity control
 
@@ -514,7 +514,7 @@ live_plot_reg_training(15, 500, 1e-3)
 
 ![pow_spec_props_norms_reg_15]({{"assets/pow_spec_props_norms_reg_15.png" | absolute_url}})
 
-We can see that the spectral norms are  smaller than our previous attempt with $$15 \times 15$$ matrices above,  norm grows appears to stabilize, but performance appears similar. Just the gap between the top four features and the rest of the features became more pronounced - that's the effect of delicate regularization. Larger regularization coefficient may even drive some of the matrices towards zero, similarly to $$\ell_1$$ regularization in Lasso.
+We can see that the spectral norms are smaller than our previous attempt with $$15 \times 15$$ matrices above, norm growth appears to stabilize, but performance appears similar. Just the gap between the top four features and the rest of the features became more pronounced - that's the effect of delicate regularization. A larger regularization coefficient may even drive some of the matrices towards zero, similarly to $$\ell_1$$ regularization in Lasso.
 
 Imposing such a regularizer with standard PyTorch optimizers, rather than a dedicated optimizer, may not be the optimal (pun intended!) thing to do, and some of you can probably think of better ways. But that's beside the point - the point is that we can, in principle, regularize the spectral norm to control the model's sensitivity to feature perturbations. And that is quite powerful. 
 
@@ -524,7 +524,7 @@ So now after we've seen plenty of stuff - it's time for a recap.
 
 We saw that matrix eigenvalues let us find a nice sweet-spot between several opposing forces - performance, robustness, and interpretability. Beyond just models for tabular data, this nice idea can also be employed for another use case we haven't yet discussed - ensembling. There, too, we care about the ensemble's prediction to behave "sensibly" w.r.t the predictions of the individual models, and there too we may care about robustness and interpretability. So it's nice to have a learnable ensembling technique that both improves with scaling, but remains robust and somewhat interpretable.
 
-We will study other mathematical properties in future posts that will let us understand on a deeper level what kind of information we can elicit from those models, but as of now we have a slightly more urgent concern - training is slow! It is slow both because we need a lot of epochs, but also because each epoch is slow. This makes experimentation hard - our feedback loop is slow as well. So this is something we shall try to address in the next post!
+We will study other mathematical properties in future posts that will let us understand on a deeper level what kind of information we can elicit from those models, but as of now we have a slightly more urgent concern: training is slow. We need many epochs, and each epoch is expensive. This makes experimentation hard - our feedback loop is slow as well. So this is something we shall try to address in the next post!
 
 
 
