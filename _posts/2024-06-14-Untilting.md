@@ -2,7 +2,7 @@
 layout: post
 title: "Untilting the tilted loss"
 tags: [machine-learning, tilted-loss,sgd]
-description: We study a way to represent a tilted loss as an average of losses by lifting to a higher dimensional space, and employing regular SGD
+description: "Tilted loss (log-sum-exp aggregation) interpolates between average and worst-case risk, but is tricky for SGD. Derive an 'untilting' reformulation and test it in PyTorch."
 comments: true
 image: /assets/tilted_adam_comparison.png
 ---

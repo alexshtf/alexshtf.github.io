@@ -2,7 +2,7 @@
 layout: post
 title:  "SkLearning with Bernstein Polynomials - continued"
 tags: ["machine learning", "feature engineering", "polynomials", "polynomial regression", "scikit-learn", "Bernstein polynomials", "feature interactions", "tensor products", "hyperparameter optimization", "ridge regression", "California housing dataset"]
-description: We implement an Scikit-Learn transformer to generate polynomial feature interactions using the Bernstein and the Power basis, and compare the performance of Bernstein pairwise interactions to the power basis, and to the Scikit-Learn polynomial transformer that produces interactions of equivalent length.
+description: "Add pairwise feature interactions via tensor-product polynomial bases (Bernstein or power) in scikit-learn. Compare against PolynomialFeatures on the California Housing regression task."
 comments: true
 series: "Polynomial features in machine learning"
 image: /assets/bernstein_tensor_product.png

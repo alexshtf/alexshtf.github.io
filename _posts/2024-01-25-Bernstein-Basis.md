@@ -2,7 +2,7 @@
 layout: post
 title:  “Keeping the polynomial monster under control"
 tags: ["machine learning", "feature engineering", "polynomials", "polynomial regression", "Bernstein polynomials", "shape constraints", "monotonic regression", "convex optimization", "regularization", "calibration", "cvxpy"]
-description: We explore the Bernstein basis in more depth, and learn how to use the coefficients to control the shape of the fit curve.
+description: "Bernstein coefficients act as control points for polynomial regression. This post shows how monotone and convex shape constraints become simple coefficient constraints, with theory and code."
 comments: true
 series: "Polynomial features in machine learning"
 slug: Bernstein-Basis

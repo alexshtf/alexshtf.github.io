@@ -2,7 +2,7 @@
 layout: post
 title:  "Mini-batching with in-memory datasets"
 tags: [pytorch,machine-learning,data-loader]
-description: We develop an efficient alternative to PyTorch built-in dataloader class for the case of in-memory datasets, and lightweight models.
+description: "PyTorch DataLoader can be a bottleneck when your dataset already lives in memory (especially on GPU). Benchmark the overhead and use faster minibatch iterators, including group shuffling."
 comments: true
 image: /assets/group_shuffling.png
 ---
