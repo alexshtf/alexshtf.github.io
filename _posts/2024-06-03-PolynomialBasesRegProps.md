@@ -2,7 +2,7 @@
 layout: post
 title: "Regularization properties of polynomial bases"
 tags: ["machine learning", "feature engineering", "polynomials", "polynomial regression", "scikit-learn", "Bernstein polynomials", "Chebyshev polynomials", "Legendre polynomials", "bias-variance tradeoff", "regularization", "approximation theory"]
-description: We study various polynomial bases from the bias-variance perspective, and the derivative-control properties of the Bernstein basis. This concludes our series on polynomial regression.
+description: "Why do some polynomial bases regularize better than others? A bias-variance and derivative-control tour of power, Chebyshev, Legendre, and Bernstein bases with code experiments."
 comments: true
 series: "Polynomial features in machine learning"
 image: /assets/assets/bases_bias_var_viz_0.1.png

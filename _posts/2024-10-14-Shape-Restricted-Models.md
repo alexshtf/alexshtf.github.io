@@ -2,7 +2,7 @@
 layout: post
 title:  "Shape restricted function models"
 tags: [pytorch,machine-learning,monotonic-regression,bernstein,polynomial-regression]
-description: Fitting shape-restricted functions with ease using PyTorch.
+description: "Build shape-restricted models in PyTorch by predicting Bernstein polynomial coefficients: monotone and bounded functions of a chosen feature, with flexible dependence on the rest."
 comments: true
 series: "Shape restricted models"
 image: /assets/increasing_function_model.png
@@ -571,4 +571,3 @@ Now let's get back to the realm of Bernstein polynomials. What happens if we wan
 [^7]: Grigoriy Blekherman, Pablo A. Parrilo, and Rekha R. Thomas. _Semidefinite Optimization and Convex Algebraic Geometry_. SIAM (2012)
 
 [^8]: Carl De-Boor. _A practical guide to splines_. (1993)
-

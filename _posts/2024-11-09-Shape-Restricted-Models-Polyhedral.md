@@ -2,7 +2,7 @@
 layout: post
 title:  "Shape restricted function models via polyhedral cones"
 tags: [pytorch,machine-learning,monotonic-regression,bernstein,polynomial-regression,polyhedral-cone]
-description: Advanced shape restrictions, such as combinations of monotonicity and convexity / concavity using polyhedral cones
+description: "Enforce richer shape constraints (convexity/concavity and combinations with monotonicity) by constraining coefficient vectors to polyhedral cones. Implement a PyTorch cone layer and fit concave functions."
 comments: true
 series: "Shape restricted models"
 image: /assets/polyedral_cone_layer.png
@@ -968,4 +968,3 @@ That's it! I hope you learned something new about incorporating constraints into
 [^4]: McMullen, P. (1970). The maximum numbers of faces of a convex polytope. *Mathematika*, *17*(2), 179-184.
 [^5]: Avis, D., & Fukuda, K. (1996). Reverse search for enumeration. *Discrete applied mathematics*, *65*(1-3), 21-46.
 [^6]: Fukuda, K., & Prodon, A. (1995, July). Double description method revisited. In *Franco-Japanese and Franco-Chinese conference on combinatorics and computer science* (pp. 91-111). Berlin, Heidelberg: Springer Berlin Heidelberg.
-

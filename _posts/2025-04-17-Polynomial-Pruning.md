@@ -2,7 +2,7 @@
 layout: post
 title:  "Off with the polynomial's tail!"
 tags: ["machine learning", "feature engineering", "polynomials", "polynomial regression", "Legendre polynomials", "double descent", "model pruning", "feature selection", "scikit-learn", "California housing dataset"]
-description: Overparametrized Legendre polynomial regression with scikit-learn, with a few surprising properties!
+description: "Legendre polynomial feature regression on California Housing shows double descent; a simple tail-pruning of high-degree coefficients yields smaller, competitive models. Implemented in scikit-learn."
 comments: true
 image: assets/california_housing_pruned_polys.png
 series: "Polynomial features in machine learning"

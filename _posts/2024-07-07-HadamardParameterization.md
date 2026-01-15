@@ -2,7 +2,7 @@
 layout: post
 title:  "Fun with sparsity in PyTorch via Hadamard product parametrization"
 tags: [pytorch,machine-learning,sparse,sgd,hadamard-parametrization,factorization-machine]
-description: We demonstrate how we can reduce model size by pruning un-needed neurons.
+description: "Get sparsity in PyTorch via Hadamard product parametrization: turn L1-style sparsity into simple L2 weight decay. Demos include logistic regression, group sparsity, and pruning-by-training."
 comments: true
 image: /assets/hadamard_linear_convergence_plot.png
 ---
@@ -706,4 +706,3 @@ I hope you had fun reading it as much as I had fun writing it, and see you in th
 [^8]: Belloni, Alexandre, and Victor Chernozhukov. "ℓ1-penalized quantile regression in high-dimensional sparse models." (2011): 82-130.
 [^9]: BELLONI, ALEXANDRE, and VICTOR CHERNOZHUKOV. "Least squares after model selection in high-dimensional sparse models." Bernoulli (2013): 521-547.
 [^10]: Meinshausen, Nicolai. "Relaxed lasso." Computational Statistics & Data Analysis 52.1 (2007): 374-393.
-

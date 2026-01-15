@@ -2,7 +2,7 @@
 layout: post
 title:  "Paying attention to feature distribution alignment"
 tags: ["machine learning", "feature engineering", "polynomials", "polynomial regression", "Legendre polynomials", "orthogonal polynomials", "feature scaling", "quantile transformer", "correlation analysis", "California housing dataset"]
-description: We discuss the meaning of weighted-orthogonality of function bases in feature engineering, and the relationship between the weight function and the feature distribution.
+description: "Orthogonal polynomial features are only uncorrelated when the feature distribution matches the basis weight. Use CDF/quantile transforms to align distributions and get more informative Legendre features."
 comments: true
 image: assets/orthogonality_test_pipeline.png
 series: "Polynomial features in machine learning"

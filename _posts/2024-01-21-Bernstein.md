@@ -2,7 +2,7 @@
 layout: post
 title:  “Are polynomial features the root of all evil?"
 tags: ["machine learning", "feature engineering", "polynomials", "polynomial regression", "overfitting", "regularization", "Bernstein polynomials", "approximation theory"]
-description: There is a well-known myth in the machine learning community - high degree polynomials are bad for modeling. In this post we debunk this myth.
+description: "High-degree polynomial features aren’t inherently unstable: the power basis and unscaled inputs are. This post shows how regularization and Bernstein polynomials make polynomial regression behave."
 comments: true
 series: "Polynomial features in machine learning"
 image: /assets/polyfit_bern_100_reg5em4.png
