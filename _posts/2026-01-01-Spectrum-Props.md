@@ -98,12 +98,13 @@ class MultivariateSpectral(nn.Module):
         self.eigval_idx = eigval_idx
         self.mu = Nondecreasing(dim)
         self.A = nn.Parameter(
-            torch.randn(dim, dim, 1, num_features) / (math.sqrt(dim) * num_features)
+            torch.randn(num_features, dim, dim) / (math.sqrt(dim) * num_features)
         )
 
     def forward(self, x):
-        # batches of sum of x[i] * A[i] 
-        feature_mat = (x * self.A).sum(-1).permute(2, 0, 1)
+        # batches of sum of x[i] * A[i]
+        nf, dim = self.A.shape[:2]
+        feature_mat = (x @ self.A.view(nf, dim * dim)).view(-1, dim, dim)
 
         # diag(mu) replicated per batch
         bias_mat = torch.diagflat(self.mu()).expand_as(feature_mat)
@@ -152,16 +153,16 @@ for i, xyb, zb in zip(count(), xy.split(batch_size), z.split(batch_size)):
 ```
 
 ```
-Loss = 1.3166
-Loss = 0.5477
-Loss = 0.2204
-Loss = 0.1277
-Loss = 0.0816
-Loss = 0.0739
-Loss = 0.0628
-Loss = 0.0586
-Loss = 0.0510
-Loss = 0.0458
+Loss = 0.4582
+Loss = 0.1355
+Loss = 0.0774
+Loss = 0.0649
+Loss = 0.0626
+Loss = 0.0520
+Loss = 0.0534
+Loss = 0.0516
+Loss = 0.0464
+Loss = 0.0468
 ```
 
 OK. The model appears to be learning - the loss is decreasing. So now that we have eliminated most of the redundancy, let's move on to more interesting stuff.
@@ -309,11 +310,11 @@ for event in train_model_stream(model, criterion, n_epochs=5):
 ```
 
 ```
-1	107484.25117084995	98660.8877118415
-2	95854.5373696473	89858.41412593648
-3	87353.91719906522	82952.01820090419
-4	81113.07081004539	78276.20920193197
-5	77119.19058892808	75319.17643985168
+1	109072.75280327671	99536.88016316161
+2	95295.4091119307	89540.08167748511
+3	86628.42283455568	82857.71197495822
+4	80906.37794419663	78535.01666073261
+5	77319.691256485	75821.19027087984
 ```
 
 OK - model appears to be training nicely. This trick of yielding lets us do interesting stuff - for example, we can create a new stream that yields train and test errors, together with the spectral norms of the feature matrices:
@@ -323,8 +324,10 @@ def add_spectral_norms(stream):
     for event in stream:
         model = event['model']
         with torch.no_grad():
-            matrices = model.A.permute(3, 2, 0, 1)
-            norms = tla.matrix_norm(matrices)
+            # remember - we're using only lower-triangular part of each A_i
+            matrices_sym = \
+                model.A.tril() + model.A.tril(diagonal=-1).transpose(-1, -2)
+            norms = tla.matrix_norm(matrices_sym, ord=2)
             norms = norms.ravel().cpu().tolist()
         
         yield {
@@ -349,33 +352,34 @@ for event in add_spectral_norms(train_model_stream(model, criterion, n_epochs=2)
 ```
 
 ```
- {
+  {
     'step': 1,
-    'train_error': 108996.59799459229,
-    'test_error': 99867.97799524757,
-    'norm_longitude': 0.2386510819196701,
-    'norm_latitude': 0.3564183712005615,
-    'norm_housing_median_age': 0.34519562125205994,
-    'norm_total_rooms': 0.28659239411354065,
-    'norm_total_bedrooms': 0.23927736282348633,
-    'norm_population': 0.24056264758110046,
-    'norm_households': 0.19522185623645782,
-    'norm_median_income': 0.4063502550125122
+    'train_error': 105523.77536281559,
+    'test_error': 97731.75678823328,
+    'norm_longitude': 0.12640513479709625,
+    'norm_latitude': 0.1759399175643921,
+    'norm_housing_median_age': 0.15713410079479218,
+    'norm_total_rooms': 0.17977216839790344,
+    'norm_total_bedrooms': 0.16544003784656525,
+    'norm_population': 0.19817979633808136,
+    'norm_households': 0.2670281231403351,
+    'norm_median_income': 0.33458226919174194
 }
-
 {
     'step': 2,
-    'train_error': 96591.91130978987,
-    'test_error': 90401.0083572838,
-    'norm_longitude': 0.2725176513195038,
-    'norm_latitude': 0.40763068199157715,
-    'norm_housing_median_age': 0.38611629605293274,
-    'norm_total_rooms': 0.3064548373222351,
-    'norm_total_bedrooms': 0.2526550889015198,
-    'norm_population': 0.28308284282684326,
-    'norm_households': 0.20578676462173462,
-    'norm_median_income': 0.6054275631904602
+    'train_error': 94575.6796415192,
+    'test_error': 88766.7939206047,
+    'norm_longitude': 0.15076042711734772,
+    'norm_latitude': 0.1756560057401657,
+    'norm_housing_median_age': 0.1784549206495285,
+    'norm_total_rooms': 0.18125228583812714,
+    'norm_total_bedrooms': 0.15172506868839264,
+    'norm_population': 0.19934602081775665,
+    'norm_households': 0.26696428656578064,
+    'norm_median_income': 0.47850197553634644
 }
+
+
 ```
 
 Nice! So now we can iterate and do live-plotting of everything!  This is a lengthy function with mostly boilerplate that plots two graphs - one with train/test errors, and another one with spectral norms of feature matrices. I added comments to make the code clear, but the principle is simple: we create empty plots, and gradually update them as new events arrive.
@@ -453,7 +457,7 @@ live_plot_training(5, 500)
 
 ![pow_spec_props_norms_5]({{"assets/pow_spec_props_norms_5.png" | absolute_url}})
 
-OK. We can see that the model is learning, and after 500 epochs we observe that the resulting model's strongest four features are longitude, latitude, population, and median income. What happens when we increase model size? Let's try $$15 \times 15$$ matrices:
+OK. We can see that the model is learning, and after 500 epochs we observe that the resulting model's strongest three features are longitude, latitude, and population. What happens when we increase model size? Let's try $$15 \times 15$$ matrices:
 
 ```python
 live_plot_training(15, 500)
@@ -461,7 +465,7 @@ live_plot_training(15, 500)
 
 ![pow_spec_props_norms_15]({{"assets/pow_spec_props_norms_15.png" | absolute_url}})
 
-We see that the test loss decreases with the model size, and even though the ranking between features is slightly different, the four strongest features remain longitude, latitude, median income, and population. But we also see something else - the matrix norms continue growing. Apparently, after 500 epochs, the model's parameters do not appear to be converging. Perhaps a more thorough hyper-parameter tuning would help, I don't know. But I chose a conservative option of a small learning rate and many epochs for a reason - to show that scaling model size improves performance, while keeping our model's ability to be interpretable almost as if it was linear.
+We see that the test loss decreases with the model size, and even though the ranking between features is slightly different, the three strongest features remain longitude, latitude, and population. But we also see something else - the matrix norms continue growing. Apparently, after 500 epochs, the model's parameters do not appear to be converging. Perhaps a more thorough hyper-parameter tuning would help, I don't know. But I chose a conservative option of a small learning rate and many epochs for a reason - to show that scaling model size improves performance, while keeping our model's ability to be interpretable almost as if it was linear.
 
 Let's go even further up, to $$30 \times 30$$ matrices:
 
@@ -471,7 +475,7 @@ live_plot_training(30, 500)
 
 ![pow_spec_props_norms_30]({{"assets/pow_spec_props_norms_30.png" | absolute_url}})
 
-We see that the train and test errors go further down, and the four top features remain the strongest. Again - scaling up improves performance, while keeping interpretability and computable robustness bounds.
+We see that the train and test errors go further down, and the three features previously at the top remain there. Again - scaling up improves performance, while keeping interpretability and computable robustness bounds.
 
 So what we got here is really interesting! We have a model that is nonlinear and improves with scaling, while remaining interpretable in terms of feature sensitivity / importance, and we have an easy way to compute global sensitivity bounds (which can be loose).
 
@@ -494,9 +498,9 @@ def live_plot_reg_training(dim, n_epochs, reg_coef):
     )
 
     def penalty(net):
-        # (dim x dim x 1 x n) --> (n x 1 x dim x dim)
-        matrices = net.A.permute(3, 2, 0, 1)
-        norms = tla.matrix_norm(matrices)
+        matrices_sym = \
+            net.A.tril() + net.A.tril(diagonal=-1).transpose(-1, -2)
+        norms = tla.matrix_norm(matrices_sym, ord=2)
         return reg_coef * norms.sum()
 
     criterion = nn.MSELoss()
