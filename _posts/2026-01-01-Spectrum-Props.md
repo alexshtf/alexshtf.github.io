@@ -190,7 +190,7 @@ $$
 
 Now, we have two ways to interpret this bound. First, from the standpoint of robustness - we have a direct bound on the possible change of the prediction as a function of the noise $$\boldsymbol \varepsilon$$. For example, if we care about the $$\ell_2$$ norm of the noise and want to know what happens when {% raw %}$$\|\boldsymbol \varepsilon\|_2 \leq \alpha$${% endraw %}, the Cauchy-Schwarz inequality implies that the model's prediction changes by at most {% raw %}$$\alpha \sqrt{\sum_{i=1}^n \| \mathbf{A}_i \|^2_{\mathrm{op}}}$${% endraw %}.
 
-The second way to think of the bound is from the standpoint of interpretability - the "importance" of feature $$x_i$$ is $$\| \mathbf{A}_i \|_{\mathrm{op}}$$, because a small change of $$\varepsilon$$ to feature $$x_i$$ will make the model's prediction change by at most $$\varepsilon \| \mathbf{A}_i \|_{\mathrm{op}}$$. So this operator norm is a bound on the _effect_ of feature $$x_i$$ on the model's prediction, just like the magnitude of the coefficients on a linear model.
+The second way to think of the bound is from the standpoint of interpretability: one notion of feature importance is a worst-case sensitivity bound. The quantity $$\| \mathbf{A}_i \|_{\mathrm{op}}$$ upper-bounds how much the prediction can change when only feature $$x_i$$ is perturbed, because a small change of $$\varepsilon$$ to feature $$x_i$$ will make the model's prediction change by at most $$\varepsilon \| \mathbf{A}_i \|_{\mathrm{op}}$$. So this operator norm is a bound on the _effect_ of feature $$x_i$$ on the model's prediction, just like the magnitude of the coefficients in a linear model.
 
 We can use this knowledge in two ways. First, having trained a model, we can interrogate it for its robustness / feature-importance properties by computing the spectral norms of all feature matrices. Second, we can try to impose a regularization term that imposes a limit on these operator norms. So let's try the first idea - of observing the operator norms.
 
@@ -473,9 +473,9 @@ live_plot_training(30, 500)
 
 We see that the train and test errors go further down, and the four top features remain the strongest. Again - scaling up improves performance, while keeping interpretability and computable robustness bounds.
 
-So what we got here is really interesting! We have a model that is nonlinear and improves with scaling, while remaining interpretable in terms of feature sensitivity / importance, and we have an easy way to know its robustness properties.
+So what we got here is really interesting! We have a model that is nonlinear and improves with scaling, while remaining interpretable in terms of feature sensitivity / importance, and we have an easy way to compute global sensitivity bounds (which can be loose).
 
-As a reference, if you try fitting a gradient-boosted decision forest using XGBoost, you'll observe a test error of approximately $48,000. So the eigenvalue model we see here isn't close to what trees can achieve, but on the other hand, trees do not promise us stability or robustness to small perturbations. So it's a tradeoff.
+As a reference, if you try fitting a gradient-boosted decision forest using XGBoost, you'll observe a test error of approximately $48,000. So the eigenvalue model we see here isn't close to what trees can achieve, but tree ensembles are often discontinuous and don't come with simple global sensitivity/Lipschitz certificates in the same way. So it's a tradeoff.
 
 # Sensitivity control
 
