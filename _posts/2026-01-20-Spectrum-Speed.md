@@ -26,7 +26,7 @@ Turns out PyTorch is wrong. If we look at the [official documentation](https://d
 
 > When inputs are on a CUDA device, this function synchronizes that device with the CPU.
 
-I don't know if it means that memory is copied from the GPU back to the CPU or not, since I did not dig deep into the implementation details. But apparently, eigenvalue computations with CUDA tensors with PyTorch are slow. Very slow. So in this post we will build a custom PyTorch autograd-capable eigenvalue function. To that end, we will learn two things: first, we shall learn how to make PyTorch inter-operate with another CUDA library, [CuPy](https://cupy.dev), to facilitate fast eigenvalue computation; second, we shall finally see what eigenvalue derivatives look like, so we can integrate our code with PyTorch autograd system. 
+I don't know if it means that memory is copied from the GPU back to the CPU or not, since I did not dig deep into the implementation details. But apparently, eigenvalue computations with CUDA tensors with PyTorch are slow. Very slow. So in this post we will build a custom PyTorch autograd-capable eigenvalue function. To that end, we will learn two things: first, we shall learn how to make PyTorch inter-operate with another CUDA library, [CuPy](https://cupy.dev), to facilitate fast eigenvalue computation; second, we shall finally see what eigenvalue derivatives look like, so we can integrate our code with PyTorch autograd system. All execution speeds I measure in this post are on Colab, with an NVIDIA L4 GPU, with the 2025.10 runtime.
 
 # Warm-up
 
