@@ -1,10 +1,10 @@
 ---
-Clayout: post
+layout: post
 title:  "I feel the need for Eigen-Speed"
-tags: []
-description: "TODO"
+tags: ["machine learning", "eigenvalue models", "spectral methods", "pytorch", "cuda", "cupy", "dlpack", "autograd"]
+description: "PyTorch eigenvalues on CUDA can be unexpectedly slow due to device synchronization. This post shows how to call CuPy via DLPack for fast GPU eigvalsh/eigh while keeping gradients for training."
 comments: true
-image: assets/pow_spec_props_norms_reg_15.png
+image: assets/pow_spec_props_norms_45.png
 series: "Eigenvalues as models"
 ---
 
