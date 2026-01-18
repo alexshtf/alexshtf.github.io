@@ -18,9 +18,9 @@ series: "Eigenvalues as models"
 
 # Intro
 
-Efficiency lies at the heart of the research scientist's toolbox - fast training facilitates rapid experimentation, since we get feedback quickly. But also helps reduce costs, since we can work with cheaper hardware both for training and inference.
+Efficiency lies at the heart of the research scientist's toolbox - fast training facilitates rapid experimentation, since we get feedback quickly. It also helps reduce costs, since we can work with cheaper hardware both for training and inference.
 
-I did not show it in the last post, but if you try to run the experiment with the eigenvalue model from the last post with $$30\times30$$ training on the California Housing dataset for 500 epochs, you will see that it takes _more than an hour_. And I did it using the L4 GPU on Colab. I did a small experiment with an A100, and id improved nothing.  So then I asked myself - what's wrong?
+I did not show it in the last post, but if you try to run the experiment with the eigenvalue model from the last post with $$30\times30$$ matrices on the California Housing dataset for 500 epochs, you will see that it takes _more than an hour_. And I did it on the L4 GPU on Colab. I also tried an A100, and it didn't improve things. So then I asked myself - what's wrong?
 
 Turns out PyTorch is wrong. If we look at the [official documentation](https://docs.pytorch.org/docs/2.9/generated/torch.linalg.eigvalsh.html) of the `eigvalsh` function, we see the following note:
 
@@ -36,7 +36,7 @@ Let's start from a simple eigenvalue computation test on the CPU. We'll use Jupy
 mats = torch.randn(500, 100, 100)
 ```
 
-Now let's see how fast can we compute the sum of eigenvalues of all these matrices:
+Now let's see how fast we can compute the sum of eigenvalues of all these matrices:
 
 ```python
 %%time
@@ -66,7 +66,7 @@ Wall time: 337 ms
 np.float32(56.665924)
 ```
 
-Apparently, on the CPU, NumPy is almost twice slower than PyTorch. So apparently, when our tensors are on the CPU, we can continue using PyTorch - it's pretty fast.
+Apparently, on the CPU, NumPy is almost twice slower than PyTorch. So when our tensors are on the CPU, we can continue using PyTorch - it's pretty fast.
 
 Now let's move to the GPU. Here is a similar piece of code - create a mini-batch of random matrices and compute the sum of their eigenvalues:
 ```python
@@ -74,7 +74,7 @@ mats = torch.randn(500, 100, 100, device='cuda')
 torch.linalg.eigvalsh(mats).sum()
 ```
 
-The reason I ran eigenvalue computation is "warmup" - I want PyTorch to do whatever setup it needs to run CUDA kernels, so next time we invoke `eigvalsh` it is going to be a "clean" run not contaminated by setup:
+The reason I ran the eigenvalue computation once is as a "warmup" - I want PyTorch to do whatever setup it needs to run CUDA kernels, so next time we invoke `eigvalsh` it is going to be a "clean" run not contaminated by setup:
 ```python
 %%time
 torch.linalg.eigvalsh(mats).sum()
@@ -86,11 +86,11 @@ Wall time: 788 ms
 tensor(-557.2836, device='cuda:0')
 ```
 
-Whoa! It's _twice_ slower than NumPy on CPU, and _four times_ slower than PyTorch on the CPU! Turns out PyTorch developers haven't invested that much on general-purpose scientific computing on the GPU. It's quite reasonable - it is not their main focus. So if we want to propose a new computational tool - it's up to us to make it efficient!
+Whoa! It's _twice_ slower than NumPy on CPU, and _four times_ slower than PyTorch on the CPU! Turns out PyTorch developers haven't invested that much in general-purpose scientific computing on the GPU. It's quite reasonable - it is not their main focus. So if we want to propose a new computational tool - it's up to us to make it efficient!
 
-So maybe PyTorch haven't invested in eigenvalues on GPU that much, but it doesn't mean other scientific computing libraries haven't. CuPy, a library aiming to be "NumPy on CUDA" is one of those libraries that has a very fast eigenvalue solver we can use. But how can we use it on PyTorch tensors?
+So maybe PyTorch hasn't invested in eigenvalues on GPU that much, but it doesn't mean other scientific computing libraries haven't. CuPy, a library aiming to be "NumPy on CUDA", is one of those libraries that has a very fast eigenvalue solver we can use. But how can we use it on PyTorch tensors?
 
-Turns out there is a "standard", called [dlpack](https://github.com/dmlc/dlpack) for representing multi-dimensional tensors in memory, and it is supported both by PyTorch and by CuPy. In PyTorch we have the `torch.utils.dlpack` package for converting a tensor to a dlpack "capsule" - a wrapper around its memory with appropriate metadata:
+Turns out there is a standard called [DLPack](https://github.com/dmlc/dlpack) for representing multi-dimensional tensors in memory, and it is supported both by PyTorch and by CuPy. In PyTorch we have the `torch.utils.dlpack` package for converting a tensor to a DLPack "capsule" - a wrapper around its memory with appropriate metadata:
 
 ```python
 from torch.utils import dlpack as torch_dlpack
@@ -140,7 +140,7 @@ array(-557.284, dtype=float32)
 
 Now that's FAST! 1.37 milliseconds, instead of more than 700!
 
-Of course we got a CuPy array of eigenvalues. But we can easily use dlpack to convert it back to a PyTorch tensor. Since there is no memory copy, it practically incurs no cost, as you can see below:
+Of course we got a CuPy array of eigenvalues. But we can easily use DLPack to convert it back to a PyTorch tensor. Since there is no memory copy, it practically incurs no cost, as you can see below:
 ```python
 %%time
 eigvals_cupy = cp.linalg.eigvalsh(cupy_mats)
@@ -153,13 +153,13 @@ Wall time: 1.31 ms
 tensor(-557.2838, device='cuda:0')
 ```
 
-Here, the eigenvalues were computed with CuPy, but their sum was computed with PyTorch. You can see that we got the same result at the same speed, since dlpack conversions just wrap the same GPU memory block, without any copies.
+Here, the eigenvalues were computed with CuPy, but their sum was computed with PyTorch. You can see that we got the same result at the same speed, since DLPack conversions just wrap the same GPU memory block, without any copies.
 
 So the process is simple:
 
-1. Wrap out PyTorch tensor's memory using a CuPy array object using dlpack
+1. Wrap our PyTorch tensor's memory as a CuPy array via DLPack
 2. Compute eigenvalues using CuPy
-3. Convert eigenvalues back to PyTorch using dlpack
+3. Convert eigenvalues back to PyTorch via DLPack
 
 But that's not enough to build a full-fledged function we can use for model training in PyTorch, since for training we also need _gradients_. 
 
@@ -173,15 +173,15 @@ $$
 
 of a symmetric matrix $$\boldsymbol X$$. Recall from linear algebra that eigenvalues are roots of polynomials, and polynomial roots can have _multiplicities_ - the same root can "repeat" multiple times.
 
-For simplicity, assume for now that at our point of interest we have a simple eigenvalue, namely, with multiplicity 1. In this case, a well-known result from linear algebra is that is has a _unique_ (up to sign) normalized eigenvector $${\boldsymbol q}_k({\boldsymbol X})$$. Turns out that the function $$f$$ is _differentiable_ at such points, and the gradient is simple:
+For simplicity, assume for now that at our point of interest we have a simple eigenvalue, namely, with multiplicity 1. In this case, a well-known result from linear algebra is that it has a _unique_ (up to sign) normalized eigenvector $${\boldsymbol q}_k({\boldsymbol X})$$. Turns out that the function $$f$$ is _differentiable_ at such points, and the gradient is simple:
 
 $$
 \nabla f({\boldsymbol X}) = {\boldsymbol q}_k({\boldsymbol X}) {\boldsymbol q}_k({\boldsymbol X})^T.
 $$
 
-Thus, the only thing we need for back-propagation is the _eigenvector_ corresponding to our desired eigenvalue - their outer product is the gradient.
+Thus, the only thing we need for back-propagation is the _eigenvector_ corresponding to our desired eigenvalue - its outer product with itself is the gradient.
 
-Let's convince ourselves that this works with code. Here is the outer product of the mid eigenvalue of a $$5 \times 5$$ matrix with itself:
+Let's convince ourselves that this works with code. Here is the outer product of the eigenvector corresponding to the middle eigenvalue of a $$5 \times 5$$ matrix with itself:
 ```python
 mat = torch.linspace(-5, 5, 25).reshape(5, 5)
 w, Q = torch.linalg.eigh(mat)
@@ -220,7 +220,7 @@ There are many notions of "generalized derivatives", and we will have to choose 
 
 Consider the well-known ReLU function with a kink at zero. To the left of zero, the derivative is zero. To the right of zero, it is one. At zero there is no derivative, but we can use any number between zero and one. Intuitively, we understand it's because any line with a slope between zero and one can behave like a tangent - it touches the function at one point. Now note one important point - I said _any_ number between zero and one. So we don't have one slope we can use - we have an infinity of them.
 
-A generalization of this idea of of using the set of vectors "in between neighboring gradients" is known as the Clarke sub-differential[^1].  In higher dimensions, "in-between" generalizes to the closure of the convex hull. I am not going deep into theory, so we'll not discuss exactly the convex hull of _what_ we are taking, but intuitively these are gradients in a small neighborhood. If you're interested, I have a great book[^5] by Frank Clarke himself to recommend :)
+A generalization of this idea of using the set of vectors "in between neighboring gradients" is known as the Clarke sub-differential[^1].  In higher dimensions, "in-between" generalizes to the closure of the convex hull. I am not going deep into theory, so we'll not discuss exactly the convex hull of _what_ we are taking, but intuitively these are gradients in a small neighborhood. If you're interested, I have a great book[^5] by Frank Clarke himself to recommend :)
 
 Clarke sub-differential is one of these notions of generalized derivatives that are typically accepted as the "right" one for back-prop [^2][^3]. We are not always guaranteed to get an element in the Clarke sub-differential[^3] when backpropagating through a large graph, but we should do our best at least for our atomic building blocks.  And just like we can take any slope between 0 and 1 for ReLU, we can take _any_ vector in sub-differential set. Turns out our outer product of an eigenvector with itself is an element of the Clarke sub-differential set for the $$k$$-th eigenvalue function. 
 
@@ -228,7 +228,7 @@ Now we have our two ingredients - a way to quickly compute eigenvalues and eigen
 
 # A custom $$k$$-th eigenvalue function
 
-First, we'll need two utilities to convert tensors from PyTorch to CuPy and back via dlpack:
+First, we'll need two utilities to convert tensors from PyTorch to CuPy and back via DLPack:
 ```python
 def _torch_to_cupy(x: torch.Tensor):
     """ Zero-copy via DLPack for CUDA """
@@ -239,14 +239,14 @@ def _cupy_to_torch(x_cupy):
     return torch_dlpack.from_dlpack(x_cupy)
 ```
 
-Implementing a custom PyTorch autograd function is quite simple - we just need to follow a template. We inherit from `torch.autograd.Function` and implement two static methods - `forward` and `backward`. The former computes our function, and optionally caches anything required for computing the derivative. The latter just back-propagates the derivative. Moreover, to make things efficient, typically `forward` is split into two code paths - one efficient path when no derivatives are requires (inference mode), and another one for the case when derivatives are required. So here it is:
+Implementing a custom PyTorch autograd function is quite simple - we just need to follow a template. We inherit from `torch.autograd.Function` and implement two static methods - `forward` and `backward`. The former computes our function, and optionally caches anything required for computing the derivative. The latter just back-propagates the derivative. Moreover, to make things efficient, typically `forward` is split into two code paths - one efficient path when no derivatives are required (inference mode), and another one for the case when derivatives are required. So here it is:
 ```python
 class CuPyKthEigval(torch.autograd.Function):
     @staticmethod
     def forward(ctx, A: torch.Tensor, k: int, lower: bool = True):
         # A: PyTorch --> CuPy
         A_ = A if A.is_contiguous() else A.contiguous()
-        A_cp = _torch_to_cupy(A.detach())
+        A_cp = _torch_to_cupy(A_.detach())
 
         # Which part of A to use, in CuPy language
         uplo = "L" if lower else "U"
@@ -300,7 +300,7 @@ def faster_kth_eigvalh(
     if A.is_cuda:
         return CuPyKthEigval.apply(A, k, lower)
     else:
-        return torch.linalg.eigvalsh(A, lower=lower)[..., k]
+        return torch.linalg.eigvalsh(A, lower)[..., k]
 ```
 
 Nice! So now we have a function that works quickly on a GPU and we can finally do an experiment that I was not able to do in the previous post within a reasonable amount of time - try even larger matrices!
@@ -350,9 +350,9 @@ class MultivariateSpectralTorch(MultivariateSpectral):
 
 So now we will use functions we implemented in the last post to again test ourselves on supervised regression with the California Housing dataset. 
 
-In the last post we implemented the function `train_model_stream` that trains the given model and yields a sequence of dictionaries containing the model and the training loss, and the `add_spectral_norms` which augments this dictionary with spectral norms of the learned matrices that we used for obtaining a global bound on the model's sensitivity w.r.t features. Here we shall just use them assuming they are given, and they train on a loaded and pre-processed dataset. The linked notebook at the beginning of this post contains the full code.
+In the last post we implemented the function `train_model_stream` that trains the given model and yields a sequence of dictionaries containing the model and the training loss, and the `add_spectral_norms` which augments this dictionary with spectral norms of the learned matrices that we used for obtaining a global bound on the model's sensitivity with respect to features. Here we shall just use these helpers assuming they are defined, and that the dataset is already loaded and pre-processed. The linked notebook at the beginning of this post contains the full code.
 
-So let's measure how long do 5 training epochs take with PyTorch eigenvalues. Again, we shall use the `%%time` Jupyter magic keyword to measure time:
+So let's measure how long 5 training epochs take with PyTorch eigenvalues. Again, we shall use the `%%time` Jupyter magic keyword to measure time:
 
 ```python
 def training_stream(model, n_epochs, **train_kwargs):
@@ -427,7 +427,7 @@ Well, it took me half an hour. Quite long. But I was able to produce this plot:
 
 Recall that for a $$30 \times 30$$ matrix, we got a test error of $$\approx \$54200$$, so scaling up indeed improves performance somewhat, but not dramatically. Apparently, with our current training procedure we begin to notice the diminishing returns of this type of scaling.
 
-Now, this does _not_ mean that our training procedure is the best, and this is definitely not an exhaustive scaling experiment, where we choose the best training procedure we can, and perhaps devise some rule of hyper-parameter transfer from smaller to larger models. But having the ability to compute eigenvalues quickly lets us actually conduct this research, since PyTorch eigenvalue solver was simply too slow.
+Now, this does _not_ mean that our training procedure is the best, and this is definitely not an exhaustive scaling experiment, where we choose the best training procedure we can, and perhaps devise some rule of hyperparameter transfer from smaller to larger models. But having the ability to compute eigenvalues quickly lets us actually conduct this research, since PyTorch eigenvalue solver was simply too slow.
 
 # Recap
 
