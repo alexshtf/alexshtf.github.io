@@ -18,15 +18,17 @@ series: "Eigenvalues as models"
 
 # Intro
 
-Efficiency lies at the heart of the research scientist's toolbox - fast training facilitates rapid experimentation, since we get feedback quickly. It also helps reduce costs, since we can work with cheaper hardware both for training and inference.
+Efficiency is a quiet superpower in research. When training is fast, you can iterate: try an idea, get surprised, debug, tune, and move on. When training is slow, you start avoiding experiments you *should* be running, simply because they cost too much time.
 
-I did not show it in the last post, but if you try to run the experiment with the eigenvalue model from the last post with $$30\times30$$ matrices on the California Housing dataset for 500 epochs, you will see that it takes _more than an hour_. And I did it on the L4 GPU on Colab. I also tried an A100, and it didn't improve things. So then I asked myself - what's wrong?
+This became very tangible in this eigenvalue-model series. In the previous posts we looked at models that predict the $$k$$-th eigenvalue of a learned symmetric matrix built from the input features, and we explored what they can represent, plus some robustness/interpretability properties. Naturally, the next step was to scale up the matrix size and see what happens in practice.
 
-Turns out PyTorch is wrong. If we look at the [official documentation](https://docs.pytorch.org/docs/2.9/generated/torch.linalg.eigvalsh.html) of the `eigvalsh` function, we see the following note:
+I did not show it in the last post, but if you take the California Housing experiment and run $$30\times 30$$ matrices for 500 epochs, it takes _more than an hour_ on Colab. And this is with an L4 GPU. I even tried an A100, and it didn't meaningfully improve anything. So then I asked myself - what's wrong?
 
-> When inputs are on a CUDA device, this function synchronizes that device with the CPU.
+Turns out PyTorch is wrong. `torch.linalg.eigvalsh` has a note in the [official documentation](https://docs.pytorch.org/docs/2.9/generated/torch.linalg.eigvalsh.html): when the input is on CUDA, it synchronizes the device with the CPU. If eigenvalues sit inside your inner training loop, that synchronization becomes the bottleneck, and the rest of your model almost doesn't matter.
 
-I don't know if it means that memory is copied from the GPU back to the CPU or not, since I did not dig deep into the implementation details. But apparently, eigenvalue computations with CUDA tensors with PyTorch are slow. Very slow. So in this post we will build a custom PyTorch autograd-capable eigenvalue function. To that end, we will learn two things: first, we shall learn how to make PyTorch inter-operate with another CUDA library, [CuPy](https://cupy.dev), to facilitate fast eigenvalue computation; second, we shall finally see what eigenvalue derivatives look like, so we can integrate our code with PyTorch autograd system. All execution speeds I measure in this post are on Colab, with an NVIDIA L4 GPU, with the 2025.10 runtime.
+So this post is a practical detour: we'll make eigenvalue computation fast enough that it stops getting in the way. We'll replace the slow call with a faster GPU implementation, and we'll wrap it in a way that still supports backprop through the $$k$$-th eigenvalue. Once that's done, the scaling experiments from the previous post become feasible again, and we can go back to asking the interesting questions.
+
+(All execution speeds I measure in this post are on Colab, with an NVIDIA L4 GPU, with the 2025.10 runtime.)
 
 # Warm-up
 
@@ -138,7 +140,7 @@ Wall time: 1.37 ms
 array(-557.284, dtype=float32)
 ```
 
-Now that's FAST! 1.37 milliseconds, instead of more than 700!
+Now that's FAST! 1.37 milliseconds, instead of more than 700 - almost 500 times faster! It's impressive, but a part of the enormous speedup is because we aren't doing anything to be prepared to backpropagate.
 
 Of course we got a CuPy array of eigenvalues. But we can easily use DLPack to convert it back to a PyTorch tensor. Since there is no memory copy, it practically incurs no cost, as you can see below:
 ```python
@@ -291,7 +293,43 @@ tensor([[ 0.1389, -0.2269, -0.0168,  0.2359, -0.1102],
         [-0.1102,  0.1801,  0.0133, -0.1873,  0.0875]], device='cuda:0')
 ```
 
-Identical to the gradient we previously obtained - so as a sanity check, this appears to be working.  As a final step, we now wrap it with a convenience function to separate the CUDA tensors from non-CUDA tensors:
+Identical to the gradient we previously obtained - so as a sanity check, this appears to be working. Now let's measure the speed versus PyTorch with a mini-batch of 500 matrices of size $$50 \times 50$$:
+
+```python
+mats = torch.randn(500, 100, 100, device='cuda')
+mat_param = torch.nn.Parameter(torch.randn(500, 100, 100, device='cuda'))
+```
+
+```python
+%%time 
+w = CuPyKthEigval.apply(mats, 2).sum()
+```
+
+```
+CPU times: user 1.44 ms, sys: 993 µs, total: 2.43 ms
+Wall time: 2.1 ms
+```
+Alright, 2 milliseconds. Pretty fast. What happens if we need backpropagation?
+
+```python
+%%time
+w = CuPyKthEigval.apply(mat_param, 2).sum()
+w.backward()
+```
+
+```
+CPU times: user 81.3 ms, sys: 1 µs, total: 81.3 ms
+Wall time: 81 ms
+```
+
+Much slower! But we also understand why - we need the eigenvector, not just the eigenvalue.  What about PyTorch?
+
+```python
+CPU times: user 795 ms, sys: 0 ns, total: 795 ms
+Wall time: 794 ms
+```
+
+Apparently, our custom function, even with backprop, is almost 10 times faster! Things appear much better, and we can move forward. As a final step, we now wrap it with a convenience function to separate the CUDA tensors from non-CUDA tensors:
 
 ```python
 def faster_kth_eigvalh(
