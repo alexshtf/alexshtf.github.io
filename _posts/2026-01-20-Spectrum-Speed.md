@@ -163,7 +163,9 @@ So the process is simple:
 2. Compute eigenvalues using CuPy
 3. Convert eigenvalues back to PyTorch via DLPack
 
-But that's not enough to build a full-fledged function we can use for model training in PyTorch, since for training we also need _gradients_. 
+There are more nuances here about memory management, and which object is responsible for actually freeing the memory when it's no longer needed, and you should learn these DLPack nuances if you wish to use it. But that's out of the scope of this post. 
+
+What we have is still not enough to build a full-fledged function we can use for model training in PyTorch, since for training we also need _gradients_. 
 
 # Eigenvalue gradients
 
