@@ -2,7 +2,7 @@
 layout: post
 title:  "Interpreting eigenvalue models"
 tags: []
-description: "TODO"
+description: "Interpreting eigenvalue-based ML models: read the k-th eigenvalue as a two-player game, a sequential orthogonality process, and a difference-of-convex function."
 comments: true
 image: assets/pow_spec_recurrent.png
 series: "Eigenvalues as models"
