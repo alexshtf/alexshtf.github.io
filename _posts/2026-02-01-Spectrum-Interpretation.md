@@ -1,8 +1,8 @@
 ---
 layout: post
 title:  "Interpreting eigenvalue models"
-tags: []
-description: "Interpreting eigenvalue-based ML models: read the k-th eigenvalue as a two-player game, a sequential orthogonality process, and a difference-of-convex function."
+tags: ["machine learning", "eigenvalue models", "spectral methods", "interpretability", "optimization", "minimax", "dc optimization"]
+description: "Interpreting eigenvalue-based ML models: read the k-th eigenvalue as a two-player game using Courant principle, a sequential orthogonality process via Courant-Fischer theorem, and a difference-of-convex function using Ky Fan variational principle."
 comments: true
 image: assets/pow_spec_recurrent.png
 series: "Eigenvalues as models"
