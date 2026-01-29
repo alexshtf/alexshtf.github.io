@@ -20,15 +20,17 @@ where $${\boldsymbol A}_i$$ are learned symmetric matrices, and $$\lambda_k$$ is
 
 # A game between two players
 
-Eigenvectors in linear algebra are typically presented as the directions along which a matrix _stretches_ vectors without changing their direction (flipping is permitted), and the amount of stretch are the corresponding eigenvalues. So here is another characterization of the $$k$$-th smallest eigenvalue, known as the Courant mini-max principle, named after Richard Courant. It's a bit "hairy", so let's first present it, and then interpret it:
+You've probably seen eigenvalues presented as "stretch factors". But for our understanding of the model, the optimization view is often more useful. So here is a Courant min-max characterization of the $$k$$-th smallest eigenvalue, named after Richard Courant. It's a bit "hairy", so let's first present it, and then interpret it:
 
 $$
 \lambda_k({\boldsymbol A}) = \max_{ {\boldsymbol C} \in \mathbb{R}^{(k-1)\times d}} \min_{ {\boldsymbol u} \in \mathbb{R}^d} \left\{ {\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u} : \| {\boldsymbol u} \|_2 = 1, \, {\boldsymbol C}{\boldsymbol u} = {\boldsymbol 0}\right\}
 $$
 
-First, we see that this is a bi-level optimization problem, which we can think of as a _game_ with two turns. The first player is choosing matrices $${\boldsymbol C}$$ that have $$k-1$$ rows. Exactly one row less than the index of our eigenvalue. In response, the second player is allowed to choose unit vectors $${\boldsymbol u}$$ that are in the null-space of $${\boldsymbol C}$$, or _orthogonal_ to the rows of $${\boldsymbol C}$$. In case you were wondering, when $$k = 1$$ we have no adversarial player, and the vector $$\boldsymbol u$$ can be an arbitrary unit vector.
+This is a bi-level optimization problem, which we can think of as a two-turn game. The first player chooses $${\boldsymbol C}$$ with $$k-1$$ rows (i.e., $$k-1$$ linear constraints). In response, the second player chooses a unit vector $${\boldsymbol u}$$ that is in the null-space of $${\boldsymbol C}$$, or equivalently, _orthogonal_ to the rows of $${\boldsymbol C}$$.  
 
-The objective of the second player is to pay as little as possible, where $${\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u}$$ is the cost. So they are choosing the vector appropriately. But the objective of the first player, of course, is to make their opponent pay as much as possible, so they are choosing a "worst case" matrix $${\boldsymbol C}$$. You have probably guessed, but the optimal vector $${\boldsymbol u}$$ is a corresponding eigenvector. So what role does the matrix $${\boldsymbol A}$$ play here? Well, we can think of $${\boldsymbol u}$$ as a kind of _energy allocation_ vector among a set of resources, due to its bounded norm, and $$A_{i,j}$$ is the cost associated with every pairwise interaction of resources, since:
+The objective of the second player is to pay as little as possible, where $${\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u}$$ is the cost. But the objective of the first player, of course, is to make their opponent pay as much as possible, so they choose a "worst case" matrix $${\boldsymbol C}$$. In case you were wondering, when $$k = 1$$ we have no adversarial player, and the vector $$\boldsymbol u$$ can be an arbitrary unit vector. And you have probably guessed: at any equilibrium, $${\boldsymbol u}$$ is an eigenvector corresponding to $$\lambda_k({\boldsymbol A})$$.
+
+One way to read this is: $${\boldsymbol u}$$ is a bounded allocation over $$d$$ latent resources, and $$A_{i,j}$$ is the cost associated with every pairwise interaction of resources, since:
 
 $$
 {\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u} = \sum_{i=1}^d \sum_{j=1}^d A_{i,j} u_i u_j
@@ -55,7 +57,7 @@ Consequently, each feature is associated with a matrix of some latent "costs" an
 
 # As a (kind of) recurrent neural network
 
-Another way to characterize symmetric matrix eigenvalues is as a _sequence_ of optimization problems. Here is one formulation of the celebrated Courant-Fischer theorem, named after Richard Courant and Ernst Sigismund Fischer. No, it's not the famous statistician Ronald Fisher :)
+Another way to characterize symmetric matrix eigenvalues is as a _sequence_ of optimization problems. Here is a Courant-Fischer formulation (Fischer here is Ernst Sigismund Fischer, not Ronald Fisher):
 
 We just saw that the smallest eigenvalue is just the minimum of a quadratic function over the unit sphere. The second eigenvalue is similar, but the vector has to be orthogonal to _one row_, since the matrix $$\boldsymbol C$$ the first player chooses has one row. The next eigenvalue should be orthogonal to _two rows_, and so on. But we can actually be more precise about what these constraints are. One of the possible formulations of the Courant-Fischer theorem is
 
@@ -71,7 +73,7 @@ In other words, the $$k$$-th smallest eigenvalue is the minimum of $${\boldsymbo
 
 All steps share the same matrix $${\boldsymbol A}$$ as their weights, just like recurrent neural networks share weights in each recurrent step.
 
-Intuitively, the smallest eigenvalue is the simplest function, the second smallest is slightly more expressive, the third is a bit more, and so on. But this intuition can be deceiving - since the largest eigenvalue is **not** the most expressive function of $${\boldsymbol A}$$. Indeed, we can construct a "mirror-image" of the above process if we order the eigenvalues in decreasing order. So what should be, from intuitive standpoint, the most expressive function? As we already saw, it's the middle eigenvalue. 
+Intuitively, as we move from $$\lambda_1$$ upward, the function becomes more and more expressive. But it is tempting (and wrong) to conclude that the largest eigenvalue is the most expressive function of $${\boldsymbol A}$$. Indeed, we can construct a "mirror-image" of the above process if we order the eigenvalues in decreasing order. In practice, the richest behavior tends to come from the middle of the spectrum, as we saw in the plots.
 
 Again, we can think of this process as a kind of a repeated "game". This time there is only one player. In each turn the player aims to minimize their cost, but their "strategy" $${\boldsymbol u}$$ in each turn becomes more and more restricted - they must try something "different", or orthogonal to, the strategies they chose in the previous turns.
 
