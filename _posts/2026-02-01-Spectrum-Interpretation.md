@@ -16,33 +16,33 @@ $$
 f({\boldsymbol x};{\boldsymbol A}_{0:n}) = \lambda_k \Bigl({\boldsymbol A}_0 + \sum_{i=1}^n x_i {\boldsymbol A}_i\Bigr),
 $$
 
-where $${\boldsymbol A}_i$$ are learned symmetric matrices, and $$\lambda_k$$ is the $$k$$-th smallest eigenvalue. We touched one aspect of interpretability in a previous post - the importance of each of the features $$x_1, \dots, x_n$$. But there are other aspect, namely, what does this model actually compute? How can we reason about it, or explain it to our colleagues or to a regulator?   We began this series from saying that this is a "neuron" that is solving an optimization problem. So in this post we shall focus on the different kinds of optimization problems that  $$f({\boldsymbol x}, {\boldsymbol A}_{0:n})$$ solves, and what interpretations we can give to them, and why we should care. All the results in this post are based on Chapter 4 of the _Matrix Analysis_ book by Horn & Johnson, 2nd edition.
+where $${\boldsymbol A}_i$$ are learned symmetric matrices, and $$\lambda_k$$ is the $$k$$-th smallest eigenvalue. We touched on one aspect of interpretability in a previous post - the importance of each of the features $$x_1, \dots, x_n$$. But there are other aspects: what does this model actually compute? How can we reason about it, or explain it to our colleagues or to a regulator? We began this series by saying that this is a "neuron" that is solving an optimization problem. So in this post we shall focus on the different kinds of optimization problems that $$f({\boldsymbol x}; {\boldsymbol A}_{0:n})$$ solves, what interpretations we can give to them, and why we should care. All the results in this post are based on Chapter 4 of the _Matrix Analysis_ book by Horn & Johnson, 2nd edition.
 
 # A game between two players
 
-Eigenvectors in linear algebra are typically presented as the directions along which a matrix _stretches_ vectors without changing their direction (flipping is permitted), and the amount of stretch are the corresponding eigenvalues. So here is another characterizations of the $$k$$-th smallest eigenvalue, known as the Courant mini-max principle, named after Richard Courant. It's a bit "hairy", so let's first present it, and then interpret it:
+Eigenvectors in linear algebra are typically presented as the directions along which a matrix _stretches_ vectors without changing their direction (flipping is permitted), and the amount of stretch are the corresponding eigenvalues. So here is another characterization of the $$k$$-th smallest eigenvalue, known as the Courant mini-max principle, named after Richard Courant. It's a bit "hairy", so let's first present it, and then interpret it:
 
 $$
 \lambda_k({\boldsymbol A}) = \max_{ {\boldsymbol C} \in \mathbb{R}^{(k-1)\times d}} \min_{ {\boldsymbol u} \in \mathbb{R}^d} \left\{ {\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u} : \| {\boldsymbol u} \|_2 = 1, \, {\boldsymbol C}{\boldsymbol u} = {\boldsymbol 0}\right\}
 $$
 
-First, we see that is a bi-level optimization problem, which we can think of as a _game_ with two turns. The first player is choosing matrices $${\boldsymbol C}$$ that have $$k-1$$ columns. Exactly one column less than the index of our eigenvalue. In response, the second player is allowed to choose unit vectors $${\boldsymbol u}$$ that are in the null-space of $${\boldsymbol C}$$, or _orthogonal_ to the columns of $${\boldsymbol C}$$.  In case you were wondering, when $$k = 1$$ we have no adversarial player, and the vector $$\boldsymbol u$$ can be an arbitrary unit vector.
+First, we see that this is a bi-level optimization problem, which we can think of as a _game_ with two turns. The first player is choosing matrices $${\boldsymbol C}$$ that have $$k-1$$ rows. Exactly one row less than the index of our eigenvalue. In response, the second player is allowed to choose unit vectors $${\boldsymbol u}$$ that are in the null-space of $${\boldsymbol C}$$, or _orthogonal_ to the rows of $${\boldsymbol C}$$. In case you were wondering, when $$k = 1$$ we have no adversarial player, and the vector $$\boldsymbol u$$ can be an arbitrary unit vector.
 
-The objective of second player is to pay as little as possible, where $${\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u}$$ is the cost. So they are choosing the vector appropriately. But the objective of the first player, of course, is to make their opponent pay as much as possible, so they are choosing a "worst case" matrix  $${\boldsymbol C}$$. You have probably guessed, but the optimal vector $${\boldsymbol u}$$ is a corresponding eigenvector. So what role does the matrix $${\boldsymbol A}$$ play here? Well, we can think of $${\boldsymbol u}$$ as a kind of _energy allocation_ vector among a set of resouces, due to its bounded norm, and $$A_{i,j}$$ is the cost associate with every pairwise interaction of resources, since:
+The objective of the second player is to pay as little as possible, where $${\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u}$$ is the cost. So they are choosing the vector appropriately. But the objective of the first player, of course, is to make their opponent pay as much as possible, so they are choosing a "worst case" matrix $${\boldsymbol C}$$. You have probably guessed, but the optimal vector $${\boldsymbol u}$$ is a corresponding eigenvector. So what role does the matrix $${\boldsymbol A}$$ play here? Well, we can think of $${\boldsymbol u}$$ as a kind of _energy allocation_ vector among a set of resources, due to its bounded norm, and $$A_{i,j}$$ is the cost associated with every pairwise interaction of resources, since:
 
 $$
-{\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u} = \sum_{i=1}^n \sum_{j=1}^n A_{i,j} u_i u_j
+{\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u} = \sum_{i=1}^d \sum_{j=1}^d A_{i,j} u_i u_j
 $$
 
 Depending on the context, you can give different interpretations. For example, $${\boldsymbol A}$$ represents a set of latent skills a student possesses, and $${\boldsymbol u}$$ is a _test vector_ for pairs of skills.
 
-There is a mirror-image of the above game, if we want to sort eigenvalues from largest to smallest. So the $$k$$-th _largest_ eigenvalue, which is also the $$n-k$$-th smallest one, can be written as
+There is a mirror-image of the above game, if we want to sort eigenvalues from largest to smallest. So the $$k$$-th _largest_ eigenvalue, which is also the $$d-k+1$$-th smallest one, can be written as
 
 $$
-\lambda_{n-k}({\boldsymbol A}) = \min_{ {\boldsymbol C} \in \mathbb{R}^{(k-1)\times d}} \max_{ {\boldsymbol u} \in \mathbb{R}^d} \left\{ {\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u} : \| {\boldsymbol u} \|_2 = 1, \, {\boldsymbol C}{\boldsymbol u} = {\boldsymbol 0}\right\}
+\lambda_{d-k+1}({\boldsymbol A}) = \min_{ {\boldsymbol C} \in \mathbb{R}^{(k-1)\times d}} \max_{ {\boldsymbol u} \in \mathbb{R}^d} \left\{ {\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u} : \| {\boldsymbol u} \|_2 = 1, \, {\boldsymbol C}{\boldsymbol u} = {\boldsymbol 0}\right\}
 $$
 
-We can think of it in terms of utility rather than cost - each entry in the matrix is a utility associated with a pair of resources. The first player is choosing the matrix so that the second play will get as little utility as possible, whereas the second player, in response, aims to choose a vector $${\boldsymbol u}$$ that will maximize their utility. 
+We can think of it in terms of utility rather than cost - each entry in the matrix is a utility associated with a pair of resources. The first player is choosing the matrix so that the second player will get as little utility as possible, whereas the second player, in response, aims to choose a vector $${\boldsymbol u}$$ that will maximize their utility. 
 
 Adopting the $$\max-\min$$ convention, we can write our "neuron" as:
 
@@ -55,17 +55,17 @@ Consequently, each feature is associated with a matrix of some latent "costs" an
 
 # As a (kind of) recurrent neural network
 
-Another way to characterize symmetric matrix eigenvalues is as a _sequence_ of optimization problems. One of the formulations of the celebrated Courant-Fischer theorem, named after Richard Courant and Ernst Sigismund Fischer. No, it's not the famous statistician Ronald Fisher :)
+Another way to characterize symmetric matrix eigenvalues is as a _sequence_ of optimization problems. Here is one formulation of the celebrated Courant-Fischer theorem, named after Richard Courant and Ernst Sigismund Fischer. No, it's not the famous statistician Ronald Fisher :)
 
-We just saw that the smallest eigenvalue is just the minimum of a quadratic function over the unit sphere. The second eigenvalue is similar, but the vector has to be orthogonal to _one column_, since the matrix $$\boldsymbol C$$ the first player chooses has one column. The next eigenvalue should be orthogonal to _two columns_, and so on. But we can actually be more precise about what these columns are. One of the possible formulations of the Courant-Fischer theorem is
+We just saw that the smallest eigenvalue is just the minimum of a quadratic function over the unit sphere. The second eigenvalue is similar, but the vector has to be orthogonal to _one row_, since the matrix $$\boldsymbol C$$ the first player chooses has one row. The next eigenvalue should be orthogonal to _two rows_, and so on. But we can actually be more precise about what these constraints are. One of the possible formulations of the Courant-Fischer theorem is
 
-> Let $$\boldsymbol A$$ be a symmetric matrix with eigenvalues $$\lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_d$$ with corresponding eigenvectors $${\boldsymbol u}_1, \dots, \dots, {\boldsymbol u}_d$$. Then,
+> Let $$\boldsymbol A$$ be a symmetric matrix with eigenvalues $$\lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_d$$ with corresponding eigenvectors $${\boldsymbol u}_1, \dots, {\boldsymbol u}_d$$. Then,
 >
 > $$
 > \lambda_k = \min_{\boldsymbol u} \left\{ {\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u} : \| {\boldsymbol u} \|_2 = 1,\,\langle {\boldsymbol u}, {\boldsymbol u}_1 \rangle = 0, \dots, \langle {\boldsymbol u}, {\boldsymbol u}_{k-1} \rangle = 0 \right\}
 > $$
 
-In other words, the $$k$$-th smallest eigenvalue is the minimum of $${\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u}$$ among all unit vectors orthogonal to  eigenvectors corresponding to the previous eigenvalues. Thus, we can think of it as a recurrent process: computing each eigenvalue yields an eigenvector, and all eigenvectors up to $$k-1$$ are use to compute the $$k$$-th eigenvalue. Visually, it looks like this:
+In other words, the $$k$$-th smallest eigenvalue is the minimum of $${\boldsymbol u}^T {\boldsymbol A} {\boldsymbol u}$$ among all unit vectors orthogonal to eigenvectors corresponding to the previous eigenvalues. Thus, we can think of it as a recurrent process: computing each eigenvalue yields an eigenvector, and all eigenvectors up to $$k-1$$ are used to compute the $$k$$-th eigenvalue. Visually, it looks like this:
 
 ![]({{"assets/pow_spec_recurrent.png" | absolute_url}})
 
@@ -77,7 +77,7 @@ Again, we can think of this process as a kind of a repeated "game". This time th
 
 # As a difference of convex functions
 
-Minimization or nonconvex functions is a long-standing challenge in optimization theory and practice. But sometimes knowing some additional information about a nonconvex function can substantially improve both the speed and the reliability of our ability to minimize it. One of these pieces of information is having an explicit representation of the function we aim to minimize (or maximize) as a _difference of convex (DC) functions_, namely,
+Minimization of nonconvex functions is a long-standing challenge in optimization theory and practice. But sometimes knowing some additional information about a nonconvex function can substantially improve both the speed and the reliability of our ability to minimize it. One of these pieces of information is having an explicit representation of the function we aim to minimize (or maximize) as a _difference of convex (DC) functions_, namely,
 
 $$
 f({\boldsymbol x}) = g({\boldsymbol x}) - h({\boldsymbol x}),
@@ -90,13 +90,13 @@ Turns out our $$f({\boldsymbol x};{\boldsymbol A}_{0:n})$$ has such an explicit 
 The idea is based on the Ky Fan Variational Principle, stating that the _sum_ of the eigenvalues $$\lambda_k, \lambda_{k+1}, ..., \lambda_d$$  can be written as
 
 $$
-\Lambda_k({\boldsymbol A}) = \sum_{i=k}^d \lambda_i({\boldsymbol A}) = \max_{ {\boldsymbol U} \in \mathbb{R}^{(d-p+1) \times d}} \left\{ \operatorname{tr}({\boldsymbol U}^T {\boldsymbol A} {\boldsymbol U}) : {\boldsymbol U}^T {\boldsymbol U} = {\boldsymbol I}  \right\}
+\Lambda_k({\boldsymbol A}) = \sum_{i=k}^d \lambda_i({\boldsymbol A}) = \max_{ {\boldsymbol U} \in \mathbb{R}^{(d-k+1) \times d}} \left\{ \operatorname{tr}({\boldsymbol U}^T {\boldsymbol A} {\boldsymbol U}) : {\boldsymbol U}^T {\boldsymbol U} = {\boldsymbol I}  \right\}
 $$
 
 This looks a bit hairy, but the term we are maximizing is  a _linear function_ of $$\boldsymbol A$$, even if it's a nonlinear function of $$\boldsymbol U$$. And the maximum of linear functions is always convex, even if we have an infinite number of linear functions. Consequently, the $$k$$-th smallest eigenvalue can be written in an explicit DC form as:
 
 $$
-\lambda_k({\boldsymbol A}) = \Lambda_k({\boldsymbol A}) - \Lambda_{k-1}({\boldsymbol A})
+\lambda_k({\boldsymbol A}) = \Lambda_k({\boldsymbol A}) - \Lambda_{k+1}({\boldsymbol A})
 $$
 
 We can see it visually by plotting $$\lambda_k({\boldsymbol P} + x {\boldsymbol Q})$$ and its two convex components as a function of $$x$$: 
@@ -134,7 +134,7 @@ plt.legend()
 
 ![pow_spec_dc]({{"assets/pow_spec_dc.png" | absolute_url}})
 
-Indeed, the orange and blue plot, which are top eigenvalue sums, are convex functions. The gap between them is red when it $$\Lambda_3 - \Lambda_4$$ is negative, and blue when positive. The function in green is the difference, and indeed it exactly reflects the size and the sign of the gap.
+Indeed, the orange and blue plots, which are top eigenvalue sums, are convex functions. The gap between them is red when $$\Lambda_3 - \Lambda_4$$ is negative, and blue when it is positive. The function in green is the difference, and it exactly reflects the size and the sign of the gap.
 
 # Recap
 
