@@ -18,7 +18,7 @@ series: "Eigenvalues as models"
 
 # Intro
 
-Efficiency is a quiet superpower in research. When training is fast, you can iterate: try an idea, get surprised, debug, tune, and move on. When training is slow, you start avoiding experiments you *should* be running, simply because they cost too much time.
+Efficiency is a quite superpower in research. When training is fast, you can iterate: try an idea, get surprised, debug, tune, and move on. When training is slow, you start avoiding experiments you *should* be running, simply because they cost too much time.
 
 This became very tangible in this eigenvalue-model series. In the previous posts we looked at models that predict the $$k$$-th eigenvalue of a learned symmetric matrix built from the input features, and we explored what they can represent, plus some robustness/interpretability properties. Naturally, the next step was to scale up the matrix size and see what happens in practice.
 
