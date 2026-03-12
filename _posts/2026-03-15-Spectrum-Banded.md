@@ -619,15 +619,42 @@ plot_log(training_log)
 ![pow_spectrum_tri_calhousing_11_20]({{ "assets/pow_spectrum_tri_calhousing_11_20.png" | absolute_url }})
 In blue we see the validation loss, whereas in dotted black we see the learning rate. We can nicely see the warmup and cooldown stages.
 
-Alright, so now that we have all the machinery in place, let's try training some model with more epochs. I used 300 epochs in all the experiments, which was enough to train both smaller and larger models. So let's try 7-dimensional tridiagonal matrices:
+Alright, so now that we have all the machinery in place, let's try training some model with more epochs. I used 500 epochs in all the experiments, which was enough to train both smaller and larger models. So let's try 7-dimensional tridiagonal matrices:
 ```python
-training_log_7 = fts.collect_pd(complete_training_stream(7, 300))
+training_log_7 = fts.collect_pd(complete_training_stream(7, 500))
 plot_log(training_log_7, title='Dim=7')
 ```
 ![pow_spectrum_tri_calhousing_7_300]({{ "assets/pow_spectrum_tri_calhousing_7_300.png" | absolute_url }})
 How about 11-dimensional tridiagonals?
 ```python
-training_log_11 = fts.collect_pd(tqdm(complete_training_stream(11, 300)))
+training_log_11 = fts.collect_pd(complete_training_stream(11, 500))
 plot_log(training_log_11, title='Dim=11')
 ```
 ![pow_spectrum_tri_calhousing_11_300]({{ "assets/pow_spectrum_tri_calhousing_11_300.png" | absolute_url }})
+
+Nice! Increasing matrix size reduces the error, meaning that performance scales with model size. But remember - it is just one neuron! How about $$15 \times 15$$ matrices?
+```python
+training_log_15 = fts.collect_pd(complete_training_stream(15, 500))
+plot_log(training_log_15, title='Dim=15')
+```
+![pow_spectrum_tri_calhousing_15_300]({{ "assets/pow_spectrum_tri_calhousing_15_300.png" | absolute_url }})
+
+Another sligght improvement. What about $$45 \times 45$$ matrices?
+```python
+training_log_45 = fts.collect_pd(tqdm(complete_training_stream(45, 500)))
+plot_log(training_log_45, title='Dim=45')
+```
+![pow_spectrum_tri_calhousing_45_300]({{ "assets/pow_spectrum_tri_calhousing_45_300.png" | absolute_url }})
+
+I can share, and you can see it by running the notebook yourself, that each such experiment takes 3-4 minutes. Just to get a feeling - comparing to dense matrix experiments we conducted in previous posts, this is _orders of magnitude_ faster, and without any GPU. I'm pretty sure that if PyTorch had tridiagonal support, we could have run each experiment in seconds. But unfortunately - it does not.
+
+Comparing it to dense experiments we conducted with the same dataset and similar matrix sizes in [this post]({% post_url 2026-01-20-Spectrum-Speed %}), which took us 31 minutes on an NVidia L4 GPU for a $$45 \times 45$$ matrix, while achieving a similar test error - we clearly see the difference. No GPU, orders of magnitude faster, and a similar performance at least on this dataset.
+
+Of course - the above are not proper experiments I'd include in a paper. I haven't conducted any hyperparameter search, perhaps a different optimizer could be better, etc..., but we see the point.
+
+# Summary
+To summarize, we can see that restricting ourselves to eigenvalue model families where all matrices are simultaneously tri-diagonalizable can be useful to strike a good balance between speed and expressiveness. Let us recall why this model family is interesting - it's just one neuron, a linear (matrix) function composed with a non-linearity, that is quite expressive, while being fairly interpretable. These nice properties haven't gone anywhere - spectral norms of our tridiagonal matrices are still a reasonable way to think of importance, and provide a certificate for sensitivity of the model to changes in that feature.
+
+We do, however, see slow convergence. 500 epochs is quite a lot, and even though our training procedure stops beforehand due to the early stopping mechanism, it's still a few hundred epochs. Even if I throw the best practices at it, such as learning rate scheduling, early stopping, and others - it's still quite slow. At this stage, this is a price we pay for having a model that is one the one hand just one fairly interpretable neuron, but on the other hand we can improve it by scaling.
+
+We have many more questions to explore in this series. For example - can we prune any dense eigenvalue model to tridiagonal form? Can we make it converge faster? How we stack such models as layers of a larger neural network? Stay tuned!
