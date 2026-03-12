@@ -626,6 +626,7 @@ def plot_log(log, title=None):
 plot_log(training_log)
 ```
 ![pow_spectrum_tri_calhousing_11_20]({{ "assets/pow_spectrum_tri_calhousing_11_20.png" | absolute_url }})
+
 In blue we see the validation loss, whereas in dotted black we see the learning rate. We can nicely see the warmup and cooldown stages.
 
 Alright, so now that we have all the machinery in place, let's try training some model with more epochs. I used 500 epochs in all the experiments, which was enough to train both smaller and larger models. So let's try 7-dimensional tridiagonal matrices:
@@ -634,6 +635,7 @@ training_log_7 = fts.collect_pd(complete_training_stream(7, 500))
 plot_log(training_log_7, title='Dim=7')
 ```
 ![pow_spectrum_tri_calhousing_7_300]({{ "assets/pow_spectrum_tri_calhousing_7_300.png" | absolute_url }})
+
 How about 11-dimensional tridiagonals?
 ```python
 training_log_11 = fts.collect_pd(complete_training_stream(11, 500))
