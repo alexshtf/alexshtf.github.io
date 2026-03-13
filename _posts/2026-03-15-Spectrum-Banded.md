@@ -25,11 +25,11 @@ $$
 f({\boldsymbol x};{\boldsymbol A}_{0..n}) = \lambda_k \Bigl({\boldsymbol A}_0 + \sum_{i=1}^n x_i {\boldsymbol A}_i\Bigr),
 $$
 
-where each $$\boldsymbol A_i$$ is a symmetric matrix. In the last post we discussed what do these models predict, and how can we explain them to ourselves and other stakeholders. Beforehand, we also discussed GPU acceleration to make training and inference faster. Speed is important, but so is _cost_, and fast GPUs may pe expensive. Here, our aim is not only making it faster, but also cheaper, by making the eigenvalue problem easier to solve even on weaker hardware. We certainly should be paying for a GPU and waiting more than 5 minutes to train _one neuron_ on a tabular dataset of a ~20k rows, even if this one neuron is a fairly complex one! We begin our exploration from theory, which immediately yields practical applications. And as always, we have a [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/spectrum_power_tridiagonal.ipynb) to reproduce all experiments in this post.
+where each $$\boldsymbol A_i$$ is a symmetric matrix. In the last post we discussed what these models predict, and how we can explain them to ourselves and other stakeholders. Before that, we also discussed GPU acceleration to make training and inference faster. Speed is important, but so is _cost_, and fast GPUs may be expensive. Here, our aim is not only to make it faster, but also cheaper, by making the eigenvalue problem easier to solve even on weaker hardware. We certainly should not be paying for a GPU and waiting more than 5 minutes to train _one neuron_ on a tabular dataset with about 20k rows, even if this one neuron is a fairly complex one! We begin our exploration from theory, which immediately yields practical applications. And as always, we have a [notebook](https://github.com/alexshtf/alexshtf.github.io/blob/master/assets/spectrum_power_tridiagonal.ipynb) to reproduce all experiments in this post.
 
 # Simultaneous simplification
 
-Recall, that for any orthogonal matrix $${\boldsymbol Q} \in \mathbb{R}^{d \times d}$$, we have
+Recall that for any orthogonal matrix $${\boldsymbol Q} \in \mathbb{R}^{d \times d}$$, we have
 
 $$
 \lambda_k(\boldsymbol A) = \lambda_k({\boldsymbol Q}^T \boldsymbol A {\boldsymbol Q}),
@@ -37,9 +37,9 @@ $$
 
 So our model family is invariant under such orthogonal similarity transformations, meaning a model with matrices $$\boldsymbol A_i$$ is identical to a model with matrices $$\boldsymbol Q^T \boldsymbol A_i \boldsymbol Q$$ for any orthogonal $$\boldsymbol Q$$.
 
-One of the interesting phenomena in linear algebra are _simultaneously diagonalizable_ matrices. A set of matrices $${\boldsymbol A}_i$$ is simultaneously diagonalizable if there exists an orthogonal matrix $${\boldsymbol Q}$$ such that $${\boldsymbol Q}^T {\boldsymbol A}_i {\boldsymbol Q}$$ is diagonal for all $$i$$. In other words, the same matric $$\boldsymbol Q$$ diagonalizes all matrices simultaneously. 
+One of the interesting phenomena in linear algebra is _simultaneous diagonalization_. A set of matrices $${\boldsymbol A}_i$$ is simultaneously diagonalizable if there exists an orthogonal matrix $${\boldsymbol Q}$$ such that $${\boldsymbol Q}^T {\boldsymbol A}_i {\boldsymbol Q}$$ is diagonal for all $$i$$. In other words, the same matrix $$\boldsymbol Q$$ diagonalizes all matrices simultaneously.
 
-If we restrict ourselves to models where all of our learned matrices are simultaneously diagonalizable, we can equialently just assume all matrices are diagonal:
+If we restrict ourselves to models where all of our learned matrices are simultaneously diagonalizable, we can equivalently just assume all matrices are diagonal:
 
 $$
 f({\boldsymbol x};{\boldsymbol A}_{0:n}) = \lambda_k \Bigl(\operatorname{diag}({\boldsymbol a}_0) + \sum_{i=1}^n x_i \operatorname{diag}({\boldsymbol a}_i)\Bigr).
@@ -51,7 +51,7 @@ $$
 {\boldsymbol a}_0 + \sum_{i=1}^n x_i {\boldsymbol a}_i.
 $$
 
-On the one hand, it's extremely easy eigenvalue problem. But we actually lost almost all of the expressive power, since it's just a convoluted way to describe a piecewise linear function of $${\boldsymbol x}$$.
+On the one hand, it's an extremely easy eigenvalue problem. But we actually lost almost all of the expressive power, since it's just a convoluted way to describe a piecewise linear function of $${\boldsymbol x}$$.
 
 But there is another family of matrices for which the eigenvalue problem is easy - _symmetric tridiagonal_ matrices, meaning, matrices of the form:
 
@@ -137,19 +137,19 @@ $$
 The quadratic function $${\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u$$ expresses interactions between _all entry pairs_ of the latent variable $$\boldsymbol u$$, since:
 
 $$
-{\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u = \sum_{i=1}^n \sum_{j=1}^n \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i,j} u_i u_j
+{\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u = \sum_{i=1}^d \sum_{j=1}^d \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i,j} u_i u_j
 $$
 
 If $$\mathcal{A}(\boldsymbol x)$$ were diagonal, we would lose all interactions and obtain a function without any interactions at all:
 
 $$
-{\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u = \sum_{i=1}^n \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i,i} u_i^2.
+{\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u = \sum_{i=1}^d \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i,i} u_i^2.
 $$
 
 This is another manifestation of the loss of expressiveness we saw before. But if it is tri-diagonal, we do have pairwise interactions:
 
 $$
-{\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u = \sum_{i=1}^n \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i,i} u_i^2 + 2 \sum_{i=1}^{n-1} \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i+1,i} u_{i+1}, u_{i}
+{\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u = \sum_{i=1}^d \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i,i} u_i^2 + 2 \sum_{i=1}^{d-1} \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i+1,i} u_{i+1} u_{i}
 $$
 
 Even though it's only between adjacent pairs $$u_i$$ and $$u_{i+1}$$, it turns out to be enough to produce a fairly rich set of models.
@@ -222,13 +222,13 @@ plot_tridiag_eig_1d(np.random.randn(2, 11), np.random.randn(2, 10))
 
 As expected, larger random matrices produce "wilder" functions - the set of the functions is richer.
 
-Now, that we convinced ourselves that tridiagonal matrices have some potential, as a family providing a reasonable balance 
+Now that we've convinced ourselves that tridiagonal matrices have some potential, as a family providing a reasonable balance between speed and expressiveness, let's move on to a more convincing demonstration of that potential.
 
 # Training tridiagonal matrix eigenvalue models
 
-If we want to be able to train with PyTorch, we first need to make sure we can enjoy fast tridiagonal eigenvalue computation there as well. Unfortunately, as of now (PyTorch 2.10), we do _not_ have fast tridiagonal eigenvalue routines in PyTorch, even though tridiagonal and banded matrices do appear in many scientific computing domains. So similarly to a [previous post]({% post_url 2026-01-20-Spectrum-Speed %}), we will have to implement a custom AutoGrad function that will forward PyTorch tensors to SciPy routines. 
+If we want to be able to train with PyTorch, we first need to make sure we can enjoy fast tridiagonal eigenvalue computation there as well. Unfortunately, as of now (PyTorch 2.10), we do _not_ have fast tridiagonal eigenvalue routines in PyTorch, even though tridiagonal and banded matrices do appear in many scientific computing domains. So similarly to a [previous post]({% post_url 2026-01-20-Spectrum-Speed %}), we will have to implement a custom autograd function that will forward PyTorch tensors to SciPy routines.
 
-As a reminder - we need to subclass `torch.autograd.Function` and implement two static methods - `forward` for the computation and `backward` for the back-propagation of derivatives. This is exactly where we need eigenvectors, and not only the eigenvalues, as we explained in this previous [post]({% post_url 2026-01-20-Spectrum-Speed %}) in the series. So below is a function that resembled an almost identical function from that post, but adapted to the tridiagonal case. It appears a bit lengthy, but it's primarily because it aims to be efficient, and differentiate between two cases: (a) when we need derivatives, e.g., training, and (b) when we do not need derivatives, e.g., inference. So here is our $$k$$-th eigenvalue function:
+As a reminder - we need to subclass `torch.autograd.Function` and implement two static methods - `forward` for the computation and `backward` for the back-propagation of derivatives. This is exactly where we need eigenvectors, and not only the eigenvalues, as we explained in this previous [post]({% post_url 2026-01-20-Spectrum-Speed %}) in the series. So below is a function that resembles an almost identical function from that post, but adapted to the tridiagonal case. It appears a bit lengthy, but that's primarily because it aims to be efficient, and distinguish between two cases: (a) when we need derivatives, e.g., training, and (b) when we do not need derivatives, e.g., inference. So here is our $$k$$-th eigenvalue function:
 
 ```python
 import torch
@@ -244,13 +244,13 @@ class TridiagEigvalsh(torch.autograd.Function):
                 matrices.
             off_diag (tensor): A M1 x ... x Mn x (N - 1) tensor representing
                 a batch of size M1 x ... x Mn of off-diagonals of NxN
-                tridiagonal symmetri cmatrices.
+                tridiagonal symmetric matrices.
             k (int): The eigenvalue index
         """
         need_grad = ctx.needs_input_grad[0] or ctx.needs_input_grad[1]
 
-        diag_np = diag.numpy()
-        off_diag_np = off_diag.numpy()
+        diag_np = diag.detach().numpy()
+        off_diag_np = off_diag.detach().numpy()
         if need_grad:
             # k-th eigenvalue and eigenvector
             ws_np, Qs_np = sla.eigh_tridiagonal(
@@ -310,7 +310,7 @@ w.backward()
 ```
 4.88 ms ± 205 µs per loop (mean ± std. dev. of 30 runs, 100 loops each)
 ```
-Pretty fast - a mini-batch of 50 tridiagonal matrices of size 100x100 can compute gradients in approximately 5 milliseconds. Comparing it with approximately 35 milliseconds for full dense matrices - quite a speedup. For convenience, let's wrap our AutoGrad function class with a simple Python function:
+Pretty fast - a mini-batch of 50 tridiagonal matrices of size 100x100 can compute gradients in approximately 5 milliseconds. Comparing it with approximately 35 milliseconds for full dense matrices - quite a speedup. For convenience, let's wrap our autograd function class with a simple Python function:
 ```python
 def tridiag_eigvalsh(
         diag: torch.Tensor, off_diag: torch.Tensor, k: int
@@ -318,7 +318,7 @@ def tridiag_eigvalsh(
     return TridiagEigvalsh.apply(diag, off_diag, k)
 ```
 
-So now, to train a model we need a torch module representing our $$f(\boldsymbol x, \boldsymbol A_{0..n})$$ for the tri-diagonal case. This means our trainable parameters are the diagonals and the off-diagonals of the matrices $$\boldsymbol A_0, \dots, \boldsymbol A_n$$. Note, that both the diagonal vector and the off-diagonal vector of $$\mathcal{A}(\boldsymbol x)$$ are just linear functions of $$\boldsymbol x$$, so we can express them as simple `torch.nn.Linear` layers. This yields an almost magically simple class:
+So now, to train a model we need a torch module representing our $$f(\boldsymbol x, \boldsymbol A_{0..n})$$ for the tri-diagonal case. This means our trainable parameters are the diagonals and the off-diagonals of the matrices $$\boldsymbol A_0, \dots, \boldsymbol A_n$$. Note that both the diagonal vector and the off-diagonal vector of $$\mathcal{A}(\boldsymbol x)$$ are just linear functions of $$\boldsymbol x$$, so we can express them as simple `torch.nn.Linear` layers. This yields an almost magically simple class:
 
 ```python
 from torch import nn
@@ -334,7 +334,7 @@ class TridiagSpectral(nn.Module):
         return tridiag_eigvalsh(self.diag(x), self.off_diag(x), self.eig_idx)
 ```
 
-Now we can use it for training, like any PyTorch model. So let's try learning a classifier that detects if we have either two of five ones in a vector:
+Now we can use it for training, like any PyTorch model. So let's try learning a classifier that detects whether we have either two or five ones in a vector:
 ```python
 def toy_function(x: torch.Tensor):
     return torch.maximum(
@@ -363,10 +363,10 @@ y_test = y[~train_mask]
 Alright! We're ready to train a classifier on `(X_train, y_train)` and evaluate it on `(X_test, y_test)`. This would be a good time to introduce the [fitstream](https://github.com/alexshtf/fitstream/) library, which is very convenient for training PyTorch models on small in-memory datasets. Recall that we found it very convenient to hide the training loop behind a _Python generator_ that yields an event on every epoch. So this is what this library does - it performs a pretty standard PyTorch training loop, and yields a dict with some data at the end of each epoch. Let's first install it in our notebook:
 
 ```python
-%pip instal -q fitstream
+%pip install -q fitstream
 ```
 
-Now let's use it. Below is a short snippet demonstraing how we iterate over the first 5 events, which are simple python dicts, and use Python's [pprint](https://docs.python.org/3/library/pprint.html) library to nicely print each dict:
+Now let's use it. Below is a short snippet demonstrating how we iterate over the first 3 events, which are simple Python dicts, and use Python's [pprint](https://docs.python.org/3/library/pprint.html) library to nicely print each dict:
 
 ```python
 import fitstream as fts
@@ -483,7 +483,7 @@ events = fts.pipe(
     fts.take(100)
 )
 ```
-Finally, the library comes with a set of _collector_ functions that iterate over the events and collect them to various data structured. Here it will be convenient to use `collect_pd`, which collects the event dicts into a Pandas DataFrame. So here is an example of collecting the above event stream into a data-frame, and then plotting the training and validation losses:
+Finally, the library comes with a set of _collector_ functions that iterate over the events and collect them into various data structures. Here it will be convenient to use `collect_pd`, which collects the event dicts into a Pandas DataFrame. So here is an example of collecting the above event stream into a data frame, and then plotting the training and validation losses:
 ```python
 training_log = fts.collect_pd(events)
 training_log.plot(x="step", y=["train_loss", "val_loss"], title='Dim = 3')
@@ -518,7 +518,7 @@ def run_experiment_bce(model, lr=1e-1, batch_size=64, max_epochs=100):
     )
     return fts.collect_pd(events)
 ```
-Now we can easily plot similar losses $$5 \times 5$$ tridiagonal matrices:
+Now we can easily plot similar losses for $$5 \times 5$$ tridiagonal matrices:
 ```python
 training_log_5 = run_experiment_bce(
     TridiagSpectral(num_features=n_features, dim=5, eig_idx=2)
@@ -528,7 +528,7 @@ training_log_5.plot(x="step", y=["train_loss", "val_loss"], title='Dim = 5')
 
 ![pow_spec_tridiag_toy_5]({{ "assets/pow_spec_tridiag_toy_5.png" | absolute_url}})
 
-Much better! Now the validation loss is very close to zero as well. Now let's to $$9 \times 9$$ matrices:
+Much better! Now the validation loss is very close to zero as well. Now let's move to $$9 \times 9$$ matrices:
 ```python
 training_log_9 = run_experiment_bce(
     TridiagSpectral(num_features=n_features, dim=9, eig_idx=4)
@@ -539,11 +539,11 @@ training_log_9.plot(x="step", y=["train_loss", "val_loss"], title='Dim = 9')
 
 Beautiful! Apparently, a model with $$9 \times 9$$ tridiagonal symmetric matrices, which has $$13 \times (9 + 8) = 221$$ parameters, can learn this function from data almost perfectly. And conceptually, this is just a linear function of the features followed by a non-linear function - the matrix eigenvalue. Just one neuron! You can try it, but a "classical" neuron cannot learn this function.
 
-So now that we're convinced that the machinery is working, let's try it on the dataset that accompanies this series - the California Housing dataset we have built-into our Colab notebooks.
+So now that we're convinced that the machinery is working, let's try it on the dataset that accompanies this series - the California Housing dataset we have built into our Colab notebooks.
 
 # California housing training
 
-Recall that the dataset is about predicting housing prices in California based on some features. I will skip the part where we read the data, normalize features and targets, and split the data into training and test set. We've already done it in previous posts in this series, and the notebook contains the full code. So here we'll assume our training data is in `X_train, y_train`, our evaluation set is `X_test, y_test`, and the number of features is in `num_features`. Moreover, since our labels are scaled, we also have `label_scale` which lets is the factor that can transform the training / eval RMSE back to the original units in the dataset - dollars.
+Recall that the dataset is about predicting housing prices in California based on some features. I will skip the part where we read the data, normalize features and targets, and split the data into training and test sets. We've already done it in previous posts in this series, and the notebook contains the full code. So here we'll assume our training data is in `X_train, y_train`, our evaluation set is `X_test, y_test`, and the number of features is in `num_features`. Moreover, since our labels are scaled, we also have `label_scale`, which is the factor that transforms the training / eval RMSE back to the original units in the dataset - dollars.
 
 First, let's define a simple function that computes the RMSE in dollars:
 ```python
@@ -650,22 +650,22 @@ plot_log(training_log_15, title='Dim=15')
 ```
 ![pow_spectrum_tri_calhousing_15_300]({{ "assets/pow_spectrum_tri_calhousing_15_300.png" | absolute_url }})
 
-Another sligght improvement. What about $$45 \times 45$$ matrices?
+Another slight improvement. What about $$45 \times 45$$ matrices?
 ```python
 training_log_45 = fts.collect_pd(tqdm(complete_training_stream(45, 500)))
 plot_log(training_log_45, title='Dim=45')
 ```
 ![pow_spectrum_tri_calhousing_45_300]({{ "assets/pow_spectrum_tri_calhousing_45_300.png" | absolute_url }})
 
-I can share, and you can see it by running the notebook yourself, that each such experiment takes 3-4 minutes. Just to get a feeling - comparing to dense matrix experiments we conducted in previous posts, this is _orders of magnitude_ faster, and without any GPU. I'm pretty sure that if PyTorch had tridiagonal support, we could have run each experiment in seconds. But unfortunately - it does not.
+I can share, and you can see it by running the notebook yourself, that each such experiment takes 3-4 minutes. Just to get a feeling - compared to dense matrix experiments we conducted in previous posts, this is much faster, and without any GPU. I'm pretty sure that if PyTorch had tridiagonal support, we could have run each experiment in seconds. But unfortunately - it does not.
 
-Comparing it to dense experiments we conducted with the same dataset and similar matrix sizes in [this post]({% post_url 2026-01-20-Spectrum-Speed %}), which took us 31 minutes on an NVidia L4 GPU for a $$45 \times 45$$ matrix, while achieving a similar test error - we clearly see the difference. No GPU, orders of magnitude faster, and a similar performance at least on this dataset.
+Comparing it to dense experiments we conducted with the same dataset and similar matrix sizes in [this post]({% post_url 2026-01-20-Spectrum-Speed %}), which took us 31 minutes on an NVidia L4 GPU for a $$45 \times 45$$ matrix, while achieving a similar test error - we clearly see the difference. No GPU, an order of magnitude faster, and a similar performance at least on this dataset.
 
 Of course - the above are not proper experiments I'd include in a paper. I haven't conducted any hyperparameter search, perhaps a different optimizer could be better, etc..., but we see the point.
 
 # Summary
 To summarize, we can see that restricting ourselves to eigenvalue model families where all matrices are simultaneously tri-diagonalizable can be useful to strike a good balance between speed and expressiveness. Let us recall why this model family is interesting - it's just one neuron, a linear (matrix) function composed with a non-linearity, that is quite expressive, while being fairly interpretable. These nice properties haven't gone anywhere - spectral norms of our tridiagonal matrices are still a reasonable way to think of importance, and provide a certificate for sensitivity of the model to changes in that feature.
 
-We do, however, see slow convergence. 500 epochs is quite a lot, and even though our training procedure stops beforehand due to the early stopping mechanism, it's still a few hundred epochs. Even if I throw the best practices at it, such as learning rate scheduling, early stopping, and others - it's still quite slow. At this stage, this is a price we pay for having a model that is one the one hand just one fairly interpretable neuron, but on the other hand we can improve it by scaling.
+We do, however, see slow convergence. 500 epochs is quite a lot, and even though our training procedure stops beforehand due to the early stopping mechanism, it's still a few hundred epochs. Even if I throw the best practices at it, such as learning rate scheduling, early stopping, and others - it's still quite slow. At this stage, this is a price we pay for having a model that is, on the one hand, just one fairly interpretable neuron, but on the other hand can be improved by scaling.
 
-We have many more questions to explore in this series. For example - can we prune any dense eigenvalue model to tridiagonal form? Can we make it converge faster? How we stack such models as layers of a larger neural network? Stay tuned!
+We have many more questions to explore in this series. For example - can we prune any dense eigenvalue model to tridiagonal form? Can we make it converge faster? How do we stack such models as layers of a larger neural network? Stay tuned!
