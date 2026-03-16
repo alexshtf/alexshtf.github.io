@@ -4,7 +4,7 @@ title:  "Cheaper eigenvalue training and inference"
 tags: ["machine learning", "eigenvalue models", "spectral methods", "tridiagonal matrices", "structured matrices", "numerical linear algebra", "pytorch", "scipy", "autograd"]
 description: "Cheaper eigenvalue training and inference with symmetric tridiagonal matrices: preserve useful expressiveness, use fast SciPy-backed PyTorch autograd, and avoid dense eigensolvers."
 comments: true
-# image: assets/pow_spec_recurrent.png
+image: assets/pow_spectrum_tri_calhousing_45_300.png
 series: "Eigenvalues as models"
 ---
 
