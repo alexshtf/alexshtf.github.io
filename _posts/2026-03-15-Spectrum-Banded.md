@@ -39,7 +39,7 @@ So our model family is invariant under such orthogonal similarity transformation
 
 One of the interesting phenomena in linear algebra is _simultaneous diagonalization_. A set of matrices $${\boldsymbol A}_i$$ is simultaneously diagonalizable if there exists an orthogonal matrix $${\boldsymbol Q}$$ such that $${\boldsymbol Q}^T {\boldsymbol A}_i {\boldsymbol Q}$$ is diagonal for all $$i$$. In other words, the same matrix $$\boldsymbol Q$$ diagonalizes all matrices simultaneously.
 
-If we restrict ourselves to models where all of our learned matrices are simultaneously diagonalizable, we can equivalently just assume all matrices are diagonal:
+If we restrict ourselves to models where all of our learned matrices are simultaneously diagonalizable, we can just assume all matrices are diagonal:
 
 $$
 f({\boldsymbol x};{\boldsymbol A}_{0:n}) = \lambda_k \Bigl(\operatorname{diag}({\boldsymbol a}_0) + \sum_{i=1}^n x_i \operatorname{diag}({\boldsymbol a}_i)\Bigr).
@@ -51,7 +51,7 @@ $$
 {\boldsymbol a}_0 + \sum_{i=1}^n x_i {\boldsymbol a}_i.
 $$
 
-On the one hand, it's an extremely easy eigenvalue problem. But we actually lost almost all of the expressive power, since it's just a convoluted way to describe a piecewise linear function of $${\boldsymbol x}$$.
+On the one hand, it's an extremely easy eigenvalue problem. But we actually lost almost all of the expressive power, since it's just a convoluted way to describe a piecewise linear function of $${\boldsymbol x}$$. We have ReLU networks for that.
 
 But there is another family of matrices for which the eigenvalue problem is easy - _symmetric tridiagonal_ matrices, meaning, matrices of the form:
 
@@ -66,7 +66,7 @@ b_1    & a_2    & b_2    & \dots  & 0      \\
 \end{pmatrix}.
 $$
 
-Such a matrix is defined by two vectors, the main diagonal $$\boldsymbol a \in \mathbb{R}^d$$, and the off-diagonal $$\boldsymbol b \in \mathbb{R}^{d-1}$$. We stand on the shoulders of giants, and use the impressive legacy of numerical analysis research, given to us in the form of `scipy.linalg.eigh_tridiagonal` on a silver platter.
+Such a matrix is defined by two vectors, the main diagonal $$\boldsymbol a \in \mathbb{R}^d$$, and the off-diagonal $$\boldsymbol b \in \mathbb{R}^{d-1}$$. Turns out this family strikes a nice balance - eigenvalues of such matrices are efficient to compute, while remaining fairly expressive. Efficiency comes from standing on the shoulders of giants, and using decades of numerical analysis research, given to us in the form of `scipy.linalg.eigh_tridiagonal` on a silver platter.
 
 To appreciate the speed difference, let's time eigenvalue and eigenvector computation using SciPy for regular dense matrices, and compare it to tridiagonal matrices. Let's create a batch of dense matrices:
 
@@ -134,27 +134,27 @@ $$
 \mathcal{A}(\boldsymbol x) = {\boldsymbol A}_0 + \sum_{i=1}^n x_i {\boldsymbol A}_i.
 $$
 
-The quadratic function $${\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u$$ expresses interactions between _all entry pairs_ of the latent variable $$\boldsymbol u$$, since:
+So we have a _latent variable_ $$\boldsymbol u$$ that appears in the quadratic function $${\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u$$, which expresses interactions between _all entry pairs_ $$\boldsymbol u$$, since:
 
 $$
 {\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u = \sum_{i=1}^d \sum_{j=1}^d \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i,j} u_i u_j
 $$
 
-If $$\mathcal{A}(\boldsymbol x)$$ were diagonal, we would lose all interactions and obtain a function without any interactions at all:
+If $$\mathcal{A}(\boldsymbol x)$$ were diagonal, we would lose all interactions - each entry $$u_i$$ interacts only with itself:
 
 $$
 {\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u = \sum_{i=1}^d \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i,i} u_i^2.
 $$
 
-This is another manifestation of the loss of expressiveness we saw before. But if it is tri-diagonal, we do have pairwise interactions:
+This is another manifestation of the loss of expressiveness we discussed before. But if it were tri-diagonal, we do have pairwise interactions:
 
 $$
-{\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u = \sum_{i=1}^d \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i,i} u_i^2 + 2 \sum_{i=1}^{d-1} \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i+1,i} u_{i+1} u_{i}
+{\boldsymbol u}^T \mathcal{A}(\boldsymbol x) \boldsymbol u = \sum_{i=1}^d \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i,i} u_i^2 + 2 \sum_{i=1}^{d-1} \bigl(\mathcal{A}(\boldsymbol x)\bigr)_{i+1,i} u_{i+1} u_{i}.
 $$
 
-Even though it's only between adjacent pairs $$u_i$$ and $$u_{i+1}$$, it turns out to be enough to produce a fairly rich set of models.
+Even though it's only between adjacent pairs $$u_i$$ and $$u_{i+1}$$, it turns out to be enough to produce a fairly rich set of models. Note, these are pairwise interactions between entries of the latent variable $$\boldsymbol u$$, not of the raw features $$\boldsymbol x$$. In fact, _all features_ of $$\boldsymbol x$$ potentially with each other, since each entry of $$\mathcal{A}(\boldsymbol x)$$ contains a linear combination of all features.
 
-Let's try plotting a univariate function:
+To visually see that we have nontrivial expressive power, let's try plotting a univariate function:
 
 $$
 f_k(x) = \lambda_k(\boldsymbol A + x \boldsymbol B),
@@ -187,7 +187,7 @@ def tridiagonal_eig_1d(k, diag, off_diag, xs):
     return eigval
 ```
 
-Let's try plotting a function obtained from random $$5 \times 5$$ matrices. Below is a function that plots a grid of eigenvalue functions $$f_k(x)$$ for all $$k$$, and uses it to plot:
+Let's try plotting a function obtained from random $$5 \times 5$$ matrices. Below is a function that plots a grid of eigenvalue functions $$f_k(x)$$ for all $$k$$, followed by its use to plot our functions:
 
 ```python
 import matplotlib.pyplot as plt
@@ -212,7 +212,7 @@ plot_tridiag_eig_1d(np.random.randn(2, 5), np.random.randn(2, 4))
 
 ![pow_spec_tridiag_5x5]({{ "assets/pow_spec_tridiag_5x5.png" | absolute_url }})
 
-Alright! We see functions having non-trivial shapes. As expected, the smallest eigenvalue $$\lambda_1$$ is concave, the largest $$\lambda_5$$ is convex, and all other eigenvalue functions have richer shapes. What about $$11\times 11$$ matrices?
+Alright! We see functions having non-trivial shapes. As expected from what we saw in previous posts, the smallest eigenvalue $$\lambda_1$$ is concave, the largest $$\lambda_5$$ is convex, and all other eigenvalue functions have piecewise-smooth shapes that are neigher convex nor concave. What about $$11\times 11$$ matrices?
 
 ```python
 plot_tridiag_eig_1d(np.random.randn(2, 11), np.random.randn(2, 10))
@@ -220,7 +220,7 @@ plot_tridiag_eig_1d(np.random.randn(2, 11), np.random.randn(2, 10))
 
 ![pow_spec_tridiag_11x11]({{ "assets/pow_spec_tridiag_11x11.png" | absolute_url}})
 
-As expected, larger random matrices produce "wilder" functions - the set of the functions is richer.
+As expected, larger random matrices produce "wilder" shapes - the set of the functions is richer.
 
 Now that we've convinced ourselves that tridiagonal matrices have some potential, as a family providing a reasonable balance between speed and expressiveness, let's move on to a more convincing demonstration of that potential.
 
@@ -228,7 +228,9 @@ Now that we've convinced ourselves that tridiagonal matrices have some potential
 
 If we want to be able to train with PyTorch, we first need to make sure we can enjoy fast tridiagonal eigenvalue computation there as well. Unfortunately, as of now (PyTorch 2.10), we do _not_ have fast tridiagonal eigenvalue routines in PyTorch, even though tridiagonal and banded matrices do appear in many scientific computing domains. So similarly to a [previous post]({% post_url 2026-01-20-Spectrum-Speed %}), we will have to implement a custom autograd function that will forward PyTorch tensors to SciPy routines.
 
-As a reminder - we need to subclass `torch.autograd.Function` and implement two static methods - `forward` for the computation and `backward` for the back-propagation of derivatives. This is exactly where we need eigenvectors, and not only the eigenvalues, as we explained in this previous [post]({% post_url 2026-01-20-Spectrum-Speed %}) in the series. So below is a function that resembles an almost identical function from that post, but adapted to the tridiagonal case. It appears a bit lengthy, but that's primarily because it aims to be efficient, and distinguish between two cases: (a) when we need derivatives, e.g., training, and (b) when we do not need derivatives, e.g., inference. So here is our $$k$$-th eigenvalue function:
+As a reminder - we need to subclass `torch.autograd.Function` and implement two static methods - `forward` for the computation and `backward` for the back-propagation of derivatives. This is exactly where we need eigenvectors, and not only the eigenvalues, as we explained in this previous [post]({% post_url 2026-01-20-Spectrum-Speed %}) in the series. As a reminder, for the function $$\lambda_k(\boldsymbol X)$$, the "right kind" of generalized derivative is the matrix $$\boldsymbol q_k \boldsymbol q_k^T$$, where $$\boldsymbol q_k$$ is the corresponding eigenvector. When $$\boldsymbol X$$ is tridiagonal, we just need the diagonal and off-diagonal vectors of the $$\boldsymbol q_k \boldsymbol q_k^T$$.  
+
+So below an autograd function implementing exactly this idea. It appears a bit lengthy, but that's primarily because it aims to be efficient, and distinguish between two cases: (a) when we need derivatives, e.g., training, and require an eigenvector, and (b) when we do not need derivatives, e.g., inference, and do _not_ require an eigenvector:
 
 ```python
 import torch
@@ -664,6 +666,7 @@ Comparing it to dense experiments we conducted with the same dataset and similar
 Of course - the above are not proper experiments I'd include in a paper. I haven't conducted any hyperparameter search, perhaps a different optimizer could be better, etc..., but we see the point.
 
 # Summary
+
 To summarize, we can see that restricting ourselves to eigenvalue model families where all matrices are simultaneously tri-diagonalizable can be useful to strike a good balance between speed and expressiveness. Let us recall why this model family is interesting - it's just one neuron, a linear (matrix) function composed with a non-linearity, that is quite expressive, while being fairly interpretable. These nice properties haven't gone anywhere - spectral norms of our tridiagonal matrices are still a reasonable way to think of importance, and provide a certificate for sensitivity of the model to changes in that feature.
 
 We do, however, see slow convergence. 500 epochs is quite a lot, and even though our training procedure stops beforehand due to the early stopping mechanism, it's still a few hundred epochs. Even if I throw the best practices at it, such as learning rate scheduling, early stopping, and others - it's still quite slow. At this stage, this is a price we pay for having a model that is, on the one hand, just one fairly interpretable neuron, but on the other hand can be improved by scaling.
