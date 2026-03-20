@@ -2,28 +2,29 @@
 layout: base
 ---
 <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      extensions: [
-        "MathMenu.js",
-        "MathZoom.js",
-        "AssistiveMML.js",
-        "a11y/accessibility-menu.js"
-      ],
-      jax: ["input/TeX", "output/CommonHTML"],
-      TeX: {
-        extensions: [
-          "AMSmath.js",
-          "AMSsymbols.js",
-          "noErrors.js",
-          "noUndefined.js",
-        ]
+  <script>
+    window.MathJax = {
+      loader: {
+        load: ["[tex]/boldsymbol", "[tex]/noerrors", "[tex]/noundefined"]
+      },
+      tex: {
+        packages: { "[+]": ["boldsymbol", "noerrors", "noundefined"] },
+        inlineMath: { "[+]": [["$", "$"]] },
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        menuOptions: {
+          settings: {
+            assistiveMml: true
+          }
+        }
       }
-    });
+    };
   </script>
 
-  <script type="text/javascript" async
-    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/mathjax@4.1/tex-mml-chtml.js">
   </script>
 
 
