@@ -36,6 +36,13 @@ $$
 
 Some of us may remember from linear algebra that eigenvalues of symmetric matrices are _invariant_ under orthogonal transformations. So the representation of our model is not unique - we can just replace all matrices $$\mathbf{A}_i$$ by $$\mathbf{Q}\mathbf{A}_i\mathbf{Q}^\intercal$$ for some orthogonal matrix $$\mathbf{Q}$$ and obtain exactly the same model. Redundancy, of course, is not unique to this family. Matrix factorization models[^2] have a similar redundancy. But we can eliminate some of this redundancy.
 
+---
+**Update 2026-04-24**
+
+The "eliminating redundancy" section below has a mistake, since orthogonal matrices can also change the order of eigenvalues. So the _entire spectrum_ is unchanged, but the $$k$$-th eigenvalue may be changed by an orthogonal transformation. Nevertheless, we have empirical experiments that show that this parametrization works reasonably well in practice.
+
+---
+
 Since $$\mathbf{A}_0$$ is symmetric, it has a spectral decomposition:
 
 $$
