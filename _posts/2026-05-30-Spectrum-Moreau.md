@@ -2,9 +2,9 @@
 layout: post
 title:  "When Eigenvalues Collide"
 tags: ["machine learning", "eigenvalue models", "spectral methods", "tridiagonal matrices", "structured matrices", "numerical linear algebra", "pytorch", "scipy", "autograd"]
-description: "Cheaper eigenvalue training and inference with symmetric tridiagonal matrices: preserve useful expressiveness, use fast SciPy-backed PyTorch autograd, and avoid dense eigensolvers."
+description: "Accelerating convergence of eigenvalue models by Moreau regularization of the mid-eigenvalue."
 comments: true
-image: assets/pow_spectrum_tri_calhousing_45_300.png
+image: assets/pow_spectrum_moreau_kyfan_smooth_aligned_demo_k3.png.png
 series: "Eigenvalues as models"
 ---
 
