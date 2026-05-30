@@ -4,7 +4,7 @@ title:  "When Eigenvalues Collide"
 tags: ["machine learning", "eigenvalue models", "spectral methods", "tridiagonal matrices", "structured matrices", "numerical linear algebra", "pytorch", "scipy", "autograd"]
 description: "Accelerating convergence of eigenvalue models by Moreau regularization of the mid-eigenvalue."
 comments: true
-image: assets/pow_spectrum_moreau_kyfan_smooth_aligned_demo_k3.png.png
+image: assets/pow_spectrum_moreau_kyfan_smooth_aligned_demo_k3.png
 series: "Eigenvalues as models"
 ---
 
@@ -55,7 +55,7 @@ Since our model is the $$k$$-th smallest eigenvalue of the matrix $${\boldsymbol
 
 # A tale of colliding eigenvalues
 
-The $$k$$-th eigenvalue $$\lambda_k(\boldsymbol W)$$ has a corresponding normalized eigenvector $$\boldsymbol{v}_k(\boldsymbol W)$$. As we pointed out in a [previous post]({{"2026-01-20-Spectrum-Speed" | post_url}}), we have:
+The $$k$$-th eigenvalue $$\lambda_k(\boldsymbol W)$$ has a corresponding normalized eigenvector $$\boldsymbol{v}_k(\boldsymbol W)$$. As we pointed out in a [previous post]({% post_url 2026-01-20-Spectrum-Speed %}), we have:
 
 $$
 \nabla \lambda_k(\boldsymbol W) = \boldsymbol{v}_k(\boldsymbol W) \boldsymbol{v}_k(\boldsymbol W)^T.
@@ -103,7 +103,7 @@ In contrast to Davis Kahan, now we present a _local_ result that holds in a smal
 > \nabla \boldsymbol \phi(t) = \sum_{j \neq k} \frac{(\boldsymbol v_j^T \boldsymbol \Delta \boldsymbol v_k) \boldsymbol v_j \boldsymbol v_k^T + (\boldsymbol v_k^T \boldsymbol \Delta \boldsymbol v_j) \boldsymbol v_k \boldsymbol v_j^T}{\mathrm{gap}_{k,j}(\boldsymbol W)}
 > $$
 
-The above is a simplification of a more general _eigenvector projector theorem_, a well known result described by Kato[^2], and more nicely presented in the "First-order perturbation theory for eigenvalues and eigenvectors"[^3]. 
+The above is a simplification of a more general eigenvector perturbation result, a well known result described by Kato[^2], and more nicely presented in the "First-order perturbation theory for eigenvalues and eigenvectors"[^3].
 
 Let's first understand what the theorem says. Note that $$\boldsymbol \phi$$ is our desired gradient of the eigenvalue function along the line starting at $$\boldsymbol W$$ in the direction $$\boldsymbol \Delta$$. So the derivative $$\nabla \boldsymbol \phi$$ represents the _local rates of change_ in this direction. 
 
@@ -123,10 +123,10 @@ $$
 \lambda_k(\boldsymbol W) = \mu_{n - k + 1}(\boldsymbol W).
 $$
 
-Recall from our [post]({{ 2026-02-03-Spectrum-Interpretability | post_url}}) on interpreting the model family, that the _sum_ of the $$r$$ largest eigenvalues,
+Recall from our [post]({% post_url 2026-02-03-Spectrum-Interpretation %}) on interpreting the model family, that the _sum_ of the $$r$$ largest eigenvalues,
 
 $$
-M_r(\boldsymbol W) = \sum_{j=1}^r \mu_r(\boldsymbol W),
+M_r(\boldsymbol W) = \sum_{j=1}^r \mu_j(\boldsymbol W),
 $$
 
 is a _convex_ function. Indeed, in that very post we saw that this largest eigenvalue sum function can be equivalently written using the _Ky Fan Variational Principle_, called after the Chinese-American mathematician Ky Fan:
@@ -141,7 +141,7 @@ $$
 \mu_r(\boldsymbol W) = M_r(\boldsymbol W) - M_{r-1}(\boldsymbol W).
 $$
 
-So now that we've met Ky Fan, let's meet Jean-Jaques Moreau and his _Moreau envelope_. In fact, this blog already introduced him in the [proximal-point post series]({{ 2020-01-31-ProximalPointWarmup | post_url }}), but here we are going to see the envelope in a different form:
+So now that we've met Ky Fan, let's meet Jean-Jaques Moreau and his _Moreau envelope_. In fact, this blog already introduced him in the [proximal-point post series]({% post_url 2020-01-31-ProximalPointWarmup %}), but here we are going to see the envelope in a different form:
 
 > Let $$\phi(\boldsymbol u) = \max_{\boldsymbol v} \{ \langle \boldsymbol u, \boldsymbol v \rangle - \varphi(\boldsymbol v) \}$$, where $$\varphi$$ is a convex function, and let $$\alpha > 0$$. Then the Moreau envelope of $$\phi$$ is:
 > 
@@ -151,9 +151,9 @@ So now that we've met Ky Fan, let's meet Jean-Jaques Moreau and his _Moreau enve
 
 Intuitively, we take a function defined as a maximum, and introduce quadratic regularization to the maximization problem. 
 
-The first property that we immediately see is that it is indeed an "envelope", meaning, the envelope of $$\phi$$ is  alower bound for $$\phi$$, since we subtract a non-negative term inside the maximum.
+The first property that we immediately see is that it is indeed an "envelope", meaning, the envelope of $$\phi$$ is a lower bound for $$\phi$$, since we subtract a non-negative term inside the maximum.
 
-Second, the Moeau envelope is _always_ differentiable and smooth:
+Second, the Moreau envelope is _always_ differentiable and smooth:
 
 $$
 \| \nabla \tilde{\phi}_{\alpha}(\boldsymbol u) - \nabla \tilde{\phi}_{\alpha}(\boldsymbol u + \boldsymbol \delta) \|_2 \leq \frac{1}{\alpha} \| \boldsymbol \delta \|_2
@@ -547,7 +547,7 @@ Indeed, away from the kink and the high curvature regions, the smooth approximat
 
 # Smooth $$k$$-th smallest eigenvalue
 
-Subtracting the two smooth approximations, we can obtain a smooth approximation of the $$k$$-th smallest eigenvalue eigenvalue, which is the $$r=n-k+1$$-th largest as
+Subtracting the two smooth approximations, we can obtain a smooth approximation of the $$k$$-th smallest eigenvalue, which is the $$r=n-k+1$$-th largest as
 
 $$
 \tilde{\mu}_{r, \alpha}(\boldsymbol W) = \tilde{M}_{r, \alpha}(\boldsymbol W) - \tilde{M}_{r - 1, \alpha}(\boldsymbol W) + \frac{\alpha}{2}.
@@ -587,7 +587,7 @@ Our `kth_eigval_smooth` function above computed the smooth approximation by invo
 3. Compute $$\boldsymbol q_{r-1}^*$$ - the projection of $$\boldsymbol \mu(\boldsymbol W) / \alpha$$ onto the capped $$r-1$$-simplex.
 4. Output: $$\tilde{\mu}_{r, \alpha}(\boldsymbol W) = \langle \mu(\boldsymbol W), \boldsymbol q_r^* - \boldsymbol q_{r-1}^* \rangle - \frac{\alpha}{2} ( \| \boldsymbol q_r^* \|_2^2 - \| \boldsymbol q_{r-1}^* \|_2^2) + \frac{\alpha}{2}$$
 
-Now, look at the term $$\langle \mu(\boldsymbol W), \boldsymbol q_r^* - \boldsymbol q_{r-1}^* \rangle$$ - it is just a weighted sum of eigenvalues of $$\boldsymbol W$$. So let's plot these weights in the vicinity of the "kink" near $$x=1$$. Here are the weights near the kink for $$\alpha = 3$$:
+Now, look at the term $$\langle \mu(\boldsymbol W), \boldsymbol q_r^* - \boldsymbol q_{r-1}^* \rangle$$ - it is just a weighted sum of eigenvalues of $$\boldsymbol W$$. So let's plot these weights in the vicinity of the "kink" near $$x=1$$. Here are the weights near the kink for $$\alpha = 0.5$$:
 ```python
 alpha = 0.5
 r = 3
@@ -617,11 +617,13 @@ plt.show()
 
 We see that we are just computing a sum of a _window_ of two (out of five) eigenvalues. As we get closer to the "kink" there is more need for smoothing, and the weights of both eigenvalues are almost identical - we see both get a similarly gray color. But farther away from the kink, we are almost exclusively assigning all of the weight to $$\lambda_3$$. The simplex projection trick automatically discovers the right weights, without us having to do the guess-work. The power of convex analysis!
 
-So now we're ready to implement it in PyTorch and train a model. We shall even exploit the fact that it's just a window. The reason is that for the gradients we will be computing a weighted sum of eigen-_vectors_, and we would like to avoid summing up vectors whose weight is zero, for efficiency.
+So now comes the part where the math has to pay rent. The smoothing looks nice on a one-dimensional plot, but our actual goal is training. For that, the smoothed eigenvalue has to become a PyTorch operation, with a forward pass, a backward pass, and enough respect for symmetry conventions not to quietly lie to us.
 
-# $$k$$-th smallest eigenvector in PyTorch
+The good news is that the derivation already told us what the backward pass should look like: not just one matrix $$\boldsymbol v_k \boldsymbol v_k^T$$, but a weighted sum of matrices $$\boldsymbol v_j \boldsymbol v_j^T$$ coming from nearby eigenvalues. The weights are exactly the capped-simplex weights we just plotted.
 
-For PyTorch we will need to re-write a pytorch variant of all our NumPy functions. So here is almost an exact copy of the function that computes the coefficients of the piece-wise linear equation we use to project onto the simplex. Nothing special, just the same function with a slightly different PyTorch syntax:
+# A smoothed eigenvalue in PyTorch
+
+For PyTorch we will need to re-write a PyTorch variant of all our NumPy functions. Luckily, this part contains no new math - the only strange object in this post is the idea, not the syntax. We begin with almost an exact copy of the function that computes the coefficients of the piece-wise linear equation we use to project onto the simplex:
 
 ```python
 import torch
@@ -698,7 +700,7 @@ Torch:  tensor([0.00, 0.25, 0.75, 1.00])
 
 Now we're almost ready to write the autograd function. Before showing the code - there is one more simplification step. Looking at the definition of the capped $$r$$-simplex, the criteria are independent of the order of the elements. This means that if we permute the vector before projection, it is equivalent to applying the same permutation to the projection. Consequently, we don't really need the vector of eigenvalues in nondecreasing order. It was convenient for visualization, but they can be in any order, including the order PyTorch uses.
 
-So now we're ready. We begin from the `forward` method. It will repeat what we've done in NumPy - project the eigenvalues, divided by $$\alpha$$ onto the appropriate capped simplices, and compute the difference-of-kyfan functions. Of course, when gradients are needed, it will save eigenvectors for backward pass, since the gradient is the appropriate sum of eigenvectors. 
+So now we're ready. We begin from the `forward` method. This is where our earlier derivation reappears almost verbatim: project the eigenvalues, divided by $$\alpha$$, onto two capped simplices, subtract the projections, and use the difference as weights. When gradients are needed, we also save the eigenvectors, because the backward pass will combine the matrices $$\boldsymbol v_j \boldsymbol v_j^T$$ using exactly these weights.
 
 
 ```python
@@ -731,7 +733,7 @@ class KthEigvalhSmooth(torch.autograd.Function):
         )
 ```
 
-Before implementing it, we need to notice something important. As a convention in PyTorch, when the symmetric eigenvalue algorithm is invoked, it uses _only_ the upper triangle of the matrix. Why? Well - it should be symmetric, so the lower triangle is in theory just a mirror-image. In practice, it doesn't even look at the lower triangle - it is ignored. Thus, each component above the diagonal contributes to the gradient _twice_: once in its role in the upper triangular, and again in its role at the corresponding position in the lower triangular. Diagonal components, of course, receive it only once. So below you will see a factor of two applied to gradients exactly because of this:
+Before implementing the backward pass, we need to notice something important. As a convention in PyTorch, when the symmetric eigenvalue algorithm is invoked, it uses _only_ the lower triangle of the matrix. Why? Well - it should be symmetric, so the upper triangle is in theory just a mirror-image. In practice, it doesn't even look at the upper triangle - it is ignored. Thus, each off-diagonal component contributes to the gradient _twice_: once through its role below the diagonal, and once through its mirror image above the diagonal. Diagonal components, of course, receive it only once. So below you will see a factor of two applied to off-diagonal gradients exactly because of this:
 
 ```python
     @staticmethod
@@ -766,11 +768,13 @@ torch.autograd.gradcheck(
 ```
 True
 ```
-The `True` means that the check has passed - the numerical gradient approximation was equivalent to our autograd implementation. And now, we're finally ready to experiment with model training.
+The `True` means that the check has passed - the numerical gradient approximation was equivalent to our autograd implementation. This is the point where the construction stops being just a nice convex-analysis story and becomes something we can actually train with.
 
 # California housing experiments
 
-First, if we've already invested in being compatible with PyTorch and using only the lower triangle of a matrix for symmetric eigenvalue computation, let go all the way through and just store only the lower triangle. To that end, we'll just have a small auxiliary class that reshapes a vector of $$d (d + 1) / 2$$ coordinates to $$d \times d$$ symmetric matrices. It's quite simple - it precomputes the mapping from vector to matrix coordinates and stores it in a PyTorch buffer:
+Now comes the real test. The one-dimensional plots showed that the smoothed eigenvalue behaves the way we wanted, and `gradcheck` showed that our backward pass matches the numerical derivative. But the question that started this post was about training speed and stability. So let's put the new smoothed eigenvalue model inside the same California Housing experiment we've been using throughout the series.
+
+First, if we've already invested in being compatible with PyTorch and using only one triangle of a matrix for symmetric eigenvalue computation, let's go all the way through and store only the lower triangle. To that end, we'll use a small auxiliary class that reshapes a vector of $$d (d + 1) / 2$$ coordinates to $$d \times d$$ symmetric matrices. It's quite simple - it precomputes the mapping from vector to matrix coordinates and stores it in a PyTorch buffer:
 
 ```python
 from torch import nn
@@ -828,7 +832,7 @@ $$
 
 Note, here we're using the smoothed out version $$\tilde{\lambda}_{k, \alpha}$$ we've just developed, rather than the exact eigenvalue. But the idea is similar - we use _one_ neuron, composed of a linear combination of the features + a nonlinear activation in the form of the smoothed-out eigenvalue function. 
 
-Here, we shall use our module above. The linear combination is performed by an `nn.Linear` layer, producing $$d \times (d + 1)$$ vectors, which are then reshaped to matrices. By default, we'll be targeting the mid-eigenvalue.
+Here, we shall use our module above. The linear combination is performed by an `nn.Linear` layer, producing $$d(d + 1) / 2$$ vectors, which are then reshaped to matrices. By default, we'll be targeting the mid-eigenvalue.
 
 ```python
 class SmoothKthEigvalhModel(nn.Module):
@@ -854,7 +858,7 @@ Again, we shall use the [fitstream](https://fitstream.readthedocs.io/en/latest/)
 import fitstream as fts
 ```
 
-Here is a full PyTorch training loop, implemented using `fitstream`, that includes a linear a learning rate scheduler with $$10\%$$ warmup. Produces a generator of "events" in the form of dictionaries, we can later gather to dataframes and plot. It constructs our model, the Adam optimizer, a learning rate scheduler, and then pipes a bunch of `fitstream` operators. By default, we use 75 epochs, which I found to be enough for the experiments here, and a smoothing factor of $$\alpha = 0.1$$, which I will use later to demonstrate an important point.
+Here is a full PyTorch training loop, implemented using `fitstream`, that includes a linear learning rate scheduler with $$10\%$$ warmup. It produces a generator of "events" in the form of dictionaries, which we can later gather to dataframes and plot. It constructs our model, the Adam optimizer, a learning rate scheduler, and then pipes a bunch of `fitstream` operators. By default, we use 75 epochs, which I found to be enough for the experiments here, and a smoothing factor of $$\alpha = 0.1$$, which I will use later to demonstrate an important point.
 
 ```python
 from torch.optim.lr_scheduler import OneCycleLR
@@ -904,9 +908,9 @@ Recall we can also collect the stream to a dataframe, like this:
 ```python
 demo_log = fts.collect_pd(complete_training_stream(dim=5, n_epochs=11))
 ```
-This will make plotting easier. So now we need to think _what_ is it that we want to be ploted. 
+This will make plotting easier. So now we need to think _what_ it is that we want to plot.
 
-We began this journey from slow convergence, so somehow we will need to measure the speed of convergence. So here I propose a pretty straightforward idea - let's measure the area under the validation loss curve. A quickly converging algorithm will tend to yield a smaller area, whereas a slowly converging one will tend to have a large area. A simple approximation is just the _aveage of the points along the curve_. Note that this incorporates both the rate, and the error we're converging to. For example, a horizontal line, which is the fastest possible convergence, can have a terrible average if all points along the line achieve a high error.
+We began this journey from slow convergence, so somehow we need to measure not only _where_ the model ends up, but also _how it gets there_. Here I propose a pretty straightforward idea - let's measure the area under the validation loss curve. A quickly converging algorithm will tend to yield a smaller area, whereas a slowly converging one will tend to have a large area. A simple approximation is just the _average of the points along the curve_. Note that this incorporates both the rate, and the error we're converging to. For example, a horizontal line, which is the fastest possible convergence, can have a terrible average if all points along the line achieve a high error.
 
 So here is a plotting function for the validation loss from a log dataframe such as the one we produced above, together with the best validation loss we achieved, and the average of the validation loss curve:
 ```python
@@ -958,37 +962,37 @@ plot_log(demo_log)
 
 Alright! We can see the dotted line of the learning rate going up and down, and the blue line of the validation loss going down. We can also see that the best validation RMSE here is approximately $$\$58.3$$k, and that the "area under the curve" is here $$\sim \$61.7$$k.
 
-Alright, now that we have the "piping" in place, let's do some experiments. Here is the result of training with $$5 \times 5$$ matrices:
+Alright, now that we have the "piping" in place, let's do some experiments. First, a sanity check: can the smoothed version of our neuron learn at all? Here is the result of training with $$5 \times 5$$ matrices:
 ```python
 log_5 = fts.collect_pd(complete_training_stream(dim=5))
 plot_log(log_5)
 ```
 ![pow_spectrum_moreau_calhouse_5]({{"assets/pow_spectrum_moreau_calhouse_5.png" | absolute_url }})
 
-Results appear to be somewhat similar to previous posts, and it's hard to judge. But at least it's a nice sanity test to see that we haven't made some embarassing mistake - the model is learning. 
+Results appear to be somewhat similar to previous posts, and it's hard to judge much from this plot alone. But at least it is a useful sanity test: we haven't made some embarrassing mistake - the model is learning.
 
-So first let's see that our smoothed $$k$$-th eigenvalue scales with size. Let's try out $$7 \times 7$$ matrices.
+Next, let's see whether the smoothed $$k$$-th eigenvalue still benefits from increasing the matrix size. If smoothing destroyed the useful behavior of the eigenvalue model, this is where we would start getting suspicious. Let's try out $$7 \times 7$$ matrices.
 ```python
 log_7 = fts.collect_pd(complete_training_stream(dim=7))
 plot_log(log_7)
 ```
 ![pow_spectrum_moreau_calhouse_7]({{"assets/pow_spectrum_moreau_calhouse_7.png" | absolute_url }})
 
-Nice! Both better validation loss and a smaller curve average. How about $$15 \times 15$$?
+Nice! Both better validation loss and a smaller curve average. So the smoothing did not kill scaling, at least not yet. How about $$15 \times 15$$?
 ```python
 log_15 = fts.collect_pd(complete_training_stream(dim=15))
 plot_log(log_15)
 ```
 ![pow_spectrum_moreau_calhouse_15]({{"assets/pow_spectrum_moreau_calhouse_15.png" | absolute_url }})
 
-OK. Now let's do some smoothing experiments. Since the model becomes smoother _both_ as a function of the features, and as a function of its parameters, a higher smoothing can help convergence, but also can degrate the model's expressive power. So there is a balance. Let's try the same $$15 \times 15$$ model, but this time with a smoothing factor of $$\alpha = 5$$ (recall that the default was $$\alpha = 0.1$$).
+OK. Now alpha becomes the main character. Since the model becomes smoother _both_ as a function of the features, and as a function of its parameters, a higher smoothing can help convergence, but also degrade the model's expressive power. So there is a balance. Too little smoothing keeps us close to the original jagged eigenvalue; too much smoothing gives the optimizer an easy life, but leaves the model with less room to express interesting functions. Let's try the same $$15 \times 15$$ model, but this time with a smoothing factor of $$\alpha = 5$$ (recall that the default was $$\alpha = 0.1$$).
 ```python
 log_15_alpha_5 = fts.collect_pd(complete_training_stream(dim=15, alpha=5))
 plot_log(log_15_alpha_5)
 ```
 ![pow_spectrum_moreau_calhouse_15_alpha_5]({{"assets/pow_spectrum_moreau_calhouse_15_alpha_5.png" | absolute_url }})
 
-Appears to be a better result. The best model has a lower loss, but also we can see that the loss curve flattens out earler, and is a bit less jaggy. What about $$\alpha = 25$$?
+This appears to be a better result. The best model has a lower loss, but we can also see that the loss curve flattens out earlier, and is a bit less jaggy. So far, alpha looks like a useful knob. But knobs can be turned too far. What about $$\alpha = 25$$?
 ```python
 log_15_alpha_25 = fts.collect_pd(complete_training_stream(dim=15, alpha=25))
 plot_log(log_15_alpha_25)
@@ -997,7 +1001,7 @@ plot_log(log_15_alpha_25)
 
 Now we see the phenomenon we discussed. The loss curve appears "nicer", it appears to each its minimum a bit earlier, but the curve average is _awful_. We've hit the other side of the balance - our model favors the optimization process, but is not expressive enough.
 
-Let's try hitting the other side of the balance with $$\alpha = 0.001$$:
+Let's also try hitting the other side of the balance with $$\alpha = 0.001$$:
 ```python
 log_15_alpha_0_001 = fts.collect_pd(complete_training_stream(dim=15, alpha=0.001))
 plot_log(log_15_alpha_0_001)
@@ -1015,9 +1019,9 @@ plot_loss(log_15_alpha_25, loss_label='$\\alpha$=25', color='orange')
 ```
 ![pow_spectrum_moreau_calhouse_15_alpha_all]({{"assets/pow_spectrum_moreau_calhouse_15_alpha_all.png" | absolute_url }})
 
-Now we can see that $$\alpha = 5$$ leads - strikes just the right balance between making fast convergence without degrading model quality. Lower $$\alpha$$ values converge slower, and the larger $$\alpha=25$$ value degrades model quality.
+Now we can see that $$\alpha = 5$$ leads - it strikes the right balance in this experiment between faster convergence and model quality. Lower $$\alpha$$ values converge slower, and the larger $$\alpha=25$$ value degrades model quality.
 
-But all of these can be a matter of luck, right? Perhaps it's due to initialization, or random shuffling of the data? So let's do a more rigorous experiment, and try our several smoothing parameter values $$\alpha$$ with 15 independent experiments each. Then we shall plot histograms. This experiment takes some time, $$\sim 90$$ minutes in my CPU only Colab notebook:
+But all of this can be a matter of luck, right? Perhaps $$\alpha = 5$$ got a lucky initialization, or a lucky shuffle of the data. So let's make the comparison less anecdotal, and try several smoothing parameter values $$\alpha$$ with 15 independent experiments each. Then we shall plot histograms. This experiment takes some time, $$\sim 90$$ minutes in my CPU-only Colab notebook:
 
 ```python
 from tqdm.auto import tqdm
@@ -1045,13 +1049,15 @@ g.tick_params(axis='x', rotation=45)
 
 ![pow_spectrum_moreau_calhouse_15_alpha_auc_histograms]({{"assets/pow_spectrum_moreau_calhouse_15_alpha_auc_histograms.png" | absolute_url }})
 
-Viola! We can see indeed that $$\alpha=5$$ achieves a distribution of mean loss curve that is concentrated around small values, whereas smaller values of $$\alpha$$, that model sharper functions, achieve both higher mean loss curve values, and more widely distributed, so training is less stable.
+Viola! We can see indeed that $$\alpha=5$$ achieves a distribution of mean loss curve values that is concentrated around smaller values, whereas smaller values of $$\alpha$$, which model sharper functions, achieve higher mean loss curve values and a wider spread. In other words, training is not only slower, but also less stable.
 
 # Conclusion
 
-In this post we tried to tackle the slow convergence problem from its root cause - colliding eigenvalues cause rapidly changing derivatives, which in turn make training slower. But our solution, smoothing the model, makes a sacrifice - smoother models have less representation power. In this sense, the amount of smoothing acts as a regularizer - it makes a model more "well-behaved" in some sense, while limiting its representation power. But at the same time it makes the loss more "well-behaved", achieving faster convergence. So we need a balance between the two.
+In this post we tried to tackle the slow convergence problem from its root cause - colliding eigenvalues cause rapidly changing derivatives, which in turn make training slower. The Moreau-smoothed model replaces the middle eigenvalue with a carefully weighted average of a window of nearby eigenvalues. Far from a collision, almost all the weight returns to the original eigenvalue. Near a collision, the weight spreads out, and the gradient becomes much less jumpy.
 
-Of couse, we could extend the idea to tri-diagonal matrices, or make our implementation more efficient by exploiting the fact that we need only a small window around the mid eigenvalue and thus do not require all eigenvectors for gradients. But it would make this already math-heavy post even more complex. 
+But this is not magic. Smoothing the model makes a sacrifice - smoother models have less representation power. In this sense, the amount of smoothing acts as a regularizer: it makes a model more "well-behaved" while limiting what it can represent. At the same time it makes the loss more "well-behaved", achieving faster convergence. So we need a balance between the two.
+
+Of course, we could extend the idea to tri-diagonal matrices, or make our implementation more efficient by exploiting the fact that we need only a small window around the mid eigenvalue and thus do not require all eigenvectors for gradients. But it would make this already math-heavy post even more complex.
 
 I think I will stop the series here. We already explored a large volume of ideas centered around eigenvalues as models. There are more ideas to explore, such as how we can scale such a model to multiple layers, or how we can build a dedicated optimizer for such models based on the convex-concave decomposition. But I think that at this stage I'd like to move to other adventures. So stay tuned!
 
