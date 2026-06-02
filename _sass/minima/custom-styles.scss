@@ -1,5 +1,32 @@
+body {
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+blockquote {
+  font-size: inherit;
+  line-height: inherit;
+}
+
 code, pre, kbd, samp {
   font-family: $code-font-family;
+}
+
+code, kbd, samp {
+  font-size: 0.95em;
+}
+
+code.highlighter-rouge {
+  font-size: 0.95em;
+}
+
+pre {
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+pre code {
+  font-size: inherit;
 }
 
 .PageNavigation {
