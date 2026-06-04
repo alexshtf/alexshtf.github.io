@@ -29,6 +29,35 @@ pre code {
   font-size: inherit;
 }
 
+@media screen and (max-width: 600px) {
+  body {
+    font-size: 18px;
+    line-height: 1.4;
+  }
+
+  pre {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .post-title,
+  .post-content h1 {
+    font-size: 2rem;
+    line-height: 1.15;
+    letter-spacing: 0;
+  }
+
+  .post-content h2 {
+    font-size: 1.6rem;
+    line-height: 1.2;
+  }
+
+  .post-content h3 {
+    font-size: 1.35rem;
+    line-height: 1.25;
+  }
+}
+
 .PageNavigation {
   font-size: 20px;
   display: block;
