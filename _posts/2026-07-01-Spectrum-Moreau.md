@@ -4,7 +4,7 @@ title:  "When Eigenvalues Collide"
 tags: ["machine learning", "eigenvalue models", "spectral methods", "tridiagonal matrices", "structured matrices", "numerical linear algebra", "pytorch", "scipy", "autograd"]
 description: "Accelerating convergence of eigenvalue models by Moreau regularization of the mid-eigenvalue."
 comments: true
-image: assets/pow_spectrum_moreau_kyfan_smooth_aligned_demo_k3.png
+image: assets/pow_spectrum_moreau_smooth_lambda3.png
 series: "Eigenvalues as models"
 ---
 
@@ -51,7 +51,7 @@ Since our model is the $$k$$-th smallest eigenvalue of the matrix $${\boldsymbol
 
 > How does the derivative of $$\lambda_k(\boldsymbol W)$$ vary as $$\boldsymbol W$$ varies?
 
-
+There are also variants of these aspects for nondifferentiable functions, but our intent here is to keep the discussion simple at this stage. So let's study some answers the literature provides to the variation of eigenvalue derivatives.
 
 # A tale of colliding eigenvalues
 
@@ -149,27 +149,29 @@ So now that we've met Ky Fan, let's meet Jean-Jaques Moreau and his _Moreau enve
 > \tilde{\phi}_{\alpha}(\boldsymbol u) = \max_{\boldsymbol v} \{ \langle \boldsymbol u, \boldsymbol v \rangle - \varphi(\boldsymbol v) - \tfrac{\alpha}{2} \| \boldsymbol v \|_2^2 \} \tag{E}
 > $$
 
-Intuitively, we take a function defined as a maximum, and introduce quadratic regularization to the maximization problem. 
+Intuitively, we take a function defined as a maximum, and introduce quadratic regularization to the maximization problem that defines that function. 
 
-The first property that we immediately see is that it is indeed an "envelope", meaning, the envelope of $$\phi$$ is a lower bound for $$\phi$$, since we subtract a non-negative term inside the maximum.
+The first property that we immediately see is that it is indeed an "envelope", meaning, the envelope of $$\phi$$ is a lower bound for $$\phi$$ itself, since we subtract a non-negative term inside the maximum.
 
-Second, the Moreau envelope is _always_ differentiable and smooth:
+But a more useful property, whose proof is out of the scope of this post, is that the Moreau envelope is _always_ differentiable and smooth:
 
 $$
 \| \nabla \tilde{\phi}_{\alpha}(\boldsymbol u) - \nabla \tilde{\phi}_{\alpha}(\boldsymbol u + \boldsymbol \delta) \|_2 \leq \frac{1}{\alpha} \| \boldsymbol \delta \|_2
 $$
 
-This appears to be exactly the property we are looking for - we want the gradient of our eigenvalue function to change slowly. Here we get a direct control over the rate of change - it is at most $$\tfrac{1}{\alpha}$$.
+This appears to be exactly the property we are looking for - the rate of change of its derivative is bounded by the size of the change up to a constant. Here we get a direct control over that constant - it is at most $$\tfrac{1}{\alpha}$$.
 
-Finally, we have an explicit formula for the gradient. You wouldn't be surprised - it's just the maximizer of the maximization problem:
+Finally, we have an explicit formula for the gradient. You wouldn't be surprised - it's just the maximizer of the maximization problem that defines the envelope:
 
 $$
 \nabla \tilde{\phi}_{\alpha}(\boldsymbol u) = \operatorname*{argmax}_{\boldsymbol v} \left \{ \langle \boldsymbol u, \boldsymbol v \rangle - \varphi(\boldsymbol v) - \tfrac{\alpha}{2} \| \boldsymbol v \|_2^2 \right\}.
 $$
 
-The Ky Fan principle allows us to write the sum of $$r$$ largest eigenvalues as a "max-function". Moreau envelope let us produce a controlled smooth approximation. 
+So why is this object useful for our case? Because we can write eigenvalues using such a "max" formulation!
 
-Thus, our plan is combining both ideas into one. We shall devise a closed-form solution for the Moreau envelope $$\tilde{M}_{r,\alpha}$$ of the sum of $$r$$-th largest eigenvalues function  $$M_r$$. This, in turn, leads to  a smooth approximation of the $$r$$-th largest eigenvalue:
+But here we are at luck! The Ky Fan principle lets us write the sum of the $$r$$ largest eigenvalues exactly in the form we need - as a max function. Its Moreau envelope let us produce a controlled smooth approximation.  
+
+Here is our plan. We shall devise a closed-form solution for the Moreau envelope $$\tilde{M}_{r,\alpha}$$ of the sum of $$r$$-th largest eigenvalues function  $$M_r$$. This, in turn, leads to  a smooth approximation of the $$r$$-th largest eigenvalue:
 $$
 \tilde{\mu}_{r,\alpha} = \tilde{M}_{r,\alpha} - \tilde{M}_{r-1,\alpha}
 $$
@@ -180,11 +182,13 @@ As we shall soon see, this smooth approximation is just a weighted average of a 
 # Moreau envelope of $$M_r$$
 
 Taking the $$M_r$$ as formulated in equation (M) and applying the Moreau envelope formula in equation (E), we have
+
 $$
 \tilde{M}_{r, \alpha}(\boldsymbol W) = \max_{\boldsymbol P} \left\{ 
 	\langle \boldsymbol P, \boldsymbol W \rangle - \frac{\alpha}{2} \| \boldsymbol P \|_F^2 : \boldsymbol P \succeq \boldsymbol 0, \boldsymbol I-\boldsymbol P \succeq 0, \operatorname{tr}(\boldsymbol P) = r
 \right\},
 $$
+
 where $$\| \boldsymbol P \|_F^2$$ is is just the sum of the  squares of the matrix entries, known as the squared _Frobenius norm_.  At first glance this appears like a hard to solve optimization problem - a quadratic cost, and a matrix with a positive semidefinite constraint.
 
 But it turns out there is a trick. The Frobenius norm turns out to be _invariant_ to multiplication by an orthogonal matrix. Take the eigenvalue decomposition 
@@ -223,11 +227,13 @@ $$
 $$
 
 Since $$\frac{1}{\alpha} \|\boldsymbol \mu(\boldsymbol W)\|_2^2$$ does not depend on $$\boldsymbol q$$ we can "pull it out" of the optimization problem, and obtain:
+
 $$
 \tilde{M}_{r, \alpha}(\boldsymbol W) = -\frac{\alpha}{2}\min_{\boldsymbol q} \left\{ 
 	\| \boldsymbol q - \frac{1}{\alpha} \boldsymbol \mu(\boldsymbol W) \|_2^2 : 0 \leq q_j \leq 1, \sum_j q_j = r
 \right\} + \frac{1}{\alpha} \|\boldsymbol \mu(\boldsymbol W)\|_2^2.
 $$
+
 Note, that the $$\max$$ turned to a $$\min$$ because we pulled out the _negative_ term $$-\frac{\alpha}{2}$$ out of the optimization problem. Now, looking at the $$\min$$ we can recognize the projection - it's the closest vector to $$\frac{1}{\alpha} \boldsymbol \mu(\boldsymbol W)$$ that satisfies the _capped $$r$$-simplex_ constraints - its entries are between 0 and 1, and sum to $$r$$.
 
 Having solved for $$\boldsymbol q$$, which if you recall originated from the change of variable, we can recover $$\boldsymbol P$$ using exactly the formula we used for the change of variable, as $$\boldsymbol P = \boldsymbol U \boldsymbol Q \boldsymbol U^T$$, where $$\boldsymbol Q$$ is a diagonal matrix with $$\boldsymbol q$$ in its diagonal. 
