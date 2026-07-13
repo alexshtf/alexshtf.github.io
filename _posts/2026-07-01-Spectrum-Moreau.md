@@ -223,7 +223,7 @@ $$
 This is progress! The optimization problem is now on vectors instead of matrices. The final trick up our sleeve is recognizing this problem as exactly the projection onto a simplex, and has a readily available algorithm. Indeed,  by square completion we have:
 
 $$
-\langle \boldsymbol q, \boldsymbol \mu(\boldsymbol W) \rangle - \frac{\alpha}{2} \| \boldsymbol q \|_2^2 = - \frac{\alpha}{2} \| \boldsymbol q - \frac{1}{\alpha} \boldsymbol \mu(\boldsymbol W) \|_2^2 + \frac{1}{\alpha} \|\boldsymbol \mu(\boldsymbol W)\|_2^2.
+\langle \boldsymbol q, \boldsymbol \mu(\boldsymbol W) \rangle - \frac{\alpha}{2} \| \boldsymbol q \|_2^2 = - \frac{\alpha}{2} \| \boldsymbol q - \frac{1}{\alpha} \boldsymbol \mu(\boldsymbol W) \|_2^2 + \frac{1}{2 \alpha} \|\boldsymbol \mu(\boldsymbol W)\|_2^2.
 $$
 
 Since $$\frac{1}{\alpha} \|\boldsymbol \mu(\boldsymbol W)\|_2^2$$ does not depend on $$\boldsymbol q$$ we can "pull it out" of the optimization problem, and obtain:
