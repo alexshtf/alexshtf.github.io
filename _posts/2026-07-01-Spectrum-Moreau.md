@@ -8,6 +8,8 @@ image: assets/pow_spectrum_moreau_smooth_lambda3.png
 series: "Eigenvalues as models"
 ---
 
+📝 This series contents became a paper ([preprint](https://arxiv.org/abs/2608.08003), [code](https://github.com/alexshtf/spectral_neuron_paper))!
+
 <p align="center">
   <a href="https://colab.research.google.com/github/alexshtf/alexshtf.github.io/blob/master/assets/power_spectrum_moreau.ipynb"
      target="_blank" rel="noopener">
