@@ -16,6 +16,8 @@ series: "Eigenvalues as models"
   </a>
 </p>
 
+📝 This series contents became a paper ([preprint](https://arxiv.org/abs/2608.08003), [code](https://github.com/alexshtf/spectral_neuron_paper))!
+
 # Intro
 
 We all want our models to perform well. But some of us would also like our models to be efficient, robust, or interpretable. So in this post we will discuss some mathematical properties of these models that are related to these three pillars. Robustness and interpretability may mean different things to different people, so let's explain what I mean in this post. As a general note - many things I am going to talk about are true for complex Hermitian matrices, but we focus on real symmetric matrices in the post. So this is the first and the last time I mention complex numbers in this series.
