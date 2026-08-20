@@ -19,6 +19,7 @@ title: About me
 - [AutoDiff](https://github.com/alexshtf/autodiff) - a .NET library for automatically computing derivatives of mathematical functions.
 
 ## Publications
+- **Alex Shtoff** The Spectral Neuron. _arXiv preprint arXiv:2608.08003 (2026)_ ([Preprint](https://arxiv.org/abs/2608.08003), [Code](https://github.com/alexshtf/spectral_neuron_paper))
 - **Dan Greenstein, Elazar Gershuni, Ilan Ben-Bassat, Yaroslav Fyodorov, Ran Moshe, Fiana Raiber, Alex Shtoff, Oren Somekh, Nadav Hallak** A Stochastic Approach to the Subset Selection Problem via Mirror Descent. _The Thirteenth International Conference on Learning Representations (ICLR 2025)_ ([Paper](https://openreview.net/forum?id=5K0fmGnFqP))
 - **Alex Shtoff, Elie Abboud, Rotem Stram, Oren Somekh** Function Basis Encoding of Numerical Features in Factorization Machines. _Transactions on Machine Learning Research (TMLR, 2024)_ ([Paper](https://openreview.net/pdf?id=M4222IBHsh), [Code](https://github.com/alexshtf/cont_features_paper))
 - **Alex Shtoff, Michael Viderman, Naama Haramaty Krasne, Oren Somekh, Ariel Raviv, Tularam Ban** Low Rank Field-Weighted Factorization Machines for Low Latency Item Recommendation. _18th ACM Conference on Recommender Systems (RecSys 2024)_ ([Paper](https://github.com/michaelviderman/pytorch-fm/blob/dev/low_rank_fwfm___RecSys_2024__Camera_Ready_%20(1).pdf)), ([Code](https://github.com/michaelviderman/pytorch-fm/blob/dev/))
