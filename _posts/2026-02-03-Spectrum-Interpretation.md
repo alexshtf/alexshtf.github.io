@@ -8,6 +8,8 @@ image: assets/pow_spec_recurrent.png
 series: "Eigenvalues as models"
 ---
 
+📝 This series contents became a paper ([preprint](https://arxiv.org/abs/2608.08003), [code](https://github.com/alexshtf/spectral_neuron_paper))!
+
 # Intro
 
 We continue our discussion of machine-learned models of the form
