@@ -126,7 +126,7 @@ $$
 This is a non-convex optimization problem due to the non-convex norm constraint on $$\boldsymbol s$$. But the partial minimization over $$\boldsymbol w$$ is a simple least-squares problem we can solve! As before, the solution has a closed form:
 
 $$
-\boldsymbol w^*(\boldsymbol s) = (\boldsymbol X^T \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol Y \boldsymbol s, \tag{5}
+\boldsymbol w^*(\boldsymbol s) = (\boldsymbol X^T \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol Y \boldsymbol s, \tag{2}
 $$
 
 and substituting it back lets is eliminate $$\boldsymbol w$$ form the problem. The objective becomes:
@@ -144,7 +144,7 @@ $$
 What I colored in blue is just two terms that cancel. The expression above looks "hairy", but eventually it is just a quadratic form in $$\boldsymbol s$$, with one big hairy matrix in the middle that I colored in purple. Let's denote it by $$\boldsymbol Q$$. So now, regardless of the size of the dataset, having eliminated $$\boldsymbol w$$ we can now solve a low-dimensional optimization problem in $$\boldsymbol s$$:
 
 $$
-\min_{\boldsymbol s} \left\{ \boldsymbol s^T {\color{purple} \boldsymbol Q} \boldsymbol s : \sum_{y=1}^5 n_y s_y=0, \sum_{y=1}^5 n_y s_y^2=1 \right\} \tag{4}
+\min_{\boldsymbol s} \left\{ \boldsymbol s^T {\color{purple} \boldsymbol Q} \boldsymbol s : \sum_{y=1}^5 n_y s_y=0, \sum_{y=1}^5 n_y s_y^2=1 \right\} \tag{3}
 $$
 
 The dimension of $$\boldsymbol s$$ is just the number of labels, in our case 5.  The $$5 \times 5$$ matrix $$\boldsymbol Q$$ can be computed from the dataset by solving a least-squares problem, since multiplying by $$(\boldsymbol X^T \boldsymbol X)^{-1} \boldsymbol X^T$$ is equivalent to solving a least-squares problem with the matrix $$\boldsymbol X$$:
@@ -156,9 +156,9 @@ Y = np.one_hot(y)
 Q = Y.T @ Y - (Y.T @ X) @ np.lstsq(X, Y)
 ```
 
-Now, apparently we have a low-dimensional optimization problem. Having solved it and obtained the optimal $$\boldsymbol s$$, we can also obtain the optimal regression coefficients $$\boldsymbol w^*(\boldsymbol s)$$ from equation (5) above. But is our 5-dimensional problem tractable? Well, it turns out it is!
+Now, apparently we have a low-dimensional optimization problem. Having solved it and obtained the optimal $$\boldsymbol s$$, we can also obtain the optimal regression coefficients $$\boldsymbol w^*(\boldsymbol s)$$ from equation (2) above. But is our 5-dimensional problem tractable? Well, it turns out it is!
 
-Write $$\boldsymbol D = \operatorname{diag}(n_1, \ldots, n_5)$$, the problem in equation (4) can be written cas
+Write $$\boldsymbol D = \operatorname{diag}(n_1, \ldots, n_5)$$, the problem in equation (3) can be written cas
 
 $$
 \min_{\boldsymbol s} \left\{ \boldsymbol s^T \boldsymbol Q \boldsymbol s : \sum_{y=1}^5 n_y s_y = 0,\, \boldsymbol s^T \boldsymbol D \boldsymbol s \right\}.
@@ -197,7 +197,7 @@ y_opt = vecs[:, 0]  # `vecs` has only one column - the smallest eigenvector
 s_opt = T @ y_opt
 ```
 
-Now we have a very nice way to extract both _scores_ and _regression coefficients_ from a survey. We first compute the scores of 1, 2, .., 5 using the above generalized eigenvalue problem, then we extract the regression coefficients using Equation (5), which is a simple least-squares solve - one line:
+Now we have a very nice way to extract both _scores_ and _regression coefficients_ from a survey. We first compute the scores of 1, 2, .., 5 using the above generalized eigenvalue problem, then we extract the regression coefficients using Equation (2), which is a simple least-squares solve - one line:
 
 ```python
 w_opt = np.linalg.lstsq(X, Y @ s_opt)
@@ -210,7 +210,7 @@ Principal component analysis (PCA) is typically explained from a probabilistic p
 Given the matrix $$\boldsymbol A \in \mathbb{R}^{n \times d}$$ containing $$n$$ data points, consider the following problem:
 
 $$
-\min_{\substack{\boldsymbol U \in \mathbb{R}^{d \times k} \\ \boldsymbol Z \in \mathbb{R}^{n \times k}}} f(\boldsymbol U, \boldsymbol V) = \| \boldsymbol A - \boldsymbol Z \boldsymbol U^T \|_F^2 \quad \text{s.t.} \quad \boldsymbol U^T \boldsymbol U = \boldsymbol I \tag{2}
+\min_{\substack{\boldsymbol U \in \mathbb{R}^{d \times k} \\ \boldsymbol Z \in \mathbb{R}^{n \times k}}} f(\boldsymbol U, \boldsymbol V) = \| \boldsymbol A - \boldsymbol Z \boldsymbol U^T \|_F^2 \quad \text{s.t.} \quad \boldsymbol U^T \boldsymbol U = \boldsymbol I \tag{4}
 $$
 
 Here, the columns of $$\boldsymbol U$$ contain the $$k$$ basis vectors we aim to learn, and $$\boldsymbol Z$$ contains the representation of all $n$ data points using this basis. This is the classical _dictionary learning_ setup - we aim to represent our data using a _dictionary_ stored in the form of the orthogonal columns of $$\boldsymbol U$$. 
@@ -236,7 +236,7 @@ $$
 and taking the transpose, we obtain the optimal matrix:
 
 $$
-\boldsymbol Z^*(\boldsymbol U) = \boldsymbol A \boldsymbol U \tag{3}
+\boldsymbol Z^*(\boldsymbol U) = \boldsymbol A \boldsymbol U \tag{5}
 $$
 
 Now, before we eliminate $$\boldsymbol Z$$ and obtain $$g(\boldsymbol U)$$, we need to recall some linear algebra properties. First, the Frobenius inner product between matrices, can be defined using the trace:
@@ -277,9 +277,9 @@ $$
 \min_{\boldsymbol U \in \mathbb{R}^{d \times k}} \left\{ g(\boldsymbol U) =\| \boldsymbol A\|_F^2 -  \operatorname{tr}(\boldsymbol U^T \boldsymbol A^T \boldsymbol A \boldsymbol U ) : \boldsymbol U^T \boldsymbol U = \boldsymbol I \right\} = -{\color{blue}\max_{\boldsymbol U \in \mathbb{R}^{d \times k}} \left\{   \operatorname{tr}(\boldsymbol U^T \boldsymbol A^T \boldsymbol A \boldsymbol U ) : \boldsymbol U^T \boldsymbol U = \boldsymbol I \right\}} + \| \boldsymbol A\|_F^2
 $$
 
-But we already met the blue maximization problem in a [previous post]({% post_url 2026-02-03-Spectrum-Interpretation %}) - this is the Ky Fan characterization of the sum of the largest $$k$$ eigenvalues of the matrix $$\boldsymbol A^T \boldsymbol A$$. The optimal solution $$\boldsymbol U$$ is exactly the corres matrix of eigenvectors. And viola! We have our PCA! Take the data matrix $$\boldsymbol A^T \boldsymbol A$$, compute its top $$k$$ eigenvectors, and use them as a basis to represent our data. What would this representaiton be? We already know - the formula that allowed us to eliminate the variable $$\boldsymbol Z$$ in Equation (3).
+But we already met the blue maximization problem in a [previous post]({% post_url 2026-02-03-Spectrum-Interpretation %}) - this is the Ky Fan characterization of the sum of the largest $$k$$ eigenvalues of the matrix $$\boldsymbol A^T \boldsymbol A$$. The optimal solution $$\boldsymbol U$$ is exactly the corres matrix of eigenvectors. And viola! We have our PCA! Take the data matrix $$\boldsymbol A^T \boldsymbol A$$, compute its top $$k$$ eigenvectors, and use them as a basis to represent our data. What would this representaiton be? We already know - the formula that allowed us to eliminate the variable $$\boldsymbol Z$$ in Equation (5).
 
-Now, note that there is no variance. No axes. No probability. Nothing. Just pure optimization - equation (2) is nothing more than looking for an orthogonal _dictionary of atoms_ $$\boldsymbol U$$ for our data, namely:
+Now, note that there is no variance. No axes. No probability. Nothing. Just pure optimization - equation (4) is nothing more than looking for an orthogonal _dictionary of atoms_ $$\boldsymbol U$$ for our data, namely:
 
 $$
 \boldsymbol A \approx \boldsymbol Z \boldsymbol U^T
