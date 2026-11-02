@@ -74,7 +74,7 @@ $$
 So now, we are left with a very low-dimensional constrained quadratic problem:
 
 $$
-\min_{\boldsymbol \beta \geq 0} g(\boldsymbol \beta) = \| (\boldsymbol Z - \boldsymbol Q \boldsymbol Z) \boldsymbol \beta - (\boldsymbol p - \boldsymbol Q \boldsymbol p) \|_2^2
+\min_{\boldsymbol \beta \geq 0} g(\boldsymbol \beta) = \min_{\boldsymbol \beta \geq 0} \| (\boldsymbol Z - \boldsymbol Q \boldsymbol Z) \boldsymbol \beta - (\boldsymbol p - \boldsymbol Q \boldsymbol p) \|_2^2
 $$
 
 We have eliminated a high-dimensional block from our optimization problem - now it's a non-negative least-squares problem with _one_ low-dimensional parameter vector $$\boldsymbol \beta$$. Its "features" are the rows of the matrix $$(\boldsymbol Z - \boldsymbol Q \boldsymbol Z)$$, while its "labels" are the elements of the vector $$(\boldsymbol p - \boldsymbol Q \boldsymbol p)$$. Despite the hairy definition of $$\boldsymbol Q$$,  we can easily compute both $$\boldsymbol Q \boldsymbol Z$$ and $$\boldsymbol Q \boldsymbol p$$ using standard least-squares solvers:
@@ -161,7 +161,7 @@ Now, apparently we have a low-dimensional optimization problem. Having solved it
 Write $$\boldsymbol D = \operatorname{diag}(n_1, \ldots, n_5)$$. The problem in equation (3) can be written as
 
 $$
-\min_{\boldsymbol s} \left\{ \boldsymbol s^T \boldsymbol Q \boldsymbol s : \sum_{y=1}^5 n_y s_y = 0,\, \boldsymbol s^T \boldsymbol D \boldsymbol s \right\}.
+\min_{\boldsymbol s} \left\{ \boldsymbol s^T \boldsymbol Q \boldsymbol s : \sum_{y=1}^5 n_y s_y = 0,\, \boldsymbol s^T \boldsymbol D \boldsymbol s = 1 \right\}.
 $$
 
 Now, the equation $$\sum_{y=1}^5 n_y s_y = 0$$ defines a _linear subspace_ of all vectors $$\boldsymbol S$$ satisfying this equation. In fact, this is exactly the null-space of the matrix having one row - the vector $$(n_1, \ldots, n_5)$$. Let $$\boldsymbol  T \in \mathbb{R}^{5 \times 4}$$ be any matrix whose columns are the basis of this subspace - we can compute such a matrix directly using SciPy:
@@ -203,14 +203,16 @@ Now we have a very nice way to extract both _scores_ and _regression coefficient
 w_opt = np.linalg.lstsq(X, Y @ s_opt)
 ```
 
+One caveat: nothing here guarantees that the learned scores preserve the order of the original ratings. If this matters, we need to add the constraints $$s_1 \leq s_2 \leq \cdots \leq s_5$$. Partial minimization still works, but the remaining problem now has inequality constraints, so simply taking the smallest generalized eigenvector is no longer sufficient in general.
+
 # Explaining and generalizing PCA
 
-Principal component analysis (PCA) is typically explained from a probabilistic perspective - that of finding axes that reduce variance. But there is a very different perspective - that of finding a basis, and a representation of our data samples using that basis.
+Principal component analysis (PCA) is typically explained from a probabilistic perspective - that of finding axes that maximize retained variance. But there is a very different perspective - that of finding a basis, and a representation of our data samples using that basis.
 
 Given the matrix $$\boldsymbol A \in \mathbb{R}^{n \times d}$$ containing $$n$$ data points, consider the following problem:
 
 $$
-\min_{\substack{\boldsymbol U \in \mathbb{R}^{d \times k} \\ \boldsymbol Z \in \mathbb{R}^{n \times k}}} f(\boldsymbol U, \boldsymbol V) = \| \boldsymbol A - \boldsymbol Z \boldsymbol U^T \|_F^2 \quad \text{s.t.} \quad \boldsymbol U^T \boldsymbol U = \boldsymbol I \tag{4}
+\min_{\substack{\boldsymbol U \in \mathbb{R}^{d \times k} \\ \boldsymbol Z \in \mathbb{R}^{n \times k}}} f(\boldsymbol U, \boldsymbol Z) = \| \boldsymbol A - \boldsymbol Z \boldsymbol U^T \|_F^2 \quad \text{s.t.} \quad \boldsymbol U^T \boldsymbol U = \boldsymbol I \tag{4}
 $$
 
 Here, the columns of $$\boldsymbol U$$ contain the $$k$$ basis vectors we aim to learn, and $$\boldsymbol Z$$ contains the representation of all $n$ data points using this basis. This is the classical _dictionary learning_ setup - we aim to represent our data using a _dictionary_ stored in the form of the orthogonal columns of $$\boldsymbol U$$. 
@@ -335,9 +337,9 @@ $$
 \operatorname{CrossEntropy}(\operatorname{softmax}(\boldsymbol u), \operatorname{one-hot}(i)) = \underbrace{\ln\left( \sum_{j=1}^n \mathrm{e}^{u_j} \right)}_{\operatorname{LogSumExp}(\boldsymbol u)} - u_i
 $$
 
-If we take a linear model $$\boldsymbol u = \boldsymbol w^T \boldsymbol x$$, this is our friendly neighborhood linear logistic regression. When $$\boldsymbol u$$ are token logits of our friendly neighborhood LLM, this is the pre-training loss of a single token.  But essentially, both are just multi-class logistic regression losses.
+If we take a linear model $$\boldsymbol u = \boldsymbol W^T \boldsymbol x$$, this is our friendly neighborhood linear logistic regression. When $$\boldsymbol u$$ are token logits of our friendly neighborhood LLM, this is the pre-training loss of a single token.  But essentially, both are just multi-class logistic regression losses.
 
-In case of linear regression, however, we can find a global optimum $$\boldsymbol w$$, if it exists, because $$\operatorname{LogSumExp}$$ is convex. Or so they say in the machine learning book. But if we look at these books or blogs on the Internet, various hairy formulas for its Hessian matrix are shown to be positive-semidefinite. Here we have an alternative path.
+In case of linear logistic regression, however, we can find a global optimum $$\boldsymbol W$$, if it exists, because $$\operatorname{LogSumExp}$$ is convex. Or so they say in the machine learning book. But if we look at these books or blogs on the Internet, various hairy formulas for its Hessian matrix are shown to be positive-semidefinite. Here we have an alternative path.
 
 Turns out it is because we can write the logarithm as a minimum of functions:
 
@@ -390,13 +392,13 @@ Using equation (6), we can write it as
 $$
 \begin{align*}
 \ell_i(s)
- &=\min_u \left\{ \sum_{j=1}^{n_i}\mathrm{e}^{u+s(\boldsymbol x_{i,j})} - u_i - 1\right\} - \sum_{j=1}^{n_i} y_{i,j} s(\boldsymbol x_{i, j}), \\
- &= \min_u \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j})\right)  - u_i - 1  \right\} \\
- &= \min_u \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j}) - \frac{u_i + 1}{n_i}\right)   \right\} \\
+ &=\min_{u_i} \left\{ \sum_{j=1}^{n_i}\mathrm{e}^{u_i+s(\boldsymbol x_{i,j})} - u_i - 1\right\} - \sum_{j=1}^{n_i} y_{i,j} s(\boldsymbol x_{i, j}), \\
+ &= \min_{u_i} \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u_i+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j})\right)  - u_i - 1  \right\} \\
+ &= \min_{u_i} \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u_i+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j}) - \frac{u_i + 1}{n_i}\right)   \right\} \\
 \end{align*}
 $$
 
-The second line stems from the fact that the terms $$y_{i,j} s(\boldsymbol x_{i, j})$$ do not depend on $$u$$, and we can put any constant from outside the minimum to inside the minimum. The last line is just splitting an equal portion of $$-u-1$$ between the items. So the problem of minimizing the loss over the entire training set can be written as:
+The second line stems from the fact that the terms $$y_{i,j} s(\boldsymbol x_{i, j})$$ do not depend on $$u_i$$, and we can put any constant from outside the minimum to inside the minimum. The last line is just splitting an equal portion of $$-u_i-1$$ between the items. So the problem of minimizing the loss over the entire training set can be written as:
 
 $$
 \begin{align*}
@@ -433,7 +435,7 @@ loader = DataLoader(
 )
 
 sizes = torch.bincount(list_id).to(dtype=torch.float32)
-u = nn.Parameter(-torch.log(sizes)) # log(n_i) is the optimal u when all scores are zero.
+u = nn.Parameter(-torch.log(sizes)) # -log(n_i) is the optimal u when all scores are zero.
 net = create_my_super_duper_cool_SOTA_network()
 
 optimizer = torch.optim.Adam([*net.parameters(), u], lr=1e-3)
@@ -496,7 +498,7 @@ $$
 \begin{align*}
 \ell_i(s) 
  &= \min_{u_i} \sum_{j=1}^{n_i} \hat{\ell}_{ij}(s, u_i) \\
- &= \min_{u_i} \left\{ \sum_{j=1}^{n_i}  p_j\mathrm{e}^{u_i+s(\boldsymbol x_{i,j})} - u_i + 1 \right\} - \sum_{j=1}^{n_i} y_{ij} s(\boldsymbol x_{ij}) \\
+ &= \min_{u_i} \left\{ \sum_{j=1}^{n_i}  p_j\mathrm{e}^{u_i+s(\boldsymbol x_{i,j})} - u_i - 1 \right\} - \sum_{j=1}^{n_i} y_{ij} s(\boldsymbol x_{ij}) \\
  &= \operatorname{LogSumExp}(s(\boldsymbol x_{i,1}) + \ln(p_1), \ldots, s(\boldsymbol x_{i,n_i}) + \ln(p_{n_i})) - \sum_{j=1}^{n_i} y_{ij} s(\boldsymbol x_{ij})
 \end{align*}
 $$
