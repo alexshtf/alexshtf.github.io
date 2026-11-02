@@ -292,19 +292,21 @@ But why is this proof interesting? Once we proved convexity, aren't we done and 
 
 # Simplifying learning to rank
 
-When we learn to rank items, we are given a training set of previous lists of items shown to users, and the items the user liked. Assume for simplicity that the user liked one item in each list. When I say "liked" it can be anything indicating affinity, such as a click, a purchase, or whatever action we deem as "liking".
+When we learn to rank items, we are given a training set of previous lists of items shown to users, and the items the user liked. Assume for simplicity that the user liked one item in each list. When I say "liked" it can be anything indicating affinity, such as a click, a purchase, or whatever action we deem as "liking".  In this setting, our aim is learning a model that predicts higher scores for items that are more likely to be liked. We use these scores at inference to sort items before presenting them to the user. Thus, the scores have no meaning - only the order they induce has a meaning. 
 
-Our data is a set of item lists, each item with its own features, and a binary label saying if it was liked. The lists, however, do not have to be all of the same size. So visually, our training set looks like this:
+In this setting our data is a set of item lists, each item with its own features, and a binary label saying if it was liked. The lists, however, do not have to be all of the same size. So visually, our training set looks like this:
 
 ![learning_to_rank](../assets/learning_to_rank.png)
 
 Our objective is learning a model $$s(\boldsymbol x)$$ producing a score for each item, such that liked items get higher scores than those that were not liked. A famous way of doing so is treating the scores in each list as the logits of a categorical distribution, and just using the cross-entropy loss[^5]. Thus, each _row_ is a training sample whose loss is:
 $$
-\ell_i(s)=-\sum_{j=1}^{n_i} y_{ij} \ln\left( \frac{\mathrm{e}^{s(\boldsymbol x_{ij})}}{\sum_{k=1}^{n_i} \mathrm{e}^{s(\boldsymbol x_{ik})}} \right)
+\ell_i(s)=-\sum_{j=1}^{n_i} y_{ij} \ln\left( \frac{\mathrm{e}^{s(\boldsymbol x_{ij})}}{\sum_{k=1}^{n_i} \mathrm{e}^{s(\boldsymbol x_{ik})}} \right) = \mathrm{LogSumExp}(s(\boldsymbol x_{i,1}), \ldots,s(\boldsymbol x_{i,n_i})) - \sum_{j=1}^{n_i} y_{ij} s(\boldsymbol x_{i, j}).
 $$
-Now, there are some practical issues here. First, in many cases we would like to give higher importance to items occuring at the beginning of the list. This is, for example, because the users tend to look at them first and may not even look at later items at all. It is not obvious how to correctly do it here - if we had a loss function for each item separately, we could do some weighting. Moreover, from the intuition above we understand that a _positive_ item at the beginning of the list is actually _less informative_ than a positive item at the end - if the user really liked an item at the end, it probably stood out. We can think of various heuristics, but this is what they are - heuristics.
+Here we shall see an interesting trick - rather than _eliminating_ a variable using partial minimization, we actually introduce a variable by formulating the $$\mathrm{LogSumExp}$$ function as a partial minimum to gain a simplification. But to see what are we going to simplify, we need to understand what kind of complications we have here.
 
-Another issue is that of memory layout. Working with a constant mini-batch size of $$B$$ lists doesn't mean each mini-batch has the same number of items. But we are computing a forward pass for computing $$s(\boldsymbol x)$$ for every item separately. Finally, even if our model $$s$$ is linear, and thus the entire learning problem is a convex optimization problem, using a convex solver framework such as [CVXPY](https://www.cvxpy.org/) requires organizing the data nicely to a matrix. And we can't - each row has a different number of items!
+First, in many cases we would like to give higher importance to items occuring at the beginning of the list. This is, for example, because the users tend to look at them first and may not even look at later items at all. It is not obvious how to correctly do it here - if we had a loss function for each item separately, we could do some weighting. Moreover, from the intuition above we understand that a _positive_ item at the beginning of the list is actually _less informative_ than a positive item at the end - if the user really liked an item at the end, it probably stood out. We can think of various heuristics, but this is what they are - heuristics.
+
+Another complication is that of data layout. Working with a constant mini-batch size of $$B$$ lists doesn't mean each mini-batch has the same number of items, since each list may have a different size. But we are computing a forward pass for $$s(\boldsymbol x)$$ for every item separately. Finally, even if our model $$s$$ is linear, and thus the entire learning problem is a convex optimization problem, using a convex solver framework such as [CVXPY](https://www.cvxpy.org/) requires organizing the data nicely to a matrix. And we can't - each row has a different number of items! We could pad, but the padding hack has its own complications and quirks, since the right padding is negative infinity (since $$\exp(-\infty) = 0$$), but this introduces its own challenges, both in frameworks like PyTorch and in CVXPY.
 
 So now comes our partial minimization to the rescue! The loss can be equivalently written as:
 $$
@@ -314,13 +316,13 @@ Using equation (6), we can write it as
 $$
 \begin{align*}
 \ell_i(s)
- &=\min_u \left\{ \sum_{j=1}^{n_i}\mathrm{e}^{u+s(\boldsymbol x_{i,j})} -u - 1\right\} - \sum_{j=1}^{n_i} y_{i,j} s(\boldsymbol x_{i, j}), \\
- &= \min_u \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j})\right)  - u - 1  \right\} \\
- &= \min_u \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j}) - \frac{u + 1}{n_i}\right)   \right\} \\
+ &=\min_u \left\{ \sum_{j=1}^{n_i}\mathrm{e}^{u+s(\boldsymbol x_{i,j})} - u_i - 1\right\} - \sum_{j=1}^{n_i} y_{i,j} s(\boldsymbol x_{i, j}), \\
+ &= \min_u \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j})\right)  - u_i - 1  \right\} \\
+ &= \min_u \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j}) - \frac{u_i + 1}{n_i}\right)   \right\} \\
 \end{align*}
 $$
 
-The second line stems from the fact that the terms $$y_{i,j} s(\boldsymbol x_{i, j})$$ do not depend on $$u$$, and we can put any constant from outside the minimum to inside the minimum. The last line is just splitting an equal portion of $$-u-1$$ between the $$n_i$$ items. So the problem of minimizing the loss over the entire training set can be written as:
+The second line stems from the fact that the terms $$y_{i,j} s(\boldsymbol x_{i, j})$$ do not depend on $$u$$, and we can put any constant from outside the minimum to inside the minimum. The last line is just splitting an equal portion of $$-u-1$$ between the items. So the problem of minimizing the loss over the entire training set can be written as:
 $$
 \begin{align*}
 \min_s \left\{\sum_{i=1}^m \ell_i(s) \right\} 
@@ -328,7 +330,7 @@ $$
  &= \min_{s, \boldsymbol u} \left\{ \sum_{i=1}^m \sum_{j=1}^{n_i} \left(\mathrm{e}^{u_i+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j})  - \frac{u_i + 1}{n_i}\right) \right\}
 \end{align*}
 $$
-Now behold - we are minimizing a sum of functions _of individual items_ rather than sumf of functions of _entire lists_. The price is adding an additional variable $$u_i$$ for every least, for expressing its $$\mathrm{LogSumExp}$$ function.  So item $$j$$ of list $$i$$ gets the loss function:
+Now behold - we are minimizing a sum of functions _of individual items_ rather than sum of functions of _entire lists_. The price is adding an additional variable $$u_i$$ for every least, for expressing its $$\mathrm{LogSumExp}$$ function.  So item $$j$$ of list $$i$$ gets the loss function:
 $$
 \hat{\ell}_{ij}(s, u_i) = \mathrm{e}^{u_i+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j}) - \frac{u_i + 1}{n_i}
 $$
@@ -353,7 +355,7 @@ loader = DataLoader(
 )
 
 sizes = torch.bincount(list_id).to(dtype=torch.float32)
-u = nn.Parameter(-torch.log(sizes))
+u = nn.Parameter(-torch.log(sizes)) # log(n_i) is the optimal u when all scores are zero.
 net = create_my_super_duper_cool_SOTA_network()
 
 optimizer = torch.optim.Adam([*net.parameters(), u], lr=1e-3)
@@ -362,16 +364,14 @@ for epoch in range(20):
         optimizer.zero_grad()
 
         scores = net(xb).reshape(-1)
-        ui = u[ids]
-
-        item_losses = (torch.exp(ui + scores) - yb * scores - (ui + 1) / sizes[ids])
+        item_losses = torch.exp(ui + scores) - yb * scores - (ui + 1) / sizes[ids]
         loss = item_losses.mean()
 
         loss.backward()
         optimizer.step()
 ```
 
-If $$s$$ is linear the problem is convex, and we can even use a standard convex solver. Here is a CVXPY example that works if our dataset is not too large, say, a few tens of thousands. Nice for prototypes:
+If $$s$$ is linear, the problem becomes convex, and we can even use a standard convex solver provided that the dataset is not huge. Here is a CVXPY example that works if our dataset has a few tens of thousands of examples. Nice for prototypes:
 
 ```python
 import numpy as np
@@ -387,23 +387,41 @@ w = cp.Variable(X.shape[1])  # Global parameters of the linear model <w, x>
 u = cp.Variable(len(sizes))  # One parameter per list
 
 scores = X @ w
-ui = u[list_id]             # Share each u_i across its list
+ui = u[list_id]  # Share each u_i across its list
 
 item_losses = (
-    cp.exp(ui + scores)
-    - cp.multiply(y, scores)
-    - cp.multiply(1.0 / sizes[list_id], ui + 1)
+    cp.exp(ui + scores) - cp.multiply(y, scores) - cp.multiply(1.0 / sizes[list_id], ui + 1)
 )
-
 problem = cp.Problem(cp.Minimize(cp.sum(item_losses)))
 problem.solve()
 ```
 
-Doing this with `cvxpy.log_sum_exp` where the size of each list is variable would cause a HUGE overhead. We'd have to manually iterate over the lists and compute the log-sum-exp terms, since we can't organize the lists in a matrix due to their variable size.  In both cases, both in PyTorch and in CVXPY we don't have to deal with the complexity of variable-size lists.
+Doing this with `cvxpy.log_sum_exp` where the size of each list is variable would cause a HUGE overhead - due to their variable size, we'd have to manually iterate over the lists and compute the log-sum-exp terms for each item. But the flattening, both for PyTorch and for CVXPY, allows us to treat the data as one big array of items having individual losses.
+
+In real recommender systems, not all item positions are equally exposed to users. Users typically see the first item, the second is observed slightly less, and so on. This is called _exposure bias_ - the user is exposed less to later items in a list. This is typically modeled by the probability of observing item at position $j$ given that they observed the first item. Let's denote those probabilities by $$p_1, \ldots, p_n$$ for a list of $$n$$ items, with $$p_1=1$$ by definition.
+
+Now let's think intuitively. A click on the first or second item may be informative, but a click on the 8-th is much more so - it means that this item, that the user rarely even sees, stood out. Conversely, a skip of a top item is informative - it means that the user saw it and chose to skip it, but a skip on a later item is less so, since it may be the case that the user hasn't even looked at it. Now let's look at our item-wise loss for a fixed $$u_i$$ as a function of the score $$s(\boldsymbol x_j)$$:
+$$
+\hat{\ell}_{ij}(s, u_i) = \underbrace{\mathrm{e}^{u_i+s(\boldsymbol x_{i,j})}}_{\text{high score penalty}}- \underbrace{y_{ij} s(\boldsymbol x_{i,j})}_{\text{click reward}} - \underbrace{\frac{u_i + 1}{n_i}}_{\text{const}}
+$$
+So intuitively, we would like to incur a higher penalty on higher items, without hurting their reward, meaning we can modify the loss as:
+$$
+\hat{\ell}_{ij}(s, u_i)= {\color{blue} p_j} \mathrm{e}^{u_i+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j}) - \frac{u_i + 1}{n_i}
+$$
+Now let's see what it means for the entire list by eliminating $$u_i$$ and getting a penalized version of the loss of the $$i$$-th list:
+$$
+\begin{align*}
+\ell_i(s) 
+ &= \min_{u_i} \sum_{j=1}^{n_i} \hat{\ell}_{ij}(s, u_i) \\
+ &= \min_{u_i} \left\{ \sum_{j=1}^{n_i}  p_j\mathrm{e}^{u_i+s(\boldsymbol x_{i,j})} - u_i + 1 \right\} - \sum_{j=1}^{n_i} y_{ij} s(\boldsymbol x_{ij}) \\
+ &= \operatorname{LogSumExp}(s(\boldsymbol x_{i,1}) + \ln(p_1), \ldots, s(\boldsymbol x_{i,n_i}) + \ln(p_{n_i})) - \sum_{j=1}^{n_i} y_{ij} s(\boldsymbol x_{ij})
+\end{align*}
+$$
+This is equivalent to just adding $$\ln(p_j)$$ to the score of each item at position $$j$$! The partial minimization trick let us first add an auxiliary variable to decompose the loss into a penalty and a reward, modify the penalty, and then eliminate the auxiliary variable to obtain a new exposure-adjusted loss for the entire list. Adding the exposure bias in this way exists in the literature in papers by Abeliuk et. al.[^6] and Grant et. al. [^7], but it is just shown as a modeling assumption, without explaining _why_ it makes sense. In other domains that are **not** learning to rank, this same formula has been derived from Bayes rule - see papers by Ren et. al. [^8] and Menon et. al. [^9]. But I haven't seen it derived anywhere from this perspective - decomposing the well-known loss from the literature into a penalty and a reward, and making sure that only the penalty is affected by the exposure probability to achieve the desired effect.
 
 # Summary
 
-TODO
+This post has a "theoretico-practical" smell - we use a theoretical tool, partial minimization, to simplify problems in two different ways. The first way is eliminate variables to reduce dimensions or produce a tractable problem we can solve using standard computational tools. The second way is to actually introduce auxiliary variables and _inflate_ the problem to simplify implementation or perform a theoretical analysis to derive new loss functions that serve our needs. I hope you enjoyed it, and it gave you new perspectives on machine learning algorithms that have an optimization-driven rather than probability-driven justification that we see everywhere.
 
 ---
 
@@ -414,3 +432,7 @@ TODO
 [^3]: Hastie, Trevor, Robert Tibshirani, and Andreas Buja. "Flexible discriminant analysis by optimal scoring." *Journal of the American statistical association* 89.428 (1994): 1255-1270.
 [^4]: Mairal, Julien, Francis Bach, and Jean Ponce. "Sparse modeling for image and vision processing." *Foundations and Trends in Computer Graphics and Vision* 8.2-3 (2014): 85-283.
 [^5]: Bruch, Sebastian, et al. "An analysis of the softmax cross entropy loss for learning-to-rank with binary relevance." *Proceedings of the 2019 ACM SIGIR international conference on theory of information retrieval*. 2019.
+[^6]: Abeliuk, Andrés, et al. "Assortment optimization under a multinomial logit model with position bias and social influence." *4OR* 14.1 (2016): 57-75.
+[^7]: Grant, James A., and David S. Leslie. "Learning to rank under multinomial logit choice." *Journal of Machine Learning Research* 24.260 (2023): 1-49.
+[^8]: Ren, Jiawei, et al. "Balanced meta-softmax for long-tailed visual recognition." *Advances in neural information processing systems* 33 (2020): 4175-4186.
+[^9]: Menon, Aditya Krishna, et al. "Long-Tail Learning via Logit Adjustment." *International Conference on Learning Representations*, 2021, openreview.net/forum?id=37nvvqkCo5.
