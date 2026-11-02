@@ -1,8 +1,8 @@
 ---
 layout: post
 title:  "The unreasonable effectiveness of partial minimization"
-tags: ["optimization", "linear algebra", "least squares"]
-description: "Partial minimization as a tool to achieve efficiency or understanding of optimization problems in machine learning"
+tags: ["optimization", "linear algebra", "least squares", "partial minimization", "machine learning", "convex optimization", "PCA", "log-sum-exp", "learning to rank", "exposure bias"]
+description: "What do constrained regression, PCA, and learning to rank have in common? Partial minimization reveals connections that the usual explanations tend to hide."
 comments: true
 image: assets/convex_epigraph_proj.png
 ---
