@@ -4,7 +4,7 @@ title:  "The unreasonable effectiveness of partial minimization"
 tags: ["optimization", "linear algebra", "least squares"]
 description: "Partial minimization as a tool to achieve efficiency or understanding of optimization problems in machine learning"
 comments: true
-image: assets/pow_spectrum_moreau_smooth_lambda3.png
+image: assets/convex_epigraph_proj.png
 ---
 
 # Intro
@@ -245,7 +245,7 @@ In books it is typically proved by definition. It's true also if we replace $$\m
 
 For that we shall use a standard tool in convex analysis - the set of points above the graph of the function, called the _epigraph_: $$\operatorname{epi}(f) = \{ (\boldsymbol x, t) \in \mathbb{R}^n \times \mathbb{R} : f(\boldsymbol x) \leq t \}$$.  Below are two examples of two epigraphs of functions.
 
-![convex_nonconvex_epigraphs](/home/alex/git/alexshtf.github.io/assets/convex_nonconvex_epigraphs.png)
+![convex_nonconvex_epigraphs](../assets/convex_nonconvex_epigraphs.png)
 
 One possible way to define a convex function is a function whose epigraph is a convex set, like the one on the left in the image above. So now we shall find a relationship between the epigraph of  $$f(\boldsymbol x, \boldsymbol y)$$ and its partial minimization $$g(\boldsymbol x)$$:
 $$
@@ -259,7 +259,7 @@ g(\boldsymbol x) = \min_{\boldsymbol y} f(\boldsymbol x, \boldsymbol y) \leq t
 $$
 In other words, the epigraph of $$g$$ is just the projection of the epigraph of $$f$$ onto the $$(\boldsymbol x, t)$$ coordinates - we take points $$(\boldsymbol x, \boldsymbol y, t) \in \operatorname{epi}(f)$$ and discard the $$\boldsymbol y$$ part. Geometrically, it's the _shadow_ that the epigraph of $$f$$ casts onto the $$(\boldsymbol x, t)$$ coordinates. Since $$\operatorname{epi}(f)$$ is convex, so is the above projection, and thus $$g$$ is convex. Visually, it looks like this - each _slice_ of the epigraph of $$f$$ becomes a vertical ray on the epigraph of $$g$$.
 
-![convex_epigraph_proj](/home/alex/git/alexshtf.github.io/assets/convex_epigraph_proj.png)
+![convex_epigraph_proj](../assets/convex_epigraph_proj.png)
 
 Now we can do some magic.
 
@@ -280,11 +280,11 @@ $$
 $$
 Why? Well, the logarithm is a concave function, so it is the minimum of all its tangents. And we have a very explicit way to characterize all the tangents - they all have a slope of $$e^{u}$$ and an intercept of $$-u-1$$. See the image:
 
-![log_tangents](/home/alex/git/alexshtf.github.io/assets/log_tangents.png)
+![log_tangents](../assets/log_tangents.png)
 
 So now that we have exposed the secret sauce, let's see why $$\mathrm{LogSumExp}$$ is convex:
 $$
-\ln\left( \sum_{i=1}^n \mathrm{e}^{x_i} \right) = \min_u \left\{ e^u \sum_{i=1}^n \mathrm{e}^{x_i}  - u - 1\right\}= \min_u \left\{  {\color{blue}\sum_{i=1}^n \mathrm{e}^{x_i + u}  - u - 1}\right\}
+\ln\left( \sum_{i=1}^n \mathrm{e}^{x_i} \right) = \min_u \left\{ e^u \sum_{i=1}^n \mathrm{e}^{x_i}  - u - 1\right\}= \min_u \left\{  {\color{blue}\sum_{i=1}^n \mathrm{e}^{x_i + u}  - u - 1}\right\} \tag{6}
 $$
 The blue term is a convex function of $$(\boldsymbol x, u)$$ - exponentials are convex, linear functions are convex, and a sum of two convex functions is convex. Consequently, its partial minimum over $$u$$ is also convex. A one-line proof. No hairy Hessians and gradients, but requires knowing some elementary convex analysis.
 
@@ -296,7 +296,7 @@ When we learn to rank items, we are given a training set of previous lists of it
 
 Our data is a set of item lists, each item with its own features, and a binary label saying if it was liked. The lists, however, do not have to be all of the same size. So visually, our training set looks like this:
 
-![learning_to_rank](/home/alex/git/alexshtf.github.io/assets/learning_to_rank.png)
+![learning_to_rank](../assets/learning_to_rank.png)
 
 Our objective is learning a model $$s(\boldsymbol x)$$ producing a score for each item, such that liked items get higher scores than those that were not liked. A famous way of doing so is treating the scores in each list as the logits of a categorical distribution, and just using the cross-entropy loss[^5]. Thus, each _row_ is a training sample whose loss is:
 $$
@@ -308,9 +308,102 @@ Another issue is that of memory layout. Working with a constant mini-batch size 
 
 So now comes our partial minimization to the rescue! The loss can be equivalently written as:
 $$
-\ell_i(s)=\mathrm{LogSumExp}(s(\boldsymbol x_{i,1}), \ldots,s(\boldsymbol x_{i,n_i})) - s(\boldsymbol x_{i p_i}),
+\ell_i(s)=\mathrm{LogSumExp}(s(\boldsymbol x_{i,1}), \ldots,s(\boldsymbol x_{i,n_i})) - \sum_{j=1}^{n_i} y_{ij} s(\boldsymbol x_{i, j}),
 $$
-where $$p_i$$ is the index of the item that has the positive label. 
+Using equation (6), we can write it as
+$$
+\begin{align*}
+\ell_i(s)
+ &=\min_u \left\{ \sum_{j=1}^{n_i}\mathrm{e}^{u+s(\boldsymbol x_{i,j})} -u - 1\right\} - \sum_{j=1}^{n_i} y_{i,j} s(\boldsymbol x_{i, j}), \\
+ &= \min_u \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j})\right)  - u - 1  \right\} \\
+ &= \min_u \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j}) - \frac{u + 1}{n_i}\right)   \right\} \\
+\end{align*}
+$$
+
+The second line stems from the fact that the terms $$y_{i,j} s(\boldsymbol x_{i, j})$$ do not depend on $$u$$, and we can put any constant from outside the minimum to inside the minimum. The last line is just splitting an equal portion of $$-u-1$$ between the $$n_i$$ items. So the problem of minimizing the loss over the entire training set can be written as:
+$$
+\begin{align*}
+\min_s \left\{\sum_{i=1}^m \ell_i(s) \right\} 
+ &= \min_s \left\{ \sum_{i=1}^m \min_{u_i} \left\{ \sum_{j=1}^{n_i} \left(\mathrm{e}^{u_i+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j}) - \frac{u_i + 1}{n_i} \right) \right\} \right\} \\
+ &= \min_{s, \boldsymbol u} \left\{ \sum_{i=1}^m \sum_{j=1}^{n_i} \left(\mathrm{e}^{u_i+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j})  - \frac{u_i + 1}{n_i}\right) \right\}
+\end{align*}
+$$
+Now behold - we are minimizing a sum of functions _of individual items_ rather than sumf of functions of _entire lists_. The price is adding an additional variable $$u_i$$ for every least, for expressing its $$\mathrm{LogSumExp}$$ function.  So item $$j$$ of list $$i$$ gets the loss function:
+$$
+\hat{\ell}_{ij}(s, u_i) = \mathrm{e}^{u_i+s(\boldsymbol x_{i,j})}- y_{ij} s(\boldsymbol x_{i,j}) - \frac{u_i + 1}{n_i}
+$$
+What we did is inflating the dimension of the optimization problem to get rid of the direct coupling between the list items. - now we need to learn both the parameters of our scoring model $$s$$ and the value of $$u_i$$.  Visually, it looks like this:
+
+![flattened_learning_to_rank.png](../assets/flattened_learning_to_rank.png)
+
+From the perspective of the learning algorithm, $$u_i$$ is just another parameter to be learned. But of course, we know it's there just as an auxiliary variable - after training, we only need the model $$s$$. In PyTorch, it looks something like this:
+```python
+import torch
+from torch import nn
+from torch.utils.data import DataLoader, TensorDataset
+
+# Assume we're given: 
+#   X: (N, d) item features
+#   y: (N,) binary labels, one positive per list
+#   list_id: (N,) the index of the list each row of X belongs to, numbered 0, ..., m-1
+loader = DataLoader(
+    TensorDataset(X, y, list_id),
+    batch_size=256,
+    shuffle=True,
+)
+
+sizes = torch.bincount(list_id).to(dtype=torch.float32)
+u = nn.Parameter(-torch.log(sizes))
+net = create_my_super_duper_cool_SOTA_network()
+
+optimizer = torch.optim.Adam([*net.parameters(), u], lr=1e-3)
+for epoch in range(20):
+    for xb, yb, ids in loader:
+        optimizer.zero_grad()
+
+        scores = net(xb).reshape(-1)
+        ui = u[ids]
+
+        item_losses = (torch.exp(ui + scores) - yb * scores - (ui + 1) / sizes[ids])
+        loss = item_losses.mean()
+
+        loss.backward()
+        optimizer.step()
+```
+
+If $$s$$ is linear the problem is convex, and we can even use a standard convex solver. Here is a CVXPY example that works if our dataset is not too large, say, a few tens of thousands. Nice for prototypes:
+
+```python
+import numpy as np
+import cvxpy as cp
+
+# Assume we're given: 
+#   X: (N, d) item features
+#   y: (N,) binary labels, one positive per list
+#   list_id: (N,) the index of the list each row of X belongs to, numbered 0, ..., m-1
+
+sizes = np.bincount(list_id)
+w = cp.Variable(X.shape[1])  # Global parameters of the linear model <w, x>
+u = cp.Variable(len(sizes))  # One parameter per list
+
+scores = X @ w
+ui = u[list_id]             # Share each u_i across its list
+
+item_losses = (
+    cp.exp(ui + scores)
+    - cp.multiply(y, scores)
+    - cp.multiply(1.0 / sizes[list_id], ui + 1)
+)
+
+problem = cp.Problem(cp.Minimize(cp.sum(item_losses)))
+problem.solve()
+```
+
+Doing this with `cvxpy.log_sum_exp` where the size of each list is variable would cause a HUGE overhead. We'd have to manually iterate over the lists and compute the log-sum-exp terms, since we can't organize the lists in a matrix due to their variable size.  In both cases, both in PyTorch and in CVXPY we don't have to deal with the complexity of variable-size lists.
+
+# Summary
+
+TODO
 
 ---
 
